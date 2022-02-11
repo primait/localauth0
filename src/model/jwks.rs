@@ -39,7 +39,7 @@ pub struct Jwks {
 impl Jwks {
     pub fn new() -> Result<Self, Error> {
         Ok(Self {
-            keys: (1..=3).into_iter().map(|_| Jwk::new(None)).collect(),
+            keys: (1..=3).into_iter().map(|_| Jwk::new(None)).collect::<Result<Vec<Jwk>, Error>>()?,
         })
     }
 
