@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  web:
+    build: .
+    container_name: auth0local_web
+    volumes:
+      - .:$PWD:cached
+    ports:
+      - 3000:3000
+    working_dir: $PWD
+    environment:
+      CARGO_HOME: /home/app/.cargo
+    networks:
+      - default

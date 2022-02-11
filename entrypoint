@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+source /setup_common.sh
+#source /decrypt_secrets.sh
+
+if [ -n "$1" ]; then
+  sh -c "$@"
+else
+  cargo watch -x 'run'
+fi

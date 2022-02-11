@@ -1,0 +1,21 @@
+[tasks.format]
+install_crate = "rustfmt"
+command = "cargo"
+args = ["fmt"]
+
+[tasks.run]
+command = "cargo"
+args = ["run", "--features=dev"]
+
+[tasks.watch]
+command = "cargo"
+args = ["run", "--features=dev"]
+
+[tasks.lint]
+description = "Run lint"
+command = "cargo"
+args = ["clippy", "--all-targets", "--all-features", "--", "-D"]
+
+[tasks.test]
+command = "cargo"
+args = ["test", "${@}"]
