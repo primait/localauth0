@@ -222,7 +222,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "auth0local"
+name = "localauth0"
 version = "0.1.0"
 dependencies = [
  "actix-web",

@@ -6,5 +6,5 @@ source /setup_common.sh
 if [ -n "$1" ]; then
   sh -c "$@"
 else
-  cargo watch -x 'run'
+  cargo build
 fi
