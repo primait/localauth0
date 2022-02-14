@@ -18,5 +18,4 @@ source /etc/profile.d/ecs-credentials-endpoint
 #docker run -v $PWD:/code --env CARGO_HOME=/home/app/.cargo prima/localauth0-ci:$DRONE_COMMIT
 
 docker build -t "${IMAGE_NAME}" -f Dockerfile_localauth0 "${DOCKERFILE_PATH}"
-CI=true dive "${IMAGE_NAME}"
 docker push "${IMAGE_NAME}"
