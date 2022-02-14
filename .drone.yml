@@ -15,6 +15,17 @@ steps:
   environment:
     PLUGIN_DEPTH: 5
 
+- name: build-image
+  image: public.ecr.aws/prima/drone-tools:1.21.3
+  commands:
+  - sed -i 's/USER app/USER root/g' ./Dockerfile
+  - docker build -t prima/localauth0-ci:${DRONE_COMMIT} ./
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+  depends_on:
+  - git-clone
+
 - name: build-localauth0
   image: public.ecr.aws/prima/drone-tools:1.21.3
   commands:
@@ -85,6 +96,6 @@ depends_on:
 
 ---
 kind: signature
-hmac: 434c719e7121f51e51d007d65edaeea3e2435fd614d60f6b349162c032bb435b
+hmac: 9acea68d8a4606f54fde99e92f12ee54ef6d2fdaeba78cd63b6af5d936ab0f44
 
 ...

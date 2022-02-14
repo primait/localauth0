@@ -9,4 +9,4 @@ RUN chown -R app:app /code
 # Needed to have the same file owner in the container and in Linux host
 USER app
 
-ENTRYPOINT ["/code/entrypoint"]
+ENTRYPOINT ["./entrypoint"]
