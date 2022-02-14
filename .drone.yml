@@ -40,6 +40,8 @@ steps:
     - tag
     ref:
     - refs/tags/*
+  depends_on:
+  - build-image
 
 volumes:
 - name: docker
@@ -96,6 +98,6 @@ depends_on:
 
 ---
 kind: signature
-hmac: 9acea68d8a4606f54fde99e92f12ee54ef6d2fdaeba78cd63b6af5d936ab0f44
+hmac: 5d990e9e42a6feeb993a27c9589337d3857529e6d6ce1aafaeac8a8982ee9b7c
 
 ...
