@@ -15,7 +15,7 @@ echo "building ${IMAGE_NAME}"
 source /etc/profile.d/ecs-credentials-endpoint
 # aws ecr-public get-login-password --region us-east-1 | /usr/bin/docker login --username AWS --password-stdin public.ecr.aws
 
-docker build . localauth0-temp:$VERSION
+docker build . -t localauth0-temp:$VERSION
 docker run -v $PWD:/code --env CARGO_HOME=/home/app/.cargo localauth0-temp:$VERSION
 
 docker build -t "${IMAGE_NAME}" -f Dockerfile_localauth0 "${DOCKERFILE_PATH}"
