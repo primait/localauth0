@@ -26,6 +26,16 @@ steps:
   depends_on:
   - git-clone
 
+- name: build-artifact
+  image: prima/localauth0-ci:${DRONE_COMMIT}
+  commands:
+  - cargo build
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+  depends_on:
+  - build-image
+
 - name: build-localauth0
   image: public.ecr.aws/prima/drone-tools:1.21.3
   commands:
@@ -42,6 +52,7 @@ steps:
     - refs/tags/*
   depends_on:
   - build-image
+  - build-artifact
 
 volumes:
 - name: docker
@@ -98,6 +109,6 @@ depends_on:
 
 ---
 kind: signature
-hmac: 5d990e9e42a6feeb993a27c9589337d3857529e6d6ce1aafaeac8a8982ee9b7c
+hmac: 8bc3fa290104fd50f2bfef1f2115cf3474eff5f733f47c6fab0b5d7c3a333483
 
 ...
