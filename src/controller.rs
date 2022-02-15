@@ -24,7 +24,7 @@ pub async fn jwt(app_data: Data<AppData>, token_request: Json<TokenRequest>) -> 
             .expect("Failed to get permissions");
 
         let claims: Claims = Claims::new(request.audience, permissions);
-        let random_jwk: Jwk = app_data.jwks_store().get_random().expect("Failed to get JWK");
+        let random_jwk: Jwk = app_data.jwks_store().random_jwk().expect("Failed to get JWK");
         let access_token: String = claims.to_string(&random_jwk).expect("Failed to generate JWT");
         let response: TokenResponse = TokenResponse::new(access_token, None);
 
@@ -45,7 +45,7 @@ pub async fn set_permissions_for_audience(
 ) -> HttpResponse {
     app_data
         .audience()
-        .set_permissions(
+        .put_permissions(
             &permissions_for_audience_request.0.audience,
             permissions_for_audience_request.0.permissions,
         )
@@ -57,4 +57,16 @@ pub async fn set_permissions_for_audience(
     HttpResponse::Ok()
         .content_type("application/json")
         .body(serde_json::to_string(&all_audiences).expect("Failed to serialize audiences map"))
+}
+
+#[get("/rotate")]
+pub async fn rotate_keys(app_data: Data<AppData>) -> HttpResponse {
+    app_data.jwks_store().rotate_keys().expect("Failed to rotate keys");
+    HttpResponse::Ok().content_type("text/plain").body("ok")
+}
+
+#[get("/revoke")]
+pub async fn revoke_keys(app_data: Data<AppData>) -> HttpResponse {
+    app_data.jwks_store().revoke_keys().expect("Failed to revoke keys");
+    HttpResponse::Ok().content_type("text/plain").body("ok")
 }

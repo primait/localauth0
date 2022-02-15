@@ -10,7 +10,7 @@ pub struct AppData {
 impl AppData {
     pub fn new() -> Result<Self, Error> {
         Ok(Self {
-            audience: Audience::new(),
+            audience: Audience::default(),
             jwks_store: JwksStore::new()?,
         })
     }
