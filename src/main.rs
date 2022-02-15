@@ -3,8 +3,8 @@ use std::time::Duration;
 use actix_web::web::Data;
 use actix_web::{middleware, App, HttpServer};
 
-use auth0local::controller;
-use auth0local::model::AppData;
+use localauth0::controller;
+use localauth0::model::AppData;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

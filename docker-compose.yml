@@ -3,7 +3,7 @@ version: "3"
 services:
   web:
     build: .
-    container_name: auth0local_web
+    container_name: localauth0_web
     volumes:
       - .:$PWD:cached
     ports:
