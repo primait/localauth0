@@ -59,34 +59,6 @@ steps:
   depends_on:
   - cache-restore
 
-- name: build-artifact
-  image: prima/localauth0-ci:${DRONE_COMMIT}
-  commands:
-  - cargo build
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-  depends_on:
-  - build-image
-
-- name: build-localauth0
-  image: public.ecr.aws/prima/drone-tools:1.21.3
-  commands:
-  - ./build.sh . 'public.ecr.aws/prima/localauth0:'
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-  - name: ecs
-    path: /etc/profile.d/ecs-credentials-endpoint
-  when:
-    event:
-    - tag
-    ref:
-    - refs/tags/*
-  depends_on:
-  - build-image
-  - build-artifact
-
 - name: cache-save
   image: public.ecr.aws/prima/drone-tools:1.21.3
   commands:
@@ -102,9 +74,6 @@ steps:
   when:
     branch:
     - master
-  depends_on:
-  - build-artifact
-  - build-localauth0
 
 volumes:
 - name: docker
@@ -120,6 +89,77 @@ node:
 trigger:
   event:
   - push
+
+---
+kind: pipeline
+name: build-production
+
+platform:
+  os: linux
+  arch: amd64
+
+clone:
+  disable: true
+
+steps:
+- name: git-clone
+  image: public.ecr.aws/prima/drone-git:1.3-3
+  environment:
+    PLUGIN_DEPTH: 5
+
+- name: cache-restore
+  image: public.ecr.aws/prima/drone-tools:1.21.3
+  commands:
+  - . /etc/profile.d/ecs-credentials-endpoint
+  - cache-restore
+  environment:
+    BUCKET_NAME: prima-ci-cache
+  volumes:
+  - name: ecs
+    path: /etc/profile.d/ecs-credentials-endpoint
+  - name: docker
+    path: /var/run/docker.sock
+  depends_on:
+  - git-clone
+
+- name: build-image
+  image: public.ecr.aws/prima/drone-tools:1.21.3
+  commands:
+  - sed -i 's/USER app/USER root/g' ./Dockerfile
+  - docker build -t prima/localauth0-ci:${DRONE_COMMIT} ./
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+  depends_on:
+  - cache-restore
+
+- name: build-production
+  image: prima/localauth0-ci:${DRONE_COMMIT}
+  commands:
+  - . /etc/profile.d/ecs-credentials-endpoint
+  - ./deploy/build production
+  volumes:
+  - name: ecs
+    path: /etc/profile.d/ecs-credentials-endpoint
+  depends_on:
+  - build-image
+
+volumes:
+- name: docker
+  host:
+    path: /var/run/docker.sock
+- name: ecs
+  host:
+    path: /etc/profile.d/ecs-credentials-endpoint
+
+node:
+  reserved: common
+
+trigger:
+  event:
+  - tag
+  ref:
+  - refs/tags/*.*.*
 
 ---
 kind: pipeline
@@ -158,9 +198,10 @@ trigger:
 
 depends_on:
 - default
+- build-production
 
 ---
 kind: signature
-hmac: 755360836f58b38204c84699138cbfee011fb2a8075f403c3a9420236fc13c68
+hmac: e2834f862c7ca9d0e66d1b0513ed3d701b5215f9df3c211d40fcace92fb03567
 
 ...
