@@ -15,6 +15,39 @@ steps:
   environment:
     PLUGIN_DEPTH: 5
 
+- name: cache-restore
+  image: public.ecr.aws/prima/drone-tools:1.21.3
+  commands:
+  - . /etc/profile.d/ecs-credentials-endpoint
+  - cache-restore
+  environment:
+    BUCKET_NAME: prima-ci-cache
+  volumes:
+  - name: ecs
+    path: /etc/profile.d/ecs-credentials-endpoint
+  - name: docker
+    path: /var/run/docker.sock
+  depends_on:
+  - git-clone
+
+- name: check-secrets
+  image: public.ecr.aws/prima/drone-tools:1.21.3
+  commands:
+  - . /etc/profile.d/ecs-credentials-endpoint
+  - check-secrets-grants
+  volumes:
+  - name: ecs
+    path: /etc/profile.d/ecs-credentials-endpoint
+  depends_on:
+  - git-clone
+
+- name: check-public-docker-images
+  image: public.ecr.aws/prima/drone-tools:1.21.3
+  commands:
+  - check-public-docker-images
+  depends_on:
+  - git-clone
+
 - name: build-image
   image: public.ecr.aws/prima/drone-tools:1.21.3
   commands:
@@ -24,7 +57,7 @@ steps:
   - name: docker
     path: /var/run/docker.sock
   depends_on:
-  - git-clone
+  - cache-restore
 
 - name: build-artifact
   image: prima/localauth0-ci:${DRONE_COMMIT}
@@ -54,6 +87,25 @@ steps:
   - build-image
   - build-artifact
 
+- name: cache-save
+  image: public.ecr.aws/prima/drone-tools:1.21.3
+  commands:
+  - . /etc/profile.d/ecs-credentials-endpoint
+  - cache-save deps
+  environment:
+    BUCKET_NAME: prima-ci-cache
+  volumes:
+  - name: ecs
+    path: /etc/profile.d/ecs-credentials-endpoint
+  - name: docker
+    path: /var/run/docker.sock
+  when:
+    branch:
+    - master
+  depends_on:
+  - build-artifact
+  - build-localauth0
+
 volumes:
 - name: docker
   host:
@@ -67,7 +119,7 @@ node:
 
 trigger:
   event:
-  - tag
+  - push
 
 ---
 kind: pipeline
@@ -109,6 +161,6 @@ depends_on:
 
 ---
 kind: signature
-hmac: 8bc3fa290104fd50f2bfef1f2115cf3474eff5f733f47c6fab0b5d7c3a333483
+hmac: 755360836f58b38204c84699138cbfee011fb2a8075f403c3a9420236fc13c68
 
 ...
