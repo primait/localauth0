@@ -1,6 +1,9 @@
 #[derive(Debug)]
 pub enum Msg {
-    AddPermission,
+    UpdateAudience,
     GenerateToken,
     TokenReceived(Option<String>),
+    AddPermission,
+    RemovePermission(String),
+    SetPermissions,
 }
