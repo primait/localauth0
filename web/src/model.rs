@@ -127,16 +127,24 @@ impl Component for Model {
     fn view(&self) -> Html {
         html! {
             <div>
-                <label for="audience">{ "Audience" }</label>
-                <input name="audience" type="text" ref={self.audience_input_ref.clone()}
-                    onkeypress=self.link.batch_callback(|e: KeyboardEvent| {
-                        if e.key() == "Enter" { Some(Msg::UpdateAudience) } else { None }
-                    })
-                />
+                <div class="grid">
+                    <div>
+                        <label for="audience">{ "Audience" }</label>
+                        <input name="audience" type="text" ref={self.audience_input_ref.clone()}
+                            onkeypress=self.link.batch_callback(|e: KeyboardEvent| {
+                                if e.key() == "Enter" { Some(Msg::UpdateAudience) } else { None }
+                            })
+                        />
+                    </div>
+                    <div>
+                        <label for="permission">{ "Permission" }</label>
+                        {{self.view_input()}}
+                    </div>
+                </div>
+
                 <p>{self.audience.clone().unwrap_or("-".to_string())}</p>
                 { for self.permissions.iter().map(|e| self.view_entry(e.to_string())) }
-                <label for="permission">{ "Permission" }</label>
-                {{self.view_input()}}
+
                 <br/>
                 <button onclick=self.link.callback(|_| Msg::GenerateToken)>{"Generate token"}</button>
                 <button onclick=self.link.callback(|_| Msg::SetPermissions)>{"Set permissions"}</button>
