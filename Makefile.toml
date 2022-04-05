@@ -3,6 +3,12 @@ command = "cargo"
 args = ["run"]
 dependencies = ["trunk-build"]
 
+[tasks.watch]
+install_crate = { crate_name = "cargo-watch" }
+command = "cargo"
+args = ["watch", "-x", "make run"]
+dependencies = ["trunk-build"]
+
 [tasks.test]
 command = "cargo"
 args = ["test", "${@}"]

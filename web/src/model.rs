@@ -71,26 +71,6 @@ impl Component for Model {
                 }
 
                 true
-                // if let Some(input) = self.permission_input_ref.cast::<HtmlInputElement>() {
-                //     self.audience = input.value();
-                //     let request = Request::post("/oauth/token")
-                //         .header("Content-type", "application/json")
-                //         .body(Ok(serde_json::to_string(&TokenRequest {
-                //             client_id: "client_id".to_string(),
-                //             client_secret: "client_secret".to_string(),
-                //             audience: input.value(),
-                //             grant_type: "client_credentials".to_string(),
-                //         })
-                //             .unwrap()))
-                //         .expect("Could not build request");
-                //
-                //     let callback = self
-                //         .link
-                //         .callback(|response: Response<Text>| Msg::SetText(response.into_body().ok()));
-                //
-                //     let task = FetchService::fetch(request, callback).expect("Failed to start request");
-                //     self.task = Some(task);
-                // }
             }
             Msg::RemovePermission(permission) => {
                 self.permissions = self.permissions.clone().into_iter().filter(|v| v != &permission).collect();
@@ -126,29 +106,57 @@ impl Component for Model {
 
     fn view(&self) -> Html {
         html! {
-            <div>
-                <div class="grid">
-                    <div>
-                        <label for="audience">{ "Audience" }</label>
-                        <input name="audience" type="text" ref={self.audience_input_ref.clone()}
-                            onkeypress=self.link.batch_callback(|e: KeyboardEvent| {
-                                if e.key() == "Enter" { Some(Msg::UpdateAudience) } else { None }
-                            })
-                        />
+            <div class="container spacing-v-xl">
+                <h1 class="title-xl-bold">{ "Localauth0" }</h1>
+                <div class="form-grid">
+                    <div class="form-grid__row">
+                        <div class="form-grid__row__column">
+                            <div class="form-item">
+                                <label class="form-label" for="audience">{ "Audience" }</label>
+                                <div class="form-item__wrapper">
+                                    <div class="form-field">
+                                        <label class="form-field__wrapper">
+                                            <input id="form-item-name" class="form-field__text" name="audience" type="text" ref={self.audience_input_ref.clone()}
+                                                onkeypress=self.link.batch_callback(|e: KeyboardEvent| {
+                                                    if e.key() == "Enter" { Some(Msg::UpdateAudience) } else { None }
+                                                })
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-grid__row__column">
+                            <div class="form-item">
+                                <label class="form-label" for="permission">{ "Permission" }</label>
+                                {{self.permission_input_view()}}
+                            </div>
+                        </div>
+                        <div class="form-grid__row__column"></div>
+                        <div class="form-grid__row__column"></div>
                     </div>
-                    <div>
-                        <label for="permission">{ "Permission" }</label>
-                        {{self.view_input()}}
+                    <div class="">
+
+                    </div>
+                    <div class="form-grid__row">
+                        <div class="form-grid__row__column">
+                            <div class="form-item" style="width: 80px;">
+                                <button class="button button--brand button--huge" disabled={self.audience.is_empty()} onclick=self.link.callback(|_| Msg::GenerateToken)>{"Generate token"}</button>
+                            </div>
+                        </div>
+                        <div class="form-grid__row__column">
+                            <div class="form-item" style="width: 80px;">
+                                <button class="button button--brand button--huge" disabled={self.permissions.is_empty()} onclick=self.link.callback(|_| Msg::SetPermissions)>{"Set permissions"}</button>
+                            </div>
+                        </div>
+                        <div class="form-grid__row__column"></div>
+                        <div class="form-grid__row__column"></div>
                     </div>
                 </div>
 
                 <p>{self.audience.clone().unwrap_or("-".to_string())}</p>
                 { for self.permissions.iter().map(|e| self.view_entry(e.to_string())) }
 
-                <br/>
-                <button onclick=self.link.callback(|_| Msg::GenerateToken)>{"Generate token"}</button>
-                <button onclick=self.link.callback(|_| Msg::SetPermissions)>{"Set permissions"}</button>
-                <br/>
                 <p>{self.token.clone().unwrap_or("-".to_string())}</p>
             </div>
         }
@@ -156,20 +164,19 @@ impl Component for Model {
 }
 
 impl Model {
-    fn view_input(&self) -> Html {
+    fn permission_input_view(&self) -> Html {
         html! {
-            // You can use standard Rust comments. One line:
-            // <li></li>
-            <input ref=self.permission_input_ref.clone()
-                onkeypress=self.link.batch_callback(|e: KeyboardEvent| {
-                    if e.key() == "Enter" { Some(Msg::AddPermission) } else { None }
-                })
-            />
-            /* Or multiline:
-            <ul>
-                <li></li>
-            </ul>
-            */
+            <div class="form-item__wrapper">
+                <div class="form-field">
+                    <label class="form-field__wrapper">
+                        <input id="form-item-name" class="form-field__text" type="text" ref=self.permission_input_ref.clone()
+                            onkeypress=self.link.batch_callback(|e: KeyboardEvent| {
+                                if e.key() == "Enter" { Some(Msg::AddPermission) } else { None }
+                            })
+                        />
+                    </label>
+                </div>
+            </div>
         }
     }
 
@@ -177,7 +184,7 @@ impl Model {
         html! {
             <li>
             {permission.clone()}
-            <button onclick=self.link.callback(move |_| Msg::RemovePermission(permission.clone()))>{"-"}</button>
+            <button class="button button--primary button--medium button--icon-only" onclick=self.link.callback(move |_| Msg::RemovePermission(permission.clone()))>{"-"}</button>
             </li>
         }
     }
@@ -195,4 +202,17 @@ struct TokenRequest {
 struct PermissionsForAudience {
     audience: String,
     permissions: Vec<String>,
+}
+
+trait IsEmpty {
+    fn is_empty(&self) -> bool;
+}
+
+impl IsEmpty for Option<String> {
+    fn is_empty(&self) -> bool {
+        match &self {
+            None => true,
+            Some(string) => string == "",
+        }
+    }
 }
