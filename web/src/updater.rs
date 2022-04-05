@@ -1,6 +1,7 @@
 use yew::{web_sys::HtmlInputElement, services::{fetch::{Request, Response}, FetchService}, format::Text};
 
-use crate::{model::Model, message::Msg};
+use crate::model::Model;
+use crate::message::Msg;
 
 pub fn update(model: &mut Model, message: Msg) -> bool {
     match message {
@@ -11,20 +12,21 @@ pub fn update(model: &mut Model, message: Msg) -> bool {
             true
         }
         Msg::GenerateToken => {
-            let request = Request::post("/oauth/token")
-                .header("Content-type", "application/json")
-                .body(Ok(serde_json::to_string(&TokenRequest {
+            let request = post("/oauth/token", &TokenRequest {
                     client_id: "client_id".to_string(),
                     client_secret: "client_secret".to_string(),
                     audience: model.audience.clone().unwrap(),
                     grant_type: "client_credentials".to_string(),
-                })
-                .unwrap()))
-                .expect("Could not build request");
+                });
 
             let callback = model
                 .link
-                .callback(|response: Response<Text>| Msg::TokenReceived(response.into_body().ok()));
+                .callback( |response: Response<Text>|  {
+                    let c = response.into_body().unwrap();
+                    let body = serde_json::from_str(&c).unwrap();
+                    Msg::TokenReceived(body)
+                }
+                );
 
             let task = FetchService::fetch(request, callback).expect("Failed to start request");
             model.task = Some(task);
@@ -37,8 +39,8 @@ pub fn update(model: &mut Model, message: Msg) -> bool {
         Msg::AddPermission => {
             if let Some(input) = model.permission_input_ref.cast::<HtmlInputElement>() {
                 model.permissions.push(input.value());
+                input.set_value("");
             }
-
             true
         }
         Msg::RemovePermission(permission) => {
@@ -52,20 +54,19 @@ pub fn update(model: &mut Model, message: Msg) -> bool {
         }
 
         Msg::SetPermissions => {
-            let request = Request::post("/permissions")
-                .header("Content-type", "application/json")
-                .body(Ok(serde_json::to_string(&PermissionsForAudience {
+            let request = post("/permissions", 
+                &PermissionsForAudience {
                     audience: model.audience.clone().unwrap(),
                     permissions: model.permissions.clone(),
-                })
-                .unwrap()))
-                .expect("Could not build request");
+                });
 
             log::info!("{} - {:?}", model.audience.clone().unwrap(), model.permissions.as_slice());
 
             let callback = model
                 .link
-                .callback(|response: Response<Text>| Msg::TokenReceived(response.into_body().ok()));
+                .callback(|response: Response<Text>| {
+                    log::info!("{:#?}", response);
+                    Msg::GenerateToken});
 
             let task = FetchService::fetch(request, callback).expect("Failed to start request");
             model.task = Some(task);
@@ -73,7 +74,6 @@ pub fn update(model: &mut Model, message: Msg) -> bool {
         }
     }
 }
-
 #[derive(serde::Serialize)]
 struct TokenRequest {
     client_id: String,
@@ -86,4 +86,13 @@ struct TokenRequest {
 struct PermissionsForAudience {
     audience: String,
     permissions: Vec<String>,
+}
+
+fn post<T:serde::Serialize>(path: &str, body: T) -> Request<Result<String, anyhow::Error>> {
+    let request = Request::post(path)
+        .header("Content-type", "application/json")
+        .body(Ok(serde_json::to_string(&body)
+        .unwrap()))
+        .expect("Could not build request");
+    request
 }

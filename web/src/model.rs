@@ -1,6 +1,6 @@
-use yew::prelude::*;
-use yew::services::fetch::{FetchTask};
-
+use serde::Deserialize;
+use yew::prelude::{Component, ShouldRender, Html, html, NodeRef, ComponentLink, KeyboardEvent};
+use yew::services::fetch::FetchTask;
 
 use crate::message::Msg;
 use crate::updater;
@@ -10,7 +10,7 @@ pub struct Model {
    pub permission_input_ref: NodeRef,
    pub audience: Option<String>,
    pub permissions: Vec<String>,
-   pub token: Option<String>,
+   pub token: Option<Jwt>,
    pub link: ComponentLink<Self>,
    pub task: Option<FetchTask>,
 }
@@ -68,32 +68,39 @@ impl Component for Model {
                                 {{self.permission_input_view()}}
                             </div>
                         </div>
-                        <div class="form-grid__row__column"></div>
+                        <div class="form-grid__row__column">
+                            <div class="form-item" style="width: 80px; margin-top: 25px">
+                                <label class="form-label" ></label>
+                                <button class="button button--brand button--huge" disabled={self.audience.is_empty()} onclick=self.link.callback(|_| Msg::SetPermissions)>{"Generate token"}</button>
+                            </div>
+                        </div>
                         <div class="form-grid__row__column"></div>
                     </div>
                     <div class="">
 
                     </div>
-                    <div class="form-grid__row">
-                        <div class="form-grid__row__column">
-                            <div class="form-item" style="width: 80px;">
-                                <button class="button button--brand button--huge" disabled={self.audience.is_empty()} onclick=self.link.callback(|_| Msg::GenerateToken)>{"Generate token"}</button>
-                            </div>
-                        </div>
-                        <div class="form-grid__row__column">
-                            <div class="form-item" style="width: 80px;">
-                                <button class="button button--brand button--huge" disabled={self.permissions.is_empty()} onclick=self.link.callback(|_| Msg::SetPermissions)>{"Set permissions"}</button>
-                            </div>
-                        </div>
-                        <div class="form-grid__row__column"></div>
-                        <div class="form-grid__row__column"></div>
-                    </div>
                 </div>
 
-                <p>{self.audience.clone().unwrap_or("-".to_string())}</p>
-                { for self.permissions.iter().map(|e| self.view_entry(e.to_string())) }
-
-                <p>{self.token.clone().unwrap_or("-".to_string())}</p>
+                <div class="form-grid">
+                    <div class="form-grid__row form-grid__row--medium">
+                        <div class="form-grid__row__column form-grid__row__column-medium">
+                            <label class="form-label" for="label-and-textarea">{ "Token" }</label>
+                            <div class="form-item__wrapper">
+                                <div class="form-field">
+                                    <textarea
+                                    class="form-field__textarea"
+                                    readonly=true
+                                    id="label-and-textarea">
+                                    {self.token.clone().map(|jwt| jwt.access_token).unwrap_or("-".to_string())}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-grid form-grid--gap-small form-grid__row__column form-grid__row__column-medium">
+                            { for self.permissions.iter().map(|permission| self.view_entry(permission.to_string())) }
+                         </div>
+                    </div>
+                </div>
+              
             </div>
         }
     }
@@ -118,12 +125,19 @@ impl Model {
 
     fn view_entry(&self, permission: String) -> Html {
         html! {
-            <li>
-            {permission.clone()}
-            <button class="button button--primary button--medium button--icon-only" onclick=self.link.callback(move |_| Msg::RemovePermission(permission.clone()))>{"-"}</button>
-            </li>
+            <div class="form-grid__row">
+            <div class="form-grid__row__column form-grid__row__column--small">{&permission}</div>
+            <div class="form-grid__row__column form-grid__row__column--span-3">
+                <button class="button button--primary button--medium button--icon-only" onclick=self.link.callback(move |_| Msg::RemovePermission(permission.clone()))>{"-"}</button>
+            </div>
+            </div>
         }
     }
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Jwt {
+    access_token: String
 }
 
 trait IsEmpty {

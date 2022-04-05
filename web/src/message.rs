@@ -1,8 +1,10 @@
+use crate::model::Jwt;
+
 #[derive(Debug)]
 pub enum Msg {
     UpdateAudience,
     GenerateToken,
-    TokenReceived(Option<String>),
+    TokenReceived(Option<Jwt>),
     AddPermission,
     RemovePermission(String),
     SetPermissions,
