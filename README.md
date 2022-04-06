@@ -4,7 +4,7 @@
 
 ![localauth0](localauth0.png)
 
-Localauth0 is a project that aim to be a helper while developing authentications inspired by [localstack](https://localstack.cloud/).
+Localauth0 is a project that aims to be a helper while developing authentications inspired by [localstack](https://localstack.cloud/).
 Most of the time people tend to mock authentication in order to not be forced to create complex mocks.
 With localauth0 you can fake your [auth0](https://auth0.com/) tenant and test it offline for "real".
 
@@ -22,7 +22,7 @@ Note: The latest version is the same `version` written in the `Cargo.toml` file.
 
 ### Web page
 
-After have run localauth0 machine a web interface is available at [http://localhost:3000/](http://localhost:3000/).
+After having run the localauth0 machine a web interface is available at [http://localhost:3000/](http://localhost:3000/).
 Here it's possible to:
 - get a fresh new JWT with given `audience`.
 - add/remove permissions for a given `audience`.
