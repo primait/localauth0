@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use yew::prelude::{html, Component, ComponentLink, Html, KeyboardEvent, NodeRef, ShouldRender};
+use yew::prelude::{html, Component, ComponentLink, Html, NodeRef, ShouldRender};
 use yew::services::fetch::FetchTask;
 
 use crate::message::Msg;
@@ -87,6 +87,7 @@ impl Component for Model {
                                         id="label-and-textarea"
                                         class="form-field__textarea token-area"
                                         readonly=true
+                                        onclick=self.link.callback(|| )
                                     >
                                         {self.token.clone().map(|jwt| jwt.access_token).unwrap_or("No token".to_string())}
                                     </textarea>
@@ -191,3 +192,24 @@ impl IsEmpty for Option<String> {
         }
     }
 }
+
+fn adf() {
+    web_sys::Navigator::clipboard()
+}
+
+/*
+window.addEventListener('DOMContentLoaded', () => {
+  Array.from(document.getElementsByClassName('iban-number')).forEach(number => {
+    number.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      navigator.clipboard.writeText(number.textContent)
+        .then(() => Flash.success('Copied to clipboard!'))
+        .catch((error) => {
+          Flash.failure('Could not copy to clipboard');
+          console.error({ clipboard: error });
+        });
+    });
+  });
+});
+*/

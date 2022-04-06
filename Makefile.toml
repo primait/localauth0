@@ -1,6 +1,9 @@
+[env]
+CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+
 [tasks.run]
 command = "cargo"
-args = ["run"]
+args = ["--cfg=web_sys_unstable_apis", "run"]
 dependencies = ["trunk-build"]
 
 [tasks.watch]
