@@ -1,18 +1,18 @@
 use serde::Deserialize;
-use yew::prelude::{Component, ShouldRender, Html, html, NodeRef, ComponentLink, KeyboardEvent};
+use yew::prelude::{html, Component, ComponentLink, Html, KeyboardEvent, NodeRef, ShouldRender};
 use yew::services::fetch::FetchTask;
 
 use crate::message::Msg;
 use crate::updater;
 
 pub struct Model {
-   pub audience_input_ref: NodeRef,
-   pub permission_input_ref: NodeRef,
-   pub audience: Option<String>,
-   pub permissions: Vec<String>,
-   pub token: Option<Jwt>,
-   pub link: ComponentLink<Self>,
-   pub task: Option<FetchTask>,
+    pub audience_input_ref: NodeRef,
+    pub permission_input_ref: NodeRef,
+    pub audience: Option<String>,
+    pub permissions: Vec<String>,
+    pub token: Option<Jwt>,
+    pub link: ComponentLink<Self>,
+    pub task: Option<FetchTask>,
 }
 
 impl Component for Model {
@@ -52,11 +52,7 @@ impl Component for Model {
                                 <div class="form-item__wrapper">
                                     <div class="form-field">
                                         <label class="form-field__wrapper">
-                                            <input id="form-item-name" class="form-field__text" name="audience" type="text" ref={self.audience_input_ref.clone()}
-                                                onkeypress=self.link.batch_callback(|e: KeyboardEvent| {
-                                                    if e.key() == "Enter" { Some(Msg::UpdateAudience) } else { None }
-                                                })
-                                            />
+                                            <input id="form-item-name"  class="form-field__text" name="audience" type="text" ref={self.audience_input_ref.clone()}/>
                                         </label>
                                     </div>
                                 </div>
@@ -71,7 +67,7 @@ impl Component for Model {
                         <div class="form-grid__row__column">
                             <div class="form-item" style="width: 80px; margin-top: 25px">
                                 <label class="form-label" ></label>
-                                <button class="button button--brand button--huge" disabled={self.audience.is_empty()} onclick=self.link.callback(|_| Msg::SetPermissions)>{"Generate token"}</button>
+                                <button class="button button--brand button--huge" onclick=self.link.callback(|_| Msg::SetPermissions)>{"Generate token"}</button>
                             </div>
                         </div>
                         <div class="form-grid__row__column"></div>
@@ -100,7 +96,7 @@ impl Component for Model {
                          </div>
                     </div>
                 </div>
-              
+
             </div>
         }
     }
@@ -110,14 +106,15 @@ impl Model {
     fn permission_input_view(&self) -> Html {
         html! {
             <div class="form-item__wrapper">
-                <div class="form-field">
-                    <label class="form-field__wrapper">
-                        <input id="form-item-name" class="form-field__text" type="text" ref=self.permission_input_ref.clone()
-                            onkeypress=self.link.batch_callback(|e: KeyboardEvent| {
-                                if e.key() == "Enter" { Some(Msg::AddPermission) } else { None }
-                            })
-                        />
-                    </label>
+                <div class="form-field form-grid__row">
+                    <div class="form-grid__row__column form-grid__row__column--span-2">
+                        <label class="form-field__wrapper">
+                            <input id="form-item-name" class="form-field__text" type="text" ref=self.permission_input_ref.clone()/>
+                        </label>
+                    </div>
+                    <div class="form-grid__row__column ">
+                        <button class="button button--primary button--large " onclick=self.link.batch_callback(|_| { Some(Msg::AddPermission) })>{"+"}</button>
+                    </div>
                 </div>
             </div>
         }
@@ -126,10 +123,10 @@ impl Model {
     fn view_entry(&self, permission: String) -> Html {
         html! {
             <div class="form-grid__row">
-            <div class="form-grid__row__column form-grid__row__column--small">{&permission}</div>
-            <div class="form-grid__row__column form-grid__row__column--span-3">
-                <button class="button button--primary button--medium button--icon-only" onclick=self.link.callback(move |_| Msg::RemovePermission(permission.clone()))>{"-"}</button>
-            </div>
+                <div class="form-grid__row__column form-grid__row__column--small">{&permission}</div>
+                <div class="form-grid__row__column form-grid__row__column--span-3">
+                    <button class="button button--primary button--medium button--icon-only" onclick=self.link.callback(move |_| Msg::RemovePermission(permission.clone()))>{"-"}</button>
+                </div>
             </div>
         }
     }
@@ -137,7 +134,7 @@ impl Model {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Jwt {
-    access_token: String
+    access_token: String,
 }
 
 trait IsEmpty {

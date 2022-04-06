@@ -1,32 +1,33 @@
-use yew::{web_sys::HtmlInputElement, services::{fetch::{Request, Response}, FetchService}, format::Text};
+use yew::{
+    format::Text,
+    services::{
+        fetch::{Request, Response},
+        FetchService,
+    },
+    web_sys::HtmlInputElement,
+};
 
-use crate::model::Model;
 use crate::message::Msg;
+use crate::model::Model;
 
 pub fn update(model: &mut Model, message: Msg) -> bool {
     match message {
-        Msg::UpdateAudience => {
-            if let Some(input) = model.audience_input_ref.cast::<HtmlInputElement>() {
-                model.audience = Some(input.value());
-            }
-            true
-        }
         Msg::GenerateToken => {
-            let request = post("/oauth/token", &TokenRequest {
+            let request = post(
+                "/oauth/token",
+                &TokenRequest {
                     client_id: "client_id".to_string(),
                     client_secret: "client_secret".to_string(),
                     audience: model.audience.clone().unwrap(),
                     grant_type: "client_credentials".to_string(),
-                });
+                },
+            );
 
-            let callback = model
-                .link
-                .callback( |response: Response<Text>|  {
-                    let c = response.into_body().unwrap();
-                    let body = serde_json::from_str(&c).unwrap();
-                    Msg::TokenReceived(body)
-                }
-                );
+            let callback = model.link.callback(|response: Response<Text>| {
+                let c = response.into_body().unwrap();
+                let body = serde_json::from_str(&c).unwrap();
+                Msg::TokenReceived(body)
+            });
 
             let task = FetchService::fetch(request, callback).expect("Failed to start request");
             model.task = Some(task);
@@ -54,22 +55,24 @@ pub fn update(model: &mut Model, message: Msg) -> bool {
         }
 
         Msg::SetPermissions => {
-            let request = post("/permissions", 
-                &PermissionsForAudience {
-                    audience: model.audience.clone().unwrap(),
-                    permissions: model.permissions.clone(),
+            if let Some(input) = model.audience_input_ref.cast::<HtmlInputElement>() {
+                model.audience = Some(input.value());
+                let request = post(
+                    "/permissions",
+                    &PermissionsForAudience {
+                        audience: model.audience.clone().unwrap(),
+                        permissions: model.permissions.clone(),
+                    },
+                );
+
+                let callback = model.link.callback(|response: Response<Text>| {
+                    log::info!("{:#?}", response);
+                    Msg::GenerateToken
                 });
 
-            log::info!("{} - {:?}", model.audience.clone().unwrap(), model.permissions.as_slice());
-
-            let callback = model
-                .link
-                .callback(|response: Response<Text>| {
-                    log::info!("{:#?}", response);
-                    Msg::GenerateToken});
-
-            let task = FetchService::fetch(request, callback).expect("Failed to start request");
-            model.task = Some(task);
+                let task = FetchService::fetch(request, callback).expect("Failed to start request");
+                model.task = Some(task);
+            }
             true
         }
     }
@@ -88,11 +91,10 @@ struct PermissionsForAudience {
     permissions: Vec<String>,
 }
 
-fn post<T:serde::Serialize>(path: &str, body: T) -> Request<Result<String, anyhow::Error>> {
+fn post<T: serde::Serialize>(path: &str, body: T) -> Request<Result<String, anyhow::Error>> {
     let request = Request::post(path)
         .header("Content-type", "application/json")
-        .body(Ok(serde_json::to_string(&body)
-        .unwrap()))
+        .body(Ok(serde_json::to_string(&body).unwrap()))
         .expect("Could not build request");
     request
 }
