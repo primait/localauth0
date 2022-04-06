@@ -43,60 +43,67 @@ impl Component for Model {
     fn view(&self) -> Html {
         html! {
             <div class="container spacing-v-xl">
-                <h1 class="title-xl-bold">{ "Localauth0" }</h1>
                 <div class="form-grid">
-                    <div class="form-grid__row">
+                    // Title
+                    <div class="form-grid__row form-grid__row--small">
+                        <legend class="form-legend">
+                            <span class="form-legend__addon">
+                                <img
+                                    src="static/media/placeholder.7d73ad27.svg"
+                                    width="80"
+                                    height="80"
+                                    alt="Localauth0 logo"
+                                />
+                            </span>
+                            <span class="form-legend__title">{"Localauth0"}</span>
+                            //<span class="form-legend__text">Legend description</span>
+                        </legend>
+                    </div>
+
+                    // Audience input
+                    <div class="form-grid__row form-grid__row--small">
+                        <div class="form-item">
+                            <label class="form-label" for="audience">{ "Audience" }</label>
+                            <div class="form-item__wrapper">
+                                <div class="form-field">
+                                    <label class="form-field__wrapper">
+                                        <input id="form-item-name" class="form-field__text" name="audience" type="text" placeholder="audience" ref={self.audience_input_ref.clone()}/>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{self.permission_input_view()}}
+
+                    <div class="form-grid__row form-grid__row--small">
                         <div class="form-grid__row__column">
                             <div class="form-item">
-                                <label class="form-label" for="audience">{ "Audience" }</label>
+                                <label class="form-label" for="label-and-textarea">{ "Token" }</label>
                                 <div class="form-item__wrapper">
                                     <div class="form-field">
-                                        <label class="form-field__wrapper">
-                                            <input id="form-item-name"  class="form-field__text" name="audience" type="text" ref={self.audience_input_ref.clone()}/>
-                                        </label>
+                                        <textarea
+                                            class="form-field__textarea"
+                                            readonly=true
+                                            id="label-and-textarea">
+                                            {self.token.clone().map(|jwt| jwt.access_token).unwrap_or("-".to_string())}
+                                        </textarea>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="form-grid__row__column">
-                            <div class="form-item">
-                                <label class="form-label" for="permission">{ "Permission" }</label>
-                                {{self.permission_input_view()}}
-                            </div>
-                        </div>
-                        <div class="form-grid__row__column">
-                            <div class="form-item" style="width: 80px; margin-top: 25px">
-                                <label class="form-label" ></label>
-                                <button class="button button--brand button--huge" onclick=self.link.callback(|_| Msg::SetPermissions)>{"Generate token"}</button>
-                            </div>
-                        </div>
-                        <div class="form-grid__row__column"></div>
-                    </div>
-                    <div class="">
 
-                    </div>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-grid__row form-grid__row--medium">
-                        <div class="form-grid__row__column form-grid__row__column-medium">
-                            <label class="form-label" for="label-and-textarea">{ "Token" }</label>
-                            <div class="form-item__wrapper">
-                                <div class="form-field">
-                                    <textarea
-                                    class="form-field__textarea"
-                                    readonly=true
-                                    id="label-and-textarea">
-                                    {self.token.clone().map(|jwt| jwt.access_token).unwrap_or("-".to_string())}</textarea>
-                                </div>
-                            </div>
-                        </div>
                         <div class="form-grid form-grid--gap-small form-grid__row__column form-grid__row__column-medium">
                             { for self.permissions.iter().map(|permission| self.view_entry(permission.to_string())) }
-                         </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid__row form-grid__row--small">
+                        <div class="button-row">
+                            <button class="button button--primary button--huge" onclick=self.link.callback(|_| Msg::SetPermissions)>{"Generate token"}</button>
+                        </div>
                     </div>
                 </div>
-
             </div>
         }
     }
@@ -105,18 +112,42 @@ impl Component for Model {
 impl Model {
     fn permission_input_view(&self) -> Html {
         html! {
-            <div class="form-item__wrapper">
-                <div class="form-field form-grid__row">
-                    <div class="form-grid__row__column form-grid__row__column--span-2">
-                        <label class="form-field__wrapper">
-                            <input id="form-item-name" class="form-field__text" type="text" ref=self.permission_input_ref.clone()/>
-                        </label>
-                    </div>
-                    <div class="form-grid__row__column ">
-                        <button class="button button--primary button--large " onclick=self.link.batch_callback(|_| { Some(Msg::AddPermission) })>{"+"}</button>
+            <div class="form-grid__row form-grid__row--small">
+                <div class="form-grid__row__column form-grid__row__column--span-5">
+                    <div class="form-item">
+                        <label class="form-label" for="permission">{ "Permission" }</label>
+                        <div class="form-item__wrapper">
+                            <div class="form-field">
+                                <label class="form-field__wrapper">
+                                    <input id="form-item-name" class="form-field__text" type="text" placeholder="permission" ref=self.permission_input_ref.clone()/>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                <div class="form-grid__row__column display-grid">
+                    <button class="button button--primary button--huge button--icon-only permission-button" type="button" onclick=self.link.batch_callback(|_| { Some(Msg::AddPermission) })>
+                        <div aria-hidden="false" aria-label="Button" class="icon icon--size-s" role="img">
+                            {{self.permission_icon()}}
+                        </div>
+                    </button>
+                </div>
             </div>
+
+
+            // <div class="form-item">
+            //     <label class="form-label" for="permission">{ "Permission" }</label>
+            //     <div class="form-item__wrapper">
+            //         <div class="form-field">
+            //             <label class="form-field__wrapper">
+            //                 <input id="form-item-name" class="form-field__text" type="text" ref=self.permission_input_ref.clone()/>
+            //             </label>
+            //         </div>
+            //         <div class="form-field">
+            //             <button class="button button--primary button--large " onclick=self.link.batch_callback(|_| { Some(Msg::AddPermission) })>{"+"}</button>
+            //         </div>
+            //     </div>
+            // </div>
         }
     }
 
@@ -128,6 +159,12 @@ impl Model {
                     <button class="button button--primary button--medium button--icon-only" onclick=self.link.callback(move |_| Msg::RemovePermission(permission.clone()))>{"-"}</button>
                 </div>
             </div>
+        }
+    }
+
+    fn permission_icon(&self) -> Html {
+        html! {
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M22.281 11.5H12.5V1.719a.5.5 0 1 0-1 0V11.5H1.719a.5.5 0 1 0 0 1H11.5v9.781a.5.5 0 0 0 1 0V12.5h9.781a.5.5 0 0 0 0-1z"></path></svg>
         }
     }
 }

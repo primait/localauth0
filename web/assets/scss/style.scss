@@ -1,1 +1,9 @@
 @use "../../../pyxis/packages/pyxis-scss/src/scss/pyxis";
+
+.display-grid {
+	display: grid;
+}
+
+.permission-button {
+	align-self: end;
+}
