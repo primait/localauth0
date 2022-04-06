@@ -4,6 +4,14 @@
 	display: grid;
 }
 
+.main {
+	margin-top: 1rem;
+}
+
 .permission-button {
 	align-self: end;
+}
+
+.token-area {
+	font-family: monospace;
 }

@@ -42,20 +42,20 @@ impl Component for Model {
 
     fn view(&self) -> Html {
         html! {
-            <div class="container spacing-v-xl">
+            <div class="container main spacing-v-xl">
                 <div class="form-grid">
                     // Title
                     <div class="form-grid__row form-grid__row--small">
                         <legend class="form-legend">
+                            <span class="form-legend__title">{"LOCALAUTH0"}</span>
                             <span class="form-legend__addon">
                                 <img
-                                    src="static/media/placeholder.7d73ad27.svg"
+                                    src="assets/static/media/localauth0.png"
                                     width="80"
                                     height="80"
                                     alt="Localauth0 logo"
                                 />
                             </span>
-                            <span class="form-legend__title">{"Localauth0"}</span>
                             //<span class="form-legend__text">Legend description</span>
                         </legend>
                     </div>
@@ -77,24 +77,23 @@ impl Component for Model {
                     {{self.permission_input_view()}}
 
                     <div class="form-grid__row form-grid__row--small">
-                        <div class="form-grid__row__column">
-                            <div class="form-item">
-                                <label class="form-label" for="label-and-textarea">{ "Token" }</label>
-                                <div class="form-item__wrapper">
-                                    <div class="form-field">
-                                        <textarea
-                                            class="form-field__textarea"
-                                            readonly=true
-                                            id="label-and-textarea">
-                                            {self.token.clone().map(|jwt| jwt.access_token).unwrap_or("-".to_string())}
-                                        </textarea>
-                                    </div>
+                        { for self.permissions.iter().map(|permission| self.view_entry(permission.to_string())) }
+                    </div>
+
+                    <div class="form-grid__row form-grid__row--small">
+                        <div class="form-item">
+                            <label class="form-label" for="label-and-textarea">{ "Token" }</label>
+                            <div class="form-item__wrapper">
+                                <div class="form-field">
+                                    <textarea
+                                        id="label-and-textarea"
+                                        class="form-field__textarea token-area"
+                                        readonly=true
+                                    >
+                                        {self.token.clone().map(|jwt| jwt.access_token).unwrap_or("No token".to_string())}
+                                    </textarea>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="form-grid form-grid--gap-small form-grid__row__column form-grid__row__column-medium">
-                            { for self.permissions.iter().map(|permission| self.view_entry(permission.to_string())) }
                         </div>
                     </div>
 
