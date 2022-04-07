@@ -77,6 +77,7 @@ pub fn update(model: &mut Model, message: Msg) -> bool {
         }
     }
 }
+
 #[derive(serde::Serialize)]
 struct TokenRequest {
     client_id: String,

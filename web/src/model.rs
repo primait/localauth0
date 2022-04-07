@@ -44,7 +44,6 @@ impl Component for Model {
         html! {
             <div class="container main spacing-v-xl">
                 <div class="form-grid">
-                    // Title
                     <div class="form-grid__row form-grid__row--small">
                         <legend class="form-legend">
                             <span class="form-legend__title">{"LOCALAUTH0"}</span>
@@ -56,11 +55,9 @@ impl Component for Model {
                                     alt="Localauth0 logo"
                                 />
                             </span>
-                            //<span class="form-legend__text">Legend description</span>
                         </legend>
                     </div>
 
-                    // Audience input
                     <div class="form-grid__row form-grid__row--small">
                         <div class="form-item">
                             <label class="form-label" for="audience">{ "Audience" }</label>
@@ -86,9 +83,7 @@ impl Component for Model {
                                     <textarea
                                         id="label-and-textarea"
                                         class="form-field__textarea token-area"
-                                        readonly=true
-                                        onclick=self.link.callback(|| )
-                                    >
+                                        readonly=true>
                                         {self.token.clone().map(|jwt| jwt.access_token).unwrap_or("No token".to_string())}
                                     </textarea>
                                 </div>
@@ -140,7 +135,7 @@ impl Model {
                         <div class="form-item__wrapper">
                             <div class="form-field">
                                 <label class="form-field__wrapper">
-                                    <input id="form-item-name" class="form-field__text" type="text" value={permission.clone()} ref=self.permission_input_ref.clone()/>
+                                    <input id="form-item-name" class="form-field__text" readonly=true type="text" value={permission.clone()} />
                                 </label>
                             </div>
                         </div>
@@ -151,8 +146,7 @@ impl Model {
                     <button
                         type="button"
                         class="button button--primary button--huge button--icon-only permission-button"
-                        onclick=self.link.callback(move |_| Msg::RemovePermission(permission.clone()))
-                    >
+                        onclick=self.link.callback(move |_| Msg::RemovePermission(permission.clone()))>
                         <div aria-hidden="false" aria-label="Button" class="icon icon--size-s" role="img">
                             {{self.permission_delete_icon()}}
                         </div>
@@ -192,24 +186,3 @@ impl IsEmpty for Option<String> {
         }
     }
 }
-
-fn adf() {
-    web_sys::Navigator::clipboard()
-}
-
-/*
-window.addEventListener('DOMContentLoaded', () => {
-  Array.from(document.getElementsByClassName('iban-number')).forEach(number => {
-    number.addEventListener('click', (e) => {
-      e.preventDefault();
-
-      navigator.clipboard.writeText(number.textContent)
-        .then(() => Flash.success('Copied to clipboard!'))
-        .catch((error) => {
-          Flash.failure('Could not copy to clipboard');
-          console.error({ clipboard: error });
-        });
-    });
-  });
-});
-*/
