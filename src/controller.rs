@@ -1,6 +1,7 @@
-use actix_web::web::{Data, Json};
-use actix_web::{get, post, HttpResponse};
 use std::collections::HashMap;
+
+use actix_web::web::{Data, Json, Path};
+use actix_web::{get, post, HttpResponse};
 
 use crate::model::{AppData, Claims, Jwk, Jwks, PermissionsForAudienceRequest, TokenRequest, TokenResponse};
 use crate::{CLIENT_ID_VALUE, CLIENT_SECRET_VALUE};
@@ -57,6 +58,19 @@ pub async fn set_permissions_for_audience(
     HttpResponse::Ok()
         .content_type("application/json")
         .body(serde_json::to_string(&all_audiences).expect("Failed to serialize audiences map"))
+}
+
+#[get("/permissions/{audience}")]
+pub async fn get_permissions_by_audience(app_data: Data<AppData>, audience: Path<String>) -> HttpResponse {
+    let audience: String = audience.into_inner();
+    let permissions: Vec<String> = app_data
+        .audience()
+        .get_permissions(audience.as_str())
+        .expect("Failed to get permissions by given audience");
+
+    HttpResponse::Ok()
+        .content_type("application/json")
+        .body(serde_json::to_string(&permissions).expect("Failed to serialize permissions list"))
 }
 
 #[get("/rotate")]

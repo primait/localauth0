@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use serde::Deserialize;
 use yew::prelude::{html, Component, ComponentLink, Html, NodeRef, ShouldRender};
 use yew::services::fetch::FetchTask;
@@ -9,7 +11,7 @@ pub struct Model {
     pub audience_input_ref: NodeRef,
     pub permission_input_ref: NodeRef,
     pub audience: Option<String>,
-    pub permissions: Vec<String>,
+    pub permissions: HashSet<String>,
     pub token: Option<Jwt>,
     pub link: ComponentLink<Self>,
     pub task: Option<FetchTask>,
@@ -27,7 +29,7 @@ impl Component for Model {
             permission_input_ref: NodeRef::default(),
             task: None,
             audience: None,
-            permissions: vec![],
+            permissions: HashSet::new(),
             token: None,
         }
     }
@@ -41,6 +43,8 @@ impl Component for Model {
     }
 
     fn view(&self) -> Html {
+        let onfocusout = self.link.callback(|_| Msg::AudienceFocusOut);
+
         html! {
             <div class="container main spacing-v-xl">
                 <div class="form-grid">
@@ -64,7 +68,7 @@ impl Component for Model {
                             <div class="form-item__wrapper">
                                 <div class="form-field">
                                     <label class="form-field__wrapper">
-                                        <input id="form-item-name" class="form-field__text" name="audience" type="text" placeholder="audience" ref={self.audience_input_ref.clone()}/>
+                                        <input id="form-item-name" class="form-field__text" name="audience" type="text" onblur={onfocusout} placeholder="audience" ref={self.audience_input_ref.clone()}/>
                                     </label>
                                 </div>
                             </div>
@@ -119,7 +123,7 @@ impl Model {
                 <div class="form-grid__row__column display-grid">
                     <button class="button button--primary button--huge button--icon-only permission-button" type="button" onclick=self.link.batch_callback(|_| { Some(Msg::AddPermission) })>
                         <div aria-hidden="false" aria-label="Button" class="icon icon--size-s" role="img">
-                            {{self.permission_icon()}}
+                            {{self.permission_add_icon()}}
                         </div>
                     </button>
                 </div>
@@ -156,7 +160,7 @@ impl Model {
         }
     }
 
-    fn permission_icon(&self) -> Html {
+    fn permission_add_icon(&self) -> Html {
         html! {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M22.281 11.5H12.5V1.719a.5.5 0 1 0-1 0V11.5H1.719a.5.5 0 1 0 0 1H11.5v9.781a.5.5 0 0 0 1 0V12.5h9.781a.5.5 0 0 0 0-1z"></path></svg>
         }
