@@ -46,20 +46,22 @@ impl Component for Model {
         let onfocusout = self.link.callback(|_| Msg::AudienceFocusOut);
 
         html! {
-            <div class="container main spacing-v-xl">
+            <div class="container padding-v-l">
                 <div class="form-grid">
                     <div class="form-grid__row form-grid__row--small">
-                        <legend class="form-legend">
-                            <span class="form-legend__title">{"LOCALAUTH0"}</span>
-                            <span class="form-legend__addon">
-                                <img
-                                    src="assets/static/media/localauth0.png"
-                                    width="80"
-                                    height="80"
-                                    alt="Localauth0 logo"
-                                />
-                            </span>
-                        </legend>
+                        <div class="form-grid__row__column">
+                            <legend class="form-legend">
+                                <span class="form-legend__addon">
+                                    <img
+                                        src="assets/static/media/localauth0.png"
+                                        width="80"
+                                        height="80"
+                                        alt="Localauth0 logo"
+                                    />
+                                </span>
+                                <span class="form-legend__title">{"LOCALAUTH0"}</span>
+                            </legend>
+                        </div>
                     </div>
 
                     <div class="form-grid__row form-grid__row--small">
@@ -96,7 +98,11 @@ impl Component for Model {
                     </div>
 
                     <div class="form-grid__row form-grid__row--small">
-                        <button class="button button--primary button--huge" onclick=self.link.callback(|_| Msg::SetPermissions)>{"Generate token"}</button>
+                        <div class="form-grid__row__column">
+                            <div class="button-row button-row--center">
+                                <button class="button button--primary button--huge" onclick=self.link.callback(|_| Msg::SetPermissions)>{"Generate token"}</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -122,7 +128,7 @@ impl Model {
                 </div>
                 <div class="form-grid__row__column display-grid">
                     <button class="button button--primary button--huge button--icon-only permission-button" type="button" onclick=self.link.batch_callback(|_| { Some(Msg::AddPermission) })>
-                        <div aria-hidden="false" aria-label="Button" class="icon icon--size-s" role="img">
+                        <div aria-hidden="false" aria-label="Add permission" class="icon icon--size-l" role="img">
                             {{self.permission_add_icon()}}
                         </div>
                     </button>
@@ -151,7 +157,7 @@ impl Model {
                         type="button"
                         class="button button--primary button--huge button--icon-only permission-button"
                         onclick=self.link.callback(move |_| Msg::RemovePermission(permission.clone()))>
-                        <div aria-hidden="false" aria-label="Button" class="icon icon--size-s" role="img">
+                        <div aria-hidden="false" aria-label="Remove permission" class="icon icon--size-l" role="img">
                             {{self.permission_delete_icon()}}
                         </div>
                     </button>

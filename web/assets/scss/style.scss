@@ -1,17 +1,13 @@
 @use "../../../pyxis/packages/pyxis-scss/src/scss/pyxis";
 
 .display-grid {
-	display: grid;
-}
-
-.main {
-	margin-top: 1rem;
+  display: grid;
 }
 
 .permission-button {
-	align-self: end;
+  align-self: end;
 }
 
 .token-area {
-	font-family: monospace;
+  font-family: monospace;
 }
