@@ -65,11 +65,7 @@ pub fn update(model: &mut Model, message: Msg) -> bool {
                     },
                 );
 
-                let callback = model.link.callback(|response: Response<Text>| {
-                    log::info!("{:#?}", response);
-                    Msg::GenerateToken
-                });
-
+                let callback = model.link.callback(|response: Response<Text>| Msg::GenerateToken);
                 let task = FetchService::fetch(request, callback).expect("Failed to start request");
                 model.task = Some(task);
             }

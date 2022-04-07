@@ -2,7 +2,7 @@
 
 [![Build Status](https://drone-1.prima.it/api/badges/primait/localauth0/status.svg)](https://drone-1.prima.it/primait/localauth0)
 
-![localauth0](localauth0.png)
+![localauth0](web/assets/static/media/localauth0.png)
 
 Localauth0 is a project that aims to be a helper while developing authentications inspired by [localstack](https://localstack.cloud/).
 Most of the time people tend to mock authentication in order to not be forced to create complex mocks.
