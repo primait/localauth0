@@ -92,13 +92,7 @@ impl Component for Model {
                             <label class="form-label" for="label-and-textarea">{ "Token" }</label>
                             <div class="form-item__wrapper">
                                 <div class="form-field">
-                                    <div class="token-area">{self.token.clone().map(|jwt| jwt.access_token).unwrap_or("No token".to_string())}</div>
-                                    // <textarea
-                                    //     id="label-and-textarea"
-                                    //     class="form-field__textarea token-area"
-                                    //     readonly=true>
-                                    //     {self.token.clone().map(|jwt| jwt.access_token).unwrap_or("No token".to_string())}
-                                    // </textarea>
+                                    <div class="token-area">{self.token.clone().map(|jwt| jwt.access_token).unwrap_or_else(|| "No token".to_string())}</div>
                                     <div class="copy-wrapper">
                                         <span class="badge button-copy" onclick=self.link.callback(|_| Msg::CopyToken)>{if self.copied { "Copied!" } else { "Copy" } }</span>
                                     </div>
@@ -225,7 +219,7 @@ impl IsEmpty for Option<String> {
     fn is_empty(&self) -> bool {
         match &self {
             None => true,
-            Some(string) => string == "",
+            Some(string) => string.is_empty(),
         }
     }
 }

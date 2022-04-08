@@ -131,17 +131,15 @@ struct PermissionsForAudience {
 }
 
 fn get(path: &str) -> Request<Nothing> {
-    let request = Request::get(path)
+    Request::get(path)
         .header("Content-type", "application/json")
         .body(Nothing)
-        .expect("Could not build request");
-    request
+        .expect("Could not build request")
 }
 
 fn post<T: serde::Serialize>(path: &str, body: T) -> Request<Result<String, anyhow::Error>> {
-    let request = Request::post(path)
+    Request::post(path)
         .header("Content-type", "application/json")
         .body(Ok(serde_json::to_string(&body).unwrap()))
-        .expect("Could not build request");
-    request
+        .expect("Could not build request")
 }
