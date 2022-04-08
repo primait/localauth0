@@ -5,6 +5,10 @@ use std::collections::HashSet;
 pub enum Msg {
     AudienceFocusOut,
     GenerateToken,
+    CopyToken,
+    TokenCopied,
+    CopyFailed,
+    ResetCopyButton,
     TokenReceived(Option<Jwt>),
     ShowPermissions(HashSet<String>),
     AddPermission,

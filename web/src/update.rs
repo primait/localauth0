@@ -1,7 +1,8 @@
+use std::time::Duration;
 use web_sys::HtmlInputElement;
 use yew::format::{Nothing, Text};
 use yew::services::fetch::{Request, Response};
-use yew::services::FetchService;
+use yew::services::{FetchService, TimeoutService};
 
 use crate::message::Msg;
 use crate::model::{Jwt, Model};
@@ -22,8 +23,8 @@ pub fn update(model: &mut Model, message: Msg) -> bool {
                     Msg::ShowPermissions(body.unwrap_or_default().into_iter().collect())
                 });
 
-                let task = FetchService::fetch(request, callback).expect("Failed to start request");
-                model.task = Some(task);
+                let fetch_task = FetchService::fetch(request, callback).expect("Failed to start request");
+                model.fetch_task = Some(fetch_task);
             }
             true
         }
@@ -48,9 +49,28 @@ pub fn update(model: &mut Model, message: Msg) -> bool {
                 Msg::TokenReceived(body)
             });
 
-            let task = FetchService::fetch(request, callback).expect("Failed to start request");
-            model.task = Some(task);
+            let fetch_task = FetchService::fetch(request, callback).expect("Failed to start request");
+            model.fetch_task = Some(fetch_task);
             false
+        }
+        Msg::CopyToken => {
+            model.do_copy();
+            false
+        }
+        Msg::TokenCopied => {
+            model.copied = true;
+            let callback = model.link.callback(|_| Msg::ResetCopyButton);
+            let timeout_task = TimeoutService::spawn(Duration::from_secs(2), callback);
+            model.timeout_task = Some(timeout_task);
+            true
+        }
+        Msg::CopyFailed => {
+            model.copied = false;
+            true
+        }
+        Msg::ResetCopyButton => {
+            model.copied = false;
+            true
         }
         Msg::TokenReceived(token_opt) => {
             model.token = token_opt;
@@ -88,8 +108,8 @@ pub fn update(model: &mut Model, message: Msg) -> bool {
                 );
 
                 let callback = model.link.callback(|_response: Response<Text>| Msg::GenerateToken);
-                let task = FetchService::fetch(request, callback).expect("Failed to start request");
-                model.task = Some(task);
+                let fetch_task = FetchService::fetch(request, callback).expect("Failed to start request");
+                model.fetch_task = Some(fetch_task);
             }
             true
         }

@@ -1,11 +1,13 @@
 use std::collections::HashSet;
 
 use serde::Deserialize;
+use wasm_bindgen::prelude::*;
 use yew::prelude::{html, Component, ComponentLink, Html, NodeRef, ShouldRender};
 use yew::services::fetch::FetchTask;
+use yew::services::timeout::TimeoutTask;
 
 use crate::message::Msg;
-use crate::updater;
+use crate::update;
 
 pub struct Model {
     pub audience_input_ref: NodeRef,
@@ -14,7 +16,9 @@ pub struct Model {
     pub permissions: HashSet<String>,
     pub token: Option<Jwt>,
     pub link: ComponentLink<Self>,
-    pub task: Option<FetchTask>,
+    pub fetch_task: Option<FetchTask>,
+    pub timeout_task: Option<TimeoutTask>,
+    pub copied: bool,
 }
 
 impl Component for Model {
@@ -27,15 +31,17 @@ impl Component for Model {
             link,
             audience_input_ref: NodeRef::default(),
             permission_input_ref: NodeRef::default(),
-            task: None,
+            fetch_task: None,
+            timeout_task: None,
             audience: None,
             permissions: HashSet::new(),
             token: None,
+            copied: false,
         }
     }
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        updater::update(self, msg)
+        update::update(self, msg)
     }
 
     fn change(&mut self, _props: Self::Properties) -> ShouldRender {
@@ -86,12 +92,16 @@ impl Component for Model {
                             <label class="form-label" for="label-and-textarea">{ "Token" }</label>
                             <div class="form-item__wrapper">
                                 <div class="form-field">
-                                    <textarea
-                                        id="label-and-textarea"
-                                        class="form-field__textarea token-area"
-                                        readonly=true>
-                                        {self.token.clone().map(|jwt| jwt.access_token).unwrap_or("No token".to_string())}
-                                    </textarea>
+                                    <div class="token-area">{self.token.clone().map(|jwt| jwt.access_token).unwrap_or("No token".to_string())}</div>
+                                    // <textarea
+                                    //     id="label-and-textarea"
+                                    //     class="form-field__textarea token-area"
+                                    //     readonly=true>
+                                    //     {self.token.clone().map(|jwt| jwt.access_token).unwrap_or("No token".to_string())}
+                                    // </textarea>
+                                    <div class="copy-wrapper">
+                                        <span class="badge button-copy" onclick=self.link.callback(|_| Msg::CopyToken)>{if self.copied { "Copied!" } else { "Copy" } }</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -100,7 +110,7 @@ impl Component for Model {
                     <div class="form-grid__row form-grid__row--small">
                         <div class="form-grid__row__column">
                             <div class="button-row button-row--center">
-                                <button class="button button--primary button--huge" onclick=self.link.callback(|_| Msg::SetPermissions)>{"Generate token"}</button>
+                                <button class="button button--primary button--huge" disabled={self.audience.is_empty()} onclick=self.link.callback(|_| Msg::SetPermissions)>{"Generate token"}</button>
                             </div>
                         </div>
                     </div>
@@ -177,11 +187,34 @@ impl Model {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path d="M12.714 11.976l9.121-9.121a.5.5 0 1 0-.707-.707l-9.121 9.121-9.121-9.121a.5.5 0 0 0-.707.707l9.121 9.121-9.121 9.121a.5.5 0 1 0 .707.707l9.121-9.121 9.121 9.121a.5.5 0 1 0 .707-.707z"></path></svg>
         }
     }
+
+    pub fn do_copy(&self) {
+        match &self.token {
+            None => (),
+            Some(jwt) => {
+                let ok = self.link.callback(|_| Msg::TokenCopied);
+                let err = self.link.callback(|_| Msg::CopyFailed);
+                let access_token: String = jwt.access_token().to_string();
+                wasm_bindgen_futures::spawn_local(async move {
+                    match copy_to_clipboard(access_token).await {
+                        Ok(_) => ok.emit(()),
+                        Err(_) => err.emit(()),
+                    };
+                });
+            }
+        }
+    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Jwt {
     access_token: String,
+}
+
+impl Jwt {
+    fn access_token(&self) -> &str {
+        &self.access_token
+    }
 }
 
 trait IsEmpty {
@@ -195,4 +228,20 @@ impl IsEmpty for Option<String> {
             Some(string) => string == "",
         }
     }
+}
+
+#[wasm_bindgen(inline_js=r#"
+export function copy_to_clipboard(value) {
+    try {
+        return window.navigator.clipboard.writeText(value);
+    } catch(e) {
+        console.log(e);
+        return Promise.reject(e)
+    }
+}
+"#)]
+#[rustfmt::skip] // required to keep the "async" keyword
+extern "C" {
+    #[wasm_bindgen(catch)]
+    async fn copy_to_clipboard(value: String) -> Result<(), JsValue>;
 }

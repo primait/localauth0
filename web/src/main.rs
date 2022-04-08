@@ -1,6 +1,6 @@
 mod message;
 mod model;
-mod updater;
+mod update;
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
