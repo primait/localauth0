@@ -1,8 +1,23 @@
+[tasks.run]
+command = "cargo"
+args = [ "run"]
+dependencies = ["trunk-build"]
+
+[tasks.watch]
+install_crate = { crate_name = "cargo-watch" }
+command = "cargo"
+args = ["watch", "-x", "make run"]
+dependencies = ["trunk-build"]
+
+[tasks.test]
+command = "cargo"
+args = ["test", "${@}"]
+
 [tasks.lint]
 description = "Run lint"
 command = "cargo"
 args = ["clippy", "--all-targets", "--all-features", "--", "-D", "warnings"]
 
-[tasks.test]
-command = "cargo"
-args = ["test", "${@}"]
+[tasks.trunk-build]
+command = "trunk"
+args = ["build", "web/index.html"]

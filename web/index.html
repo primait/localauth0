@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <link data-trunk rel="scss" href="assets/scss/style.scss" />
+    <link data-trunk rel="icon" href="assets/static/media/localauth0.png">
+    <link data-trunk rel="copy-dir" href="assets/" />
+    <link data-trunk rel="copy-file" href="sw.js" />
+    <title>Localauth0</title>
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker.register("/sw.js").then(
+                    function (registration) {
+                        // Registration was successful
+                        console.log(
+                            "ServiceWorker registration successful with scope: ",
+                            registration.scope
+                        );
+                    },
+                    function (err) {
+                        // registration failed :(
+                        console.log("ServiceWorker registration failed: ", err);
+                    }
+                );
+            });
+        }
+    </script>
+</head>
+</html>

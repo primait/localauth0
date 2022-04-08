@@ -1,0 +1,30 @@
+@use "../../../pyxis/packages/pyxis-scss/src/scss/pyxis";
+
+.display-grid {
+  display: grid;
+}
+
+.permission-button {
+  align-self: end;
+}
+
+.token-area {
+  @include pyxis.padding(s);
+  font-family: monospace;
+  word-break: break-all;
+  padding-bottom: 0;
+}
+
+.button-row--center {
+  justify-content: center;
+}
+
+.copy-wrapper {
+  display: flex;
+  justify-content: end;
+}
+
+.button-copy {
+  margin: pyxis.spacing(3xs);
+  cursor: pointer;
+}
