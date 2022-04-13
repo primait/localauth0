@@ -51,8 +51,7 @@ steps:
 - name: build-localauth0
   image: public.ecr.aws/prima/drone-tools:1.21.4
   commands:
-#  - ./build.sh . 'public.ecr.aws/prima/localauth0:'
-    - echo "hello"
+  - ./build.sh . 'public.ecr.aws/prima/localauth0:'
   volumes:
   - name: docker
     path: /var/run/docker.sock
@@ -66,6 +65,7 @@ steps:
   depends_on:
   - build-image
   - build-artifact
+  - build-web
 
 volumes:
 - name: docker
@@ -80,7 +80,6 @@ node:
 
 trigger:
   event:
-  - push
   - tag
 
 ---
