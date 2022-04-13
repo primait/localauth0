@@ -38,6 +38,16 @@ steps:
   depends_on:
   - build-image
 
+- name: build-web
+  image: prima/localauth0-ci:${DRONE_COMMIT}
+  commands:
+    - trunk build web/index.html
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+  depends_on:
+    - build-image
+
 - name: build-localauth0
   image: public.ecr.aws/prima/drone-tools:1.21.4
   commands:

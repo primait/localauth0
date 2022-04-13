@@ -61,3 +61,14 @@ Note that every generated JWT will be signed using one of those JWKS.
 
 - `GET` [http://localhost:3000/revoke](http://localhost:3000/revoke): discard all the JWKs in the JWKS list and 
   replace them with 3 freshly new JWKs.
+
+### Local development
+
+
+```shell
+docker-compose build
+```
+
+```shell
+docker build -f Dockerfile_localauth0 -t localauth0
+```
