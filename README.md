@@ -13,7 +13,7 @@ With localauth0 you can fake your [auth0](https://auth0.com/) tenant and test it
 In order to run localauth0 docker image execute the following:
 
 ```
-docker run -d -p 3000:3000 public.ecr.aws/prima/localauth0:0.2.0
+docker run -d -p 3000:3000 public.ecr.aws/prima/localauth0:0.2.1
 ```
 
 Note: The latest version is the same `version` written in the `Cargo.toml` file.
@@ -91,3 +91,12 @@ docker build -f Dockerfile_localauth0 -t localauth0 . && \
 docker run -d -p 3000:3000 localauth0
 ```
 
+#### Integrate localauth0 in existing project
+
+Add this snippet to your `docker-compose.yml` file and reference it in your app `depends_on` section.
+```yaml
+  auth0:
+    image: public.ecr.aws/prima/localauth0:0.2.1
+    ports:
+      - "3000:3000"
+```
