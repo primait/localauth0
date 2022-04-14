@@ -1,3 +1,8 @@
+[tasks.build]
+command = "cargo"
+args = [ "build"]
+dependencies = ["trunk-build"]
+
 [tasks.run]
 command = "cargo"
 args = [ "run"]
