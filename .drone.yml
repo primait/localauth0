@@ -78,10 +78,6 @@ volumes:
 node:
   reserved: common
 
-trigger:
-  event:
-  - tag
-
 ---
 kind: pipeline
 name: email-failure
@@ -122,6 +118,6 @@ depends_on:
 
 ---
 kind: signature
-hmac: 0677ad8b64c9d504c15ed6ef978a74a63f15ae4f8fb7aa5be91392333ca7076e
+hmac: 1fcf3e74e96da3fedd654806a851e64809ee340011fbe770245290de2436f573
 
 ...
