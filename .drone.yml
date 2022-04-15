@@ -67,6 +67,15 @@ steps:
   - build-artifact
   - build-web
 
+- name: noop
+  image: public.ecr.aws/prima/drone-tools:1.21.4
+  commands:
+  - echo "Nothing to do"
+  when:
+    event:
+      exclude:
+      - tag
+
 volumes:
 - name: docker
   host:
@@ -77,10 +86,6 @@ volumes:
 
 node:
   reserved: common
-
-trigger:
-  event:
-  - tag
 
 ---
 kind: pipeline
@@ -122,6 +127,6 @@ depends_on:
 
 ---
 kind: signature
-hmac: 0677ad8b64c9d504c15ed6ef978a74a63f15ae4f8fb7aa5be91392333ca7076e
+hmac: 84173da6bce549f3f613d79c24416a92dbca5e2dddaad2f77f58a8f6bdad6c5c
 
 ...
