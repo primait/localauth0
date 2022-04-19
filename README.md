@@ -91,7 +91,7 @@ docker build -f Dockerfile_localauth0 -t localauth0 . && \
 docker run -d -p 3000:3000 localauth0
 ```
 
-#### Integrate localauth0 in existing project
+### Integrate localauth0 in existing project
 
 Add this snippet to your `docker-compose.yml` file and reference it in your app `depends_on` section.
 ```yaml
