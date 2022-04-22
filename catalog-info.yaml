@@ -1,0 +1,15 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+spec:
+  type: library
+  lifecycle: production
+  owner: team-shared-services
+  system: prima.it
+metadata:
+  name: localauth0
+  description: Auth0 docker image for local development. Inspired by localstack.
+  tags:
+    - rust
+    - wasm
+    - pyxis
+  links: []
