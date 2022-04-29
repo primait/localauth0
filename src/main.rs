@@ -4,12 +4,18 @@ use actix_files::Files;
 use actix_web::web::Data;
 use actix_web::{middleware, App, HttpServer};
 
+use localauth0::config::Config;
 use localauth0::controller;
 use localauth0::model::AppData;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let _ = dotenv::dotenv().expect("Failed to load .env file");
+    let config: Config = Config::load().expect("Failed to load configuration");
+
     let data: Data<AppData> = Data::new(AppData::new().expect("Failed to create AppData"));
+
+    data.audience().load_permission_settings(config.permission_settings());
 
     HttpServer::new(move || {
         App::new()
