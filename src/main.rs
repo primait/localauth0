@@ -15,7 +15,13 @@ async fn main() -> std::io::Result<()> {
 
     let data: Data<AppData> = Data::new(AppData::new().expect("Failed to create AppData"));
 
-    data.audience().load_permission_settings(config.permission_settings());
+    if let Some(settings) = config.permission_settings() {
+        settings.iter().for_each(|request| {
+            data.audience()
+                .put_permissions(request.audience.as_str(), request.permissions.clone())
+                .unwrap();
+        });
+    }
 
     HttpServer::new(move || {
         App::new()

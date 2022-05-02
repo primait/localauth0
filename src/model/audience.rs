@@ -3,8 +3,6 @@ use std::sync::RwLock;
 
 use crate::error::Error;
 
-use super::PermissionsForAudienceRequest;
-
 pub struct Audience {
     cache: RwLock<HashMap<String, Vec<String>>>,
 }
@@ -35,22 +33,6 @@ impl Audience {
             .insert(audience.to_string(), permissions);
 
         Ok(())
-    }
-
-    pub fn load_permission_settings(&self, permission_settings: &Option<Vec<PermissionsForAudienceRequest>>) -> () {
-        if let None = permission_settings {
-            return ();
-        }
-
-        match permission_settings {
-            None => (),
-            Some(requests) => {
-                requests.iter().for_each(|request| {
-                    self.put_permissions(request.audience.as_str(), request.permissions.clone())
-                        .unwrap();
-                });
-            }
-        }
     }
 
     pub fn all(&self) -> Result<HashMap<String, Vec<String>>, Error> {
