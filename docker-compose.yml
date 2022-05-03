@@ -5,11 +5,16 @@ services:
     build: .
     container_name: localauth0_web
     volumes:
+      # This avoids the `Updating crates.io index` action at container startup. Folder contains cargo cached stuff.
+      - "./.cargo:/home/app/.cargo"
+      # This avoids recompile code everytime a new container is run.
+      - "./target-docker:/home/app/target-docker"
       - .:$PWD:cached
     ports:
       - "3000:3000"
     working_dir: $PWD
     environment:
       CARGO_HOME: /home/app/.cargo
+      CARGO_TARGET_DIR: /home/app/target-docker
     networks:
       - default
