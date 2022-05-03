@@ -1,5 +1,5 @@
 [env]
-PERMISSION_SETTINGS = '[{ "audience": "paperboy", "permissions": ["read:mail", "check:blacklist"]}]'
+LOCALAUTH0_CONFIG_PATH = "/home/app/localauth0.toml"
 
 [tasks.build]
 args = ["build"]

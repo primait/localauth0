@@ -6,23 +6,21 @@ use actix_web::{middleware, App, HttpServer};
 
 use localauth0::config::Config;
 use localauth0::controller;
-use localauth0::model::{AppData, PermissionsForAudienceRequest};
+use localauth0::model::AppData;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let config: Config = Config::load().expect("Failed to load configuration");
-
     let data: Data<AppData> = Data::new(AppData::new().expect("Failed to create AppData"));
 
-    if let Some(permission_settings_str) = config.permission_settings() {
-        let permission_settings: Vec<PermissionsForAudienceRequest> =
-            serde_json::from_str(permission_settings_str).unwrap();
-
-        permission_settings.iter().for_each(|request| {
-            data.audience()
-                .put_permissions(request.audience.as_str(), request.permissions.clone())
-                .unwrap();
-        });
+    match Config::load() {
+        Ok(config) => {
+            config.audience().iter().for_each(|request| {
+                data.audience()
+                    .put_permissions(request.name().as_str(), request.permissions().clone())
+                    .unwrap();
+            });
+        }
+        Err(err) => println!("Failed to load config {}", err),
     }
 
     HttpServer::new(move || {

@@ -12,16 +12,7 @@ services:
     environment:
       CARGO_HOME: /home/app/.cargo
       CARGO_TARGET_DIR: /home/app/target-docker
-      PERMISSIONS_SETTINGS: |
-        [
-          {
-            "audience": "paperboy",
-            "permissions": [
-              "read:mail",
-              "check:blacklist"
-            ]
-          }
-        ]
+      LOCALAUTH0_CONFIG_PATH: /home/app/localauth0.toml
 
     networks:
       - default

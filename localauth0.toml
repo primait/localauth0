@@ -1,0 +1,7 @@
+[[audience]]
+name = "paperboy"
+permissions = ["read:mail"]
+
+[[audience]]
+name = "lira"
+permissions = ["pay:insurance"]

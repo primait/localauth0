@@ -536,15 +536,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "envy"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f47e0157f2cb54f5ae1bd371b30a2ae4311e1c028f575cd4e81de7353215965"
-dependencies = [
- "serde",
-]
-
-[[package]]
 name = "error-chain"
 version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -844,7 +835,6 @@ dependencies = [
  "base64-url",
  "chrono",
  "derive-getters",
- "envy",
  "jsonwebtoken",
  "moka",
  "openssl",
@@ -852,6 +842,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+ "toml",
  "uuid",
 ]
 
@@ -1625,6 +1616,15 @@ dependencies = [
  "pin-project-lite",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "toml"
+version = "0.5.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8d82e1a7758622a465f8cee077614c73484dac5b836c02ff6a40d5d1010324d7"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
