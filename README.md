@@ -12,7 +12,7 @@ With localauth0 you can fake your [auth0](https://auth0.com/) tenant and test it
 
 In order to run localauth0 docker image execute the following:
 
-```
+```shell
 docker run -d -p 3000:3000 public.ecr.aws/prima/localauth0:0.2.1
 ```
 
