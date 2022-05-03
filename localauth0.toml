@@ -1,7 +1,7 @@
 [[audience]]
-name = "paperboy"
-permissions = ["read:mail"]
+name = "audience1"
+permissions = ["audience1:permission1", "audience1:permission2"]
 
 [[audience]]
-name = "lira"
-permissions = ["pay:insurance"]
+name = "audience2"
+permissions = ["audience2:permission2"]
