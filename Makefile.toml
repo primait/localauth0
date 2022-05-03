@@ -1,28 +1,33 @@
+env_files = [
+  {path = "./config/.env.dist.drone", profile = "drone"},
+  {path = "./config/.env", profile = "development"},
+]
+
 [tasks.build]
+args = ["build"]
 command = "cargo"
-args = [ "build"]
 dependencies = ["trunk-build"]
 
 [tasks.run]
+args = ["run"]
 command = "cargo"
-args = [ "run"]
 dependencies = ["trunk-build"]
 
 [tasks.watch]
-install_crate = { crate_name = "cargo-watch" }
-command = "cargo"
 args = ["watch", "-x", "make run"]
+command = "cargo"
 dependencies = ["trunk-build"]
+install_crate = {crate_name = "cargo-watch"}
 
 [tasks.test]
-command = "cargo"
 args = ["test", "${@}"]
+command = "cargo"
 
 [tasks.lint]
-description = "Run lint"
-command = "cargo"
 args = ["clippy", "--all-targets", "--all-features", "--", "-D", "warnings"]
+command = "cargo"
+description = "Run lint"
 
 [tasks.trunk-build]
-command = "trunk"
 args = ["build", "web/index.html"]
+command = "trunk"

@@ -11,5 +11,6 @@ services:
     working_dir: $PWD
     environment:
       CARGO_HOME: /home/app/.cargo
+      CARGO_TARGET_DIR: /home/app/target-docker
     networks:
       - default
