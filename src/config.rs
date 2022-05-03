@@ -1,11 +1,9 @@
 use derive_getters::Getters;
 use serde::Deserialize;
 
-use crate::model::PermissionsForAudienceRequest;
-
 #[derive(Getters, Deserialize)]
 pub struct Config {
-    permission_settings: Option<Vec<PermissionsForAudienceRequest>>,
+    permission_settings_path: Option<String>,
 }
 
 impl Config {

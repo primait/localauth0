@@ -1,0 +1,9 @@
+[
+	{
+		"audience": "paperboy",
+		"permissions": [
+			"read:mail",
+			"check:blacklist"
+		]
+	}
+]
