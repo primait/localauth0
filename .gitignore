@@ -1,5 +1,5 @@
 .DS_Store
-#/.cargo/*
+/.cargo/*
 /target
-#/target-docker/*
+/target-docker/*
 /web/target

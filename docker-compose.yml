@@ -16,5 +16,6 @@ services:
     environment:
       CARGO_HOME: /home/app/.cargo
       CARGO_TARGET_DIR: /home/app/target-docker
+      CARGO_BUILD_TARGET_DIR: /home/app/target-docker
     networks:
       - default
