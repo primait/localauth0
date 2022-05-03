@@ -1,5 +1,6 @@
 .DS_Store
 /.cargo/*
+/.cargo-make/*
 /target
 /target-docker/*
 /web/target
