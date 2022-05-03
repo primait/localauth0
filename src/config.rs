@@ -3,7 +3,7 @@ use serde::Deserialize;
 
 #[derive(Getters, Deserialize)]
 pub struct Config {
-    permission_settings_path: Option<String>,
+    permission_settings: Option<String>,
 }
 
 impl Config {

@@ -1,7 +1,5 @@
-env_files = [
-  {path = "./config/.env.dist.drone", profile = "drone"},
-  {path = "./config/.env", profile = "development"},
-]
+[env]
+PERMISSION_SETTINGS = '[{ "audience": "paperboy", "permissions": ["read:mail", "check:blacklist"]}]'
 
 [tasks.build]
 args = ["build"]

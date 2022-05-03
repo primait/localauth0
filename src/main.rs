@@ -1,4 +1,3 @@
-use std::fs;
 use std::time::Duration;
 
 use actix_files::Files;
@@ -11,17 +10,13 @@ use localauth0::model::{AppData, PermissionsForAudienceRequest};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    // TODO: This should work!
-    // let _ = dotenv::dotenv().expect("Failed to load .env file");
-    dotenv::from_path("./config/.env").expect("Failed to load .env file");
     let config: Config = Config::load().expect("Failed to load configuration");
 
     let data: Data<AppData> = Data::new(AppData::new().expect("Failed to create AppData"));
 
-    if let Some(settings_path) = config.permission_settings_path() {
-        let file = fs::File::open(settings_path).expect("Failed to open settings file");
+    if let Some(permission_settings_str) = config.permission_settings() {
         let permission_settings: Vec<PermissionsForAudienceRequest> =
-            serde_json::from_reader(file).expect("Failed to parse settings file");
+            serde_json::from_str(permission_settings_str).unwrap();
 
         permission_settings.iter().for_each(|request| {
             data.audience()

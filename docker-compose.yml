@@ -12,5 +12,16 @@ services:
     environment:
       CARGO_HOME: /home/app/.cargo
       CARGO_TARGET_DIR: /home/app/target-docker
+      PERMISSIONS_SETTINGS: |
+        [
+          {
+            "audience": "paperboy",
+            "permissions": [
+              "read:mail",
+              "check:blacklist"
+            ]
+          }
+        ]
+
     networks:
       - default
