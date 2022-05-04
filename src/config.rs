@@ -22,7 +22,6 @@ pub enum Error {
     ConfigParseError(String),
 }
 
-// TODO: Return a proper Error
 impl Config {
     pub fn load() -> Result<Self> {
         let config_path = std::env::var("LOCALAUTH0_CONFIG_PATH").unwrap_or(DEFAULT_LOCALAUTH0_CONFIG_PATH.to_string());
