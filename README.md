@@ -71,9 +71,9 @@ Note that every generated JWT will be signed using one of those JWKS.
 
 ## Configuration
 
-Localauth0 can be configured using a `.toml` file, which can be specified using the `LOCALAUTH0_CONFIG_PATH` environment variable.
-
-If this variable is not specified or something goes wrong while reading the file from that path it defaults to looking for a `localauth0.toml` file in your project root.
+Localauth0 can be configured using a `.toml` file, which can be specified using the `LOCALAUTH0_CONFIG_PATH` 
+environment variable. Take a look [here](###Integrate-localauth0-in-existing-project) to see how to configure your 
+docker compose cluster.
 
 ### Local development
 
@@ -100,6 +100,21 @@ As mandatory step it's needed to create the artifact and the web dist. In order 
 build` or `cargo make run` commands from within the docker-compose container (alternatively from host machine if
 `cargo` and `trunk` are installed).
 
+For someone this error could occur on host machine
+```shell
+error[E0463]: can't find crate for `core`
+  |
+  = note: the `wasm32-unknown-unknown` target may not be installed
+  = help: consider downloading the target with `rustup target add wasm32-unknown-unknown`
+
+error[E0463]: can't find crate for `compiler_builtins`
+```
+
+In order to fix it run 
+```shell
+rustup target add wasm32-unknown-unknown --toolchain nightly
+```
+
 Then run:
 
 ```shell
@@ -114,6 +129,10 @@ Add this snippet to your `docker-compose.yml` file and reference it in your app 
 ```yaml
   auth0:
     image: public.ecr.aws/prima/localauth0:0.2.1
+    environment:
+      LOCALAUTH0_CONFIG_PATH: /etc/localauth0.toml
+    volumes:
+      - ./localauth0.toml:/etc/localauth0.toml:ro
     ports:
       - "3000:3000"
 ```

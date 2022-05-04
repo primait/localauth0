@@ -12,16 +12,11 @@ use localauth0::model::AppData;
 async fn main() -> std::io::Result<()> {
     let data: Data<AppData> = Data::new(AppData::new().expect("Failed to create AppData"));
 
-    match Config::load() {
-        Ok(config) => {
-            config.audience().iter().for_each(|request| {
-                data.audience()
-                    .put_permissions(request.name().as_str(), request.permissions().clone())
-                    .unwrap();
-            });
-        }
-        Err(err) => println!("Failed to load config: {}", err),
-    }
+    Config::load().audience().iter().for_each(|request| {
+        data.audience()
+            .put_permissions(request.name().as_str(), request.permissions().clone())
+            .expect("Failed to set permissions for audience");
+    });
 
     HttpServer::new(move || {
         App::new()

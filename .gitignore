@@ -1,7 +1,3 @@
 .DS_Store
-/.cargo
-/.cargo-make
-/.trunk
-/target
-/target-docker
-/web/target
+/.docker
+target/

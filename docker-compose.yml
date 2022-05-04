@@ -5,13 +5,12 @@ services:
     build: .
     container_name: localauth0_web
     volumes:
-      # This avoids the `Updating crates.io index` action at container startup. Folder contains cargo cached stuff
-      # and to pass configuration to cargo-make and keep the cache file
-      - "./.cargo:/home/app/.cargo"
-      - "./.cargo/conf:/home/app/.config"
-      - "./.cargo/cache:/home/app/.cache"
-      # This avoids recompile code everytime a new container is run.
-      - "./target-docker:/home/app/target-docker"
+      # All .doker contained directories and files are mounted in order to prevent index check, version check and recompilation
+      # everytime user get into new container.
+      - "./.docker:/home/app/.cargo"
+      - "./.docker:/home/app/.cache"
+      - "./.docker/cargo-make:/home/app/.config"
+      - "./.docker:/home/app/target-docker"
       - .:$PWD:cached
     ports:
       - "3000:3000"
@@ -19,10 +18,5 @@ services:
     environment:
       CARGO_HOME: /home/app/.cargo
       CARGO_TARGET_DIR: /home/app/target-docker
-      CARGO_MAKE_WORKING_DIRECTORY: /home/app/.cargo-make
-      LOCALAUTH0_CONFIG_PATH: /home/sct/Develop/prima/localauth0/localauth0.toml
     networks:
       - default
-
-
-# cargo make trunk-build

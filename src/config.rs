@@ -4,8 +4,6 @@ use derive_getters::Getters;
 use serde::Deserialize;
 use thiserror::Error;
 
-const DEFAULT_LOCALAUTH0_CONFIG_PATH: &str = "./localauth0.toml";
-
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Deserialize, Getters)]
@@ -15,18 +13,42 @@ pub struct Config {
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("Failed to read config file: '{0}'")]
-    FileReadError(String),
+    #[error(transparent)]
+    VarError(#[from] std::env::VarError),
 
-    #[error("Failed to parse config file: '{0}'")]
-    ConfigParseError(String),
+    #[error(transparent)]
+    ReadFileError(#[from] std::io::Error),
+
+    #[error(transparent)]
+    TomlError(#[from] toml::de::Error),
 }
 
 impl Config {
-    pub fn load() -> Result<Self> {
-        let config_path = std::env::var("LOCALAUTH0_CONFIG_PATH").unwrap_or(DEFAULT_LOCALAUTH0_CONFIG_PATH.to_string());
-        let config_string = fs::read_to_string(config_path).map_err(|err| Error::FileReadError(err.to_string()))?;
-        Ok(toml::from_str(config_string.as_str()).map_err(|err| Error::ConfigParseError(err.to_string()))?)
+    pub fn load() -> Self {
+        let config: Self = match Self::load_env() {
+            Ok(config) => config,
+            Err(Error::VarError(_)) => {
+                println!("LOCALAUTH0_CONFIG_PATH env var not set. Configuration not loaded!");
+                Self { audience: vec![] }
+            }
+            Err(Error::ReadFileError(error)) => {
+                println!("Failed to read file: {}", error);
+                Self { audience: vec![] }
+            }
+            Err(Error::TomlError(error)) => {
+                println!("Provided file not parsable: {}", error);
+                Self { audience: vec![] }
+            }
+        };
+
+        println!("{:?}", &config);
+        config
+    }
+
+    fn load_env() -> Result<Self> {
+        let config_path: String = std::env::var("LOCALAUTH0_CONFIG_PATH")?;
+        let config_string: String = fs::read_to_string(config_path)?;
+        Ok(toml::from_str(config_string.as_str())?)
     }
 }
 
