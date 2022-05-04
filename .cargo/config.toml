@@ -1,0 +1,9 @@
+[alias]
+m = "make"
+mr = "m run"
+
+[net]
+git-fetch-with-cli = true
+
+[build]
+#rustflags=["-C", "link-arg=-fuse-ld=lld"]
