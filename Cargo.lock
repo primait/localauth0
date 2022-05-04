@@ -828,7 +828,7 @@ checksum = "e34f76eb3611940e0e7d53a9aaa4e6a3151f69541a282fd0dad5571420c53ff1"
 
 [[package]]
 name = "localauth0"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "actix-files",
  "actix-web",
