@@ -12,7 +12,7 @@ With localauth0 you can fake your [auth0](https://auth0.com/) tenant and test it
 
 In order to run localauth0 docker image execute the following:
 
-```
+```shell
 docker run -d -p 3000:3000 public.ecr.aws/prima/localauth0:0.2.1
 ```
 
@@ -24,13 +24,15 @@ Note: The latest version is the same `version` written in the `Cargo.toml` file.
 
 After having run the localauth0 machine a web interface is available at [http://localhost:3000/](http://localhost:3000/).
 Here it's possible to:
+
 - get a fresh new JWT with given `audience`.
 - add/remove permissions for a given `audience`.
 
 ### Jwt
 
-- `POST` [http://localhost:3000/oauth/token](http://localhost:3000/oauth/token): used to get a freshly new JWT. Body 
-  should be: 
+- `POST` [http://localhost:3000/oauth/token](http://localhost:3000/oauth/token): used to get a freshly new JWT. Body
+  should be:
+
   ```json
   {
     "client_id": "client_id",
@@ -40,9 +42,12 @@ Here it's possible to:
   }
   ```
 
-- `POST` [http://localhost:3000/permissions](http://localhost:3000/permissions): used to set a list of permissions for 
-  given audience. Everytime a new JWT is requested for that audience those permissions will be injected in the JWT 
+- `GET` [http://localhost:3000/permissions/](http://localhost:3000/permissions): used to get a the list of all audiences with their associated permissions.
+
+- `POST` [http://localhost:3000/permissions/](http://localhost:3000/permissions): used to set a list of permissions for
+  given audience. Everytime a new JWT is requested for that audience those permissions will be injected in the JWT
   payload. Body should be:
+
   ```json
   {
     "audience": "{{your-audience}}",
@@ -50,42 +55,68 @@ Here it's possible to:
   }
   ```
 
+- `GET` [http://localhost:3000/permissions/{audience}](http://localhost:3000/permissions/{audience}): used to get a the list of all permissions for the given audience.
+
 ### Jwks
 
-- `GET` [http://localhost:3000/.well-known/jwks.json](http://localhost:3000/.well-known/jwks.json): it's possible to 
-fetch running instance jwks. Those jwks are randomly created starting from random certificates. 
+- `GET` [http://localhost:3000/.well-known/jwks.json](http://localhost:3000/.well-known/jwks.json): it's possible to
+fetch running instance jwks. Those jwks are randomly created starting from random certificates.
 Note that every generated JWT will be signed using one of those JWKS.
 
-- `GET` [http://localhost:3000/rotate](http://localhost:3000/rotate): discard the last JWK of the JWKS list and 
+- `GET` [http://localhost:3000/rotate](http://localhost:3000/rotate): discard the last JWK of the JWKS list and
   prepend a freshly new JWK.
 
-- `GET` [http://localhost:3000/revoke](http://localhost:3000/revoke): discard all the JWKs in the JWKS list and 
+- `GET` [http://localhost:3000/revoke](http://localhost:3000/revoke): discard all the JWKs in the JWKS list and
   replace them with 3 freshly new JWKs.
+
+## Configuration
+
+Localauth0 can be configured using a `.toml` file, which can be specified using the `LOCALAUTH0_CONFIG_PATH` 
+environment variable. Take a look [here](###Integrate-localauth0-in-existing-project) to see how to configure your 
+docker compose cluster.
 
 ### Local development
 
 #### Run localauth0 from within a docker-compose
 
 Get into docker-compose container with:
+
 ```shell
 docker-compose run --service-ports web bash
 ```
 
 Build the artifact, the web dist and run the http server with:
+
 ```shell
 # Build the web dist with trunk. Then run the server
 cargo make run
 ```
 
-Now website is available at http://localhost:3000.
+Now website is available at <http://localhost:3000>.
 
 #### Build and run localauth0 as an image
 
-As mandatory step it's needed to create the artifact and the web dist. In order to achieve this run `cargo make 
-build` or `cargo make run` commands from within the docker-compose container (alternatively from host machine if 
+As mandatory step it's needed to create the artifact and the web dist. In order to achieve this run `cargo make
+build` or `cargo make run` commands from within the docker-compose container (alternatively from host machine if
 `cargo` and `trunk` are installed).
 
+For someone this error could occur on host machine
+```shell
+error[E0463]: can't find crate for `core`
+  |
+  = note: the `wasm32-unknown-unknown` target may not be installed
+  = help: consider downloading the target with `rustup target add wasm32-unknown-unknown`
+
+error[E0463]: can't find crate for `compiler_builtins`
+```
+
+In order to fix it run 
+```shell
+rustup target add wasm32-unknown-unknown --toolchain nightly
+```
+
 Then run:
+
 ```shell
 docker build -f Dockerfile_localauth0 -t localauth0 . && \
 docker run -d -p 3000:3000 localauth0
@@ -94,9 +125,14 @@ docker run -d -p 3000:3000 localauth0
 ### Integrate localauth0 in existing project
 
 Add this snippet to your `docker-compose.yml` file and reference it in your app `depends_on` section.
+
 ```yaml
   auth0:
     image: public.ecr.aws/prima/localauth0:0.2.1
+    environment:
+      LOCALAUTH0_CONFIG_PATH: /etc/localauth0.toml
+    volumes:
+      - ./localauth0.toml:/etc/localauth0.toml:ro
     ports:
       - "3000:3000"
 ```

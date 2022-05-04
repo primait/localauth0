@@ -1,6 +1,7 @@
 [alias]
 m = "make"
 mr = "m run"
+mt = "m trunk-build"
 
 [net]
 git-fetch-with-cli = true

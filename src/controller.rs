@@ -39,6 +39,16 @@ pub async fn jwt(app_data: Data<AppData>, token_request: Json<TokenRequest>) -> 
     }
 }
 
+#[get("/permissions")]
+pub async fn get_permissions(app_data: Data<AppData>) -> HttpResponse {
+    let all_audiences: HashMap<String, Vec<String>> =
+        app_data.audience().all().expect("Failed to get inner audiences cache");
+
+    HttpResponse::Ok()
+        .content_type("application/json")
+        .body(serde_json::to_string(&all_audiences).expect("Failed to serialize permissions list"))
+}
+
 #[post("/permissions")]
 pub async fn set_permissions_for_audience(
     app_data: Data<AppData>,

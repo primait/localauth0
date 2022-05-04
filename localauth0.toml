@@ -1,0 +1,7 @@
+[[audience]]
+name = "audience1"
+permissions = ["audience1:permission1", "audience1:permission2"]
+
+[[audience]]
+name = "audience2"
+permissions = ["audience2:permission2"]
