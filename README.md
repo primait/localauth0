@@ -42,8 +42,7 @@ Here it's possible to:
   }
   ```
 
-- `GET` [http://localhost:3000/permissions/](http://localhost:3000/permissions): used to get a the list of all audiences with
-  their associated permissions.
+- `GET` [http://localhost:3000/permissions/](http://localhost:3000/permissions): used to get a the list of all audiences with their associated permissions.
 
 - `POST` [http://localhost:3000/permissions/](http://localhost:3000/permissions): used to set a list of permissions for
   given audience. Everytime a new JWT is requested for that audience those permissions will be injected in the JWT
@@ -55,6 +54,8 @@ Here it's possible to:
     "permissions": ["your-permission-1", "your-permission-2", ".."]
   }
   ```
+
+- `GET` [http://localhost:3000/permissions/{audience}](http://localhost:3000/permissions/{audience}): used to get a the list of all permissions for the given audience.
 
 ### Jwks
 

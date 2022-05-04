@@ -29,6 +29,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(middleware::Logger::default())
             .service(controller::jwks)
             .service(controller::jwt)
+            .service(controller::get_permissions)
             .service(controller::set_permissions_for_audience)
             .service(controller::get_permissions_by_audience)
             .service(controller::rotate_keys)
