@@ -6,4 +6,4 @@ mr = "m run"
 git-fetch-with-cli = true
 
 [build]
-rustflags=["-C", "link-arg=-fuse-ld=lld"]
+#rustflags=["-C", "link-arg=-fuse-ld=lld"]
