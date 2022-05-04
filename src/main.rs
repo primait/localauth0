@@ -20,7 +20,7 @@ async fn main() -> std::io::Result<()> {
                     .unwrap();
             });
         }
-        Err(err) => println!("Failed to load config {}", err),
+        Err(err) => println!("Failed to load config: {}", err),
     }
 
     HttpServer::new(move || {
