@@ -1,3 +1,6 @@
+[env]
+LOCALAUTH0_CONFIG_PATH = "./localauth0.toml"
+
 [tasks.build]
 args = ["build"]
 command = "cargo"

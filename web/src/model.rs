@@ -1,13 +1,14 @@
 use std::collections::HashSet;
 
+use gloo_timers::callback::Timeout;
 use serde::Deserialize;
 use wasm_bindgen::prelude::*;
-use yew::prelude::{html, Component, ComponentLink, Html, NodeRef, ShouldRender};
-use yew::services::fetch::FetchTask;
-use yew::services::timeout::TimeoutTask;
+use yew::prelude::{html, Component, Html, NodeRef};
+use yew::Context;
 
 use crate::message::Msg;
 use crate::update;
+use crate::util::IsEmpty;
 
 pub struct Model {
     pub audience_input_ref: NodeRef,
@@ -15,9 +16,8 @@ pub struct Model {
     pub audience: Option<String>,
     pub permissions: HashSet<String>,
     pub token: Option<Jwt>,
-    pub link: ComponentLink<Self>,
-    pub fetch_task: Option<FetchTask>,
-    pub timeout_task: Option<TimeoutTask>,
+    // pub fetch_task: Option<FetchTask>,
+    pub timeout_task: Option<Timeout>,
     pub copied: bool,
 }
 
@@ -26,12 +26,11 @@ impl Component for Model {
 
     type Properties = ();
 
-    fn create(_props: Self::Properties, link: ComponentLink<Self>) -> Self {
+    fn create(context: &Context<Self>) -> Self {
         Self {
-            link,
             audience_input_ref: NodeRef::default(),
             permission_input_ref: NodeRef::default(),
-            fetch_task: None,
+            // fetch_task: None,
             timeout_task: None,
             audience: None,
             permissions: HashSet::new(),
@@ -40,16 +39,16 @@ impl Component for Model {
         }
     }
 
-    fn update(&mut self, msg: Self::Message) -> ShouldRender {
-        update::update(self, msg)
+    fn update(&mut self, context: &Context<Self>, msg: Self::Message) -> bool {
+        update::update(self, context, msg)
     }
 
-    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
+    fn changed(&mut self, _context: &Context<Model>) -> bool {
         false
     }
 
-    fn view(&self) -> Html {
-        let onfocusout = self.link.callback(|_| Msg::AudienceFocusOut);
+    fn view(&self, context: &Context<Self>) -> Html {
+        let onfocusout = context.link().callback(|_| Msg::AudienceFocusOut);
 
         html! {
             <div class="container padding-v-l">
@@ -83,9 +82,9 @@ impl Component for Model {
                         </div>
                     </div>
 
-                    {{self.permission_input_view()}}
+                    {{self.permission_input_view(context)}}
 
-                    { for self.permissions.iter().map(|permission| self.view_entry(permission.to_string())) }
+                    { for self.permissions.iter().map(|permission| self.view_entry(context, permission.to_string())) }
 
                     <div class="form-grid__row form-grid__row--small">
                         <div class="form-item">
@@ -94,7 +93,7 @@ impl Component for Model {
                                 <div class="form-field">
                                     <div class="token-area">{self.token.clone().map(|jwt| jwt.access_token).unwrap_or_else(|| "No token".to_string())}</div>
                                     <div class="copy-wrapper">
-                                        <span class="badge button-copy" onclick=self.link.callback(|_| Msg::CopyToken)>{if self.copied { "Copied!" } else { "Copy" } }</span>
+                                        <span class="badge button-copy" onclick={context.link().callback(|_| Msg::CopyToken)}>{if self.copied { "Copied!" } else { "Copy" } }</span>
                                     </div>
                                 </div>
                             </div>
@@ -104,7 +103,7 @@ impl Component for Model {
                     <div class="form-grid__row form-grid__row--small">
                         <div class="form-grid__row__column">
                             <div class="button-row button-row--center">
-                                <button class="button button--primary button--huge" disabled={self.audience.is_empty()} onclick=self.link.callback(|_| Msg::SetPermissions)>{"Generate token"}</button>
+                                <button class="button button--primary button--huge" disabled={self.audience.is_empty()} onclick={context.link().callback(|_| Msg::SetPermissions)}>{"Generate token"}</button>
                             </div>
                         </div>
                     </div>
@@ -115,7 +114,7 @@ impl Component for Model {
 }
 
 impl Model {
-    fn permission_input_view(&self) -> Html {
+    fn permission_input_view(&self, context: &Context<Model>) -> Html {
         html! {
             <div class="form-grid__row form-grid__row--small">
                 <div class="form-grid__row__column form-grid__row__column--span-5">
@@ -124,14 +123,14 @@ impl Model {
                         <div class="form-item__wrapper">
                             <div class="form-field">
                                 <label class="form-field__wrapper">
-                                    <input id="form-item-name" class="form-field__text" type="text" placeholder="permission" ref=self.permission_input_ref.clone()/>
+                                    <input id="form-item-name" class="form-field__text" type="text" placeholder="permission" ref={self.permission_input_ref.clone()}/>
                                 </label>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="form-grid__row__column display-grid">
-                    <button class="button button--primary button--huge button--icon-only permission-button" type="button" onclick=self.link.batch_callback(|_| { Some(Msg::AddPermission) })>
+                    <button class="button button--primary button--huge button--icon-only permission-button" type="button" onclick={context.link().batch_callback(|_| { Some(Msg::AddPermission) })}>
                         <div aria-hidden="false" aria-label="Add permission" class="icon icon--size-l" role="img">
                             {{self.permission_add_icon()}}
                         </div>
@@ -141,7 +140,7 @@ impl Model {
         }
     }
 
-    fn view_entry(&self, permission: String) -> Html {
+    fn view_entry(&self, context: &Context<Model>, permission: String) -> Html {
         html! {
             <div class="form-grid__row form-grid__row--small">
                 <div class="form-grid__row__column form-grid__row__column--span-5">
@@ -160,7 +159,7 @@ impl Model {
                     <button
                         type="button"
                         class="button button--primary button--huge button--icon-only permission-button"
-                        onclick=self.link.callback(move |_| Msg::RemovePermission(permission.clone()))>
+                        onclick={context.link().callback(move |_| Msg::RemovePermission(permission.clone()))}>
                         <div aria-hidden="false" aria-label="Remove permission" class="icon icon--size-l" role="img">
                             {{self.permission_delete_icon()}}
                         </div>
@@ -182,12 +181,12 @@ impl Model {
         }
     }
 
-    pub fn do_copy(&self) {
+    pub fn do_copy(&self, context: &Context<Self>) {
         match &self.token {
             None => (),
             Some(jwt) => {
-                let ok = self.link.callback(|_| Msg::TokenCopied);
-                let err = self.link.callback(|_| Msg::CopyFailed);
+                let ok = context.link().callback(|_| Msg::TokenCopied);
+                let err = context.link().callback(|_| Msg::CopyFailed);
                 let access_token: String = jwt.access_token().to_string();
                 wasm_bindgen_futures::spawn_local(async move {
                     match copy_to_clipboard(access_token).await {
@@ -208,19 +207,6 @@ pub struct Jwt {
 impl Jwt {
     fn access_token(&self) -> &str {
         &self.access_token
-    }
-}
-
-trait IsEmpty {
-    fn is_empty(&self) -> bool;
-}
-
-impl IsEmpty for Option<String> {
-    fn is_empty(&self) -> bool {
-        match &self {
-            None => true,
-            Some(string) => string.is_empty(),
-        }
     }
 }
 
