@@ -18,5 +18,6 @@ services:
     environment:
       CARGO_HOME: /home/app/.cargo
       CARGO_TARGET_DIR: /home/app/target-docker
+      RUST_LOG: info,sqlx=warn,actix_web::middleware::logger=warn
     networks:
       - default

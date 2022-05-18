@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-name = "web"
+name = "localauth0_web"
 version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -20,6 +20,7 @@ wasm-logger = "0.2"
 wasm-bindgen = "0.2.79"
 js-sys = "0.3.56"
 web-sys = {version = "0.3", features = ["Navigator", "Clipboard"]}
+url = "2.2"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4"

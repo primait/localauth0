@@ -1,5 +1,6 @@
-use crate::model::Jwt;
 use std::collections::HashSet;
+
+use crate::pages::model::Jwt;
 
 #[derive(Debug)]
 pub enum Msg {
