@@ -91,16 +91,12 @@ After redirection the redirect_url will contain those http fragments:
 
 For example navigating to:
 
-<http://localhost:3000/authorize?redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F&audience=audience1&state=test-state&bypass=true>
+<http://localhost:3000/authorize?redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F&audience=audience1&client_id=whatever&connection=whatever&response_type=token&scope=whatever&state=test-state&bypass=true>
 
 The page will automatically redirect to:
 
 <http://localhost:3000/#access_token=eyJ..RrQ&token_type=Bearer&expires_in=3600&state=test-state>
 
-#### For later versions
-
-Provide audience in query string is conceptually wrong. The permissions should be got from a user previously set and 
-known in localauth0 backend.
 
 ## Configuration
 

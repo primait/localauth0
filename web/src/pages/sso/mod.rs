@@ -3,27 +3,29 @@ use std::str::FromStr;
 use serde::Deserialize;
 use url::Url;
 use yew::{html, Component, Context, Html};
-use yew_router::history::History;
 use yew_router::prelude::{Location, RouterScopeExt};
 
 use msg::Msg;
 
 use crate::pages::model::Jwt;
 use crate::pages::{bindgen, bridge};
-use crate::route::Route;
 
 mod msg;
 
 const MISSING_PARAMS_CONTENT: &str = "Bad request while authenticating with sso:\
 Missing some query params.\
-Mandatory query params are: `audience` and `redirect_uri\
-Optional query params are: `response_type` and `state`";
+Mandatory query params are: `client_id`, `connection`, audience`, `redirect_uri`, `scope` and `response_type`\
+Optional query params are: `state` and `bypass`";
 
 #[derive(Deserialize, Debug)]
+#[allow(dead_code)]
 struct QueryParams {
+    client_id: String,
+    connection: String,
     audience: String,
     redirect_uri: String,
-    response_type: Option<String>,
+    scope: String, // "openid profile email",
+    response_type: String,
     state: Option<String>,
     bypass: Option<bool>,
 }
@@ -42,27 +44,6 @@ impl Component for SSO {
             .link()
             .location()
             .and_then(|location| location.query::<QueryParams>().ok());
-
-        let bypass: bool = query_params_opt
-            .as_ref()
-            .map(|query_params| query_params.bypass.unwrap_or(false))
-            .unwrap_or(false);
-        if bypass {
-            let redirect_uri: Option<Url> = query_params_opt
-                .as_ref()
-                .map(|query_params| query_params.redirect_uri.as_str())
-                .and_then(|uri| Url::parse(uri).ok());
-
-            match redirect_uri {
-                None => {
-                    ctx.link()
-                        .history()
-                        .expect("Something went wrong getting history")
-                        .push(Route::NotFound);
-                }
-                Some(url) => bindgen::redirect(url),
-            }
-        }
 
         Self {
             query_params_opt,
@@ -83,10 +64,7 @@ impl Component for SSO {
         match &self.query_params_opt {
             None => error_page(MISSING_PARAMS_CONTENT),
             Some(query_params) => {
-                let response_type: String = query_params
-                    .response_type
-                    .clone()
-                    .unwrap_or_else(|| "token".to_string());
+                let response_type: String = query_params.response_type.clone();
 
                 match Url::from_str(query_params.redirect_uri.as_str()) {
                     Err(_) => {
@@ -101,25 +79,19 @@ impl Component for SSO {
                         error_page(error.as_str())
                     }
                     Ok(_) if response_type == "code" => error_page("`code` response type is not supported yet. Sorry"),
-                    Ok(mut url) => match self.token.clone() {
+                    Ok(url) => match self.token.clone() {
                         None => {
                             let () =
                                 bridge::generate_token(ctx, |v| Msg::TokenReceived(v), query_params.audience.clone());
                             html! { <div>{"Loading.."}</div> }
                         }
+                        Some(token) if Some(true) == query_params.bypass => {
+                            let url: Url = build_url(query_params.state.as_ref(), url, token);
+                            let _ = bindgen::redirect(url);
+                            html! { <div></div> }
+                        }
                         Some(token) => {
-                            let state: String = query_params
-                                .state
-                                .as_ref()
-                                .map(|state| format!("&state={}", state))
-                                .unwrap_or_default();
-
-                            let access_token: String = format!(
-                                "access_token={}&token_type=Bearer&expires_in=3600{}",
-                                token.access_token(),
-                                state
-                            );
-                            url.set_fragment(Some(access_token.as_str()));
+                            let url: Url = build_url(query_params.state.as_ref(), url, token);
                             login_view(url)
                         }
                     },
@@ -147,4 +119,16 @@ fn error_page(message: &str) -> Html {
     html! {
         <span class="title-xl-bold">{message}</span>
     }
+}
+
+fn build_url(state_opt: Option<&String>, mut url: Url, token: Jwt) -> Url {
+    let state: String = state_opt.map(|state| format!("&state={}", state)).unwrap_or_default();
+
+    let access_token: String = format!(
+        "access_token={}&token_type=Bearer&expires_in=3600{}",
+        token.access_token(),
+        state
+    );
+    url.set_fragment(Some(access_token.as_str()));
+    url
 }
