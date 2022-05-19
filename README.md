@@ -22,7 +22,7 @@ Note: The latest version is the same `version` written in the `Cargo.toml` file.
 
 ### Web page
 
-After having run the localauth0 machine a web interface is available at [http://localhost:3000/](http://localhost:3000/).
+After having run the localauth0 machine a web interface is available at <http://localhost:3000/>.
 Here it's possible to:
 
 - get a fresh new JWT with given `audience`.
@@ -30,7 +30,7 @@ Here it's possible to:
 
 ### Jwt
 
-- `POST` [http://localhost:3000/oauth/token](http://localhost:3000/oauth/token): used to get a freshly new JWT. Body
+- `POST` <http://localhost:3000/oauth/token>: used to get a freshly new JWT. Body
   should be:
 
   ```json
@@ -42,9 +42,9 @@ Here it's possible to:
   }
   ```
 
-- `GET` [http://localhost:3000/permissions/](http://localhost:3000/permissions): used to get a the list of all audiences with their associated permissions.
+- `GET` <http://localhost:3000/permissions>: used to get a the list of all audiences with their associated permissions.
 
-- `POST` [http://localhost:3000/permissions/](http://localhost:3000/permissions): used to set a list of permissions for
+- `POST` <http://localhost:3000/permissions>: used to set a list of permissions for
   given audience. Everytime a new JWT is requested for that audience those permissions will be injected in the JWT
   payload. Body should be:
 
@@ -55,24 +55,57 @@ Here it's possible to:
   }
   ```
 
-- `GET` [http://localhost:3000/permissions/{audience}](http://localhost:3000/permissions/{audience}): used to get a the list of all permissions for the given audience.
+- `GET` <http://localhost:3000/permissions/{audience}>: used to get a the list of all permissions for the given 
+  audience.
 
 ### Jwks
 
-- `GET` [http://localhost:3000/.well-known/jwks.json](http://localhost:3000/.well-known/jwks.json): it's possible to
+- `GET` <http://localhost:3000/.well-known/jwks.json>: it's possible to
 fetch running instance jwks. Those jwks are randomly created starting from random certificates.
 Note that every generated JWT will be signed using one of those JWKS.
 
-- `GET` [http://localhost:3000/rotate](http://localhost:3000/rotate): discard the last JWK of the JWKS list and
+- `GET` <http://localhost:3000/rotate>: discard the last JWK of the JWKS list and
   prepend a freshly new JWK.
 
-- `GET` [http://localhost:3000/revoke](http://localhost:3000/revoke): discard all the JWKs in the JWKS list and
+- `GET` <http://localhost:3000/revoke>: discard all the JWKs in the JWKS list and
   replace them with 3 freshly new JWKs.
+
+## SSO page
+
+Localauth0 could behave like Google SSO page. In order to achieve this your web page should navigate to
+<http://localhost:3000/authorize> providing these query params:
+
+- redirect_uri: your web app callback page
+- audience: the audience you want to use to generate the token
+- response_type (optional): could be `token` or `code`. Actually only `token` is provided and is used by default. 
+  This option mean that after the redirect the url will contain the `access_token` in query string.  
+- state (optional): An opaque value, used for security purposes. If this request parameter is set in the request, 
+  then it is returned to the application as part of the `redirect_uri`.
+- bypass (optional): this is a dev feature. If set to true directly redirect to `redirect_uri`.
+
+After redirection the redirect_url will contain those http fragments:
+- access_token: the JWT token.
+- token_type: always set to `Bearer`.
+- expires_in: when will the jwt expires.
+- state: present if set in authorize url; contains the same value.
+
+For example navigating to:
+
+<http://localhost:3000/authorize?redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F&audience=audience1&state=test-state&bypass=true>
+
+The page will automatically redirect to:
+
+<http://localhost:3000/#access_token=eyJ..RrQ&token_type=Bearer&expires_in=3600&state=test-state>
+
+#### For later versions
+
+Provide audience in query string is conceptually wrong. The permissions should be got from a user previously set and 
+known in localauth0 backend.
 
 ## Configuration
 
 Localauth0 can be configured using a `.toml` file, which can be specified using the `LOCALAUTH0_CONFIG_PATH` 
-environment variable. Take a look [here](###Integrate-localauth0-in-existing-project) to see how to configure your 
+environment variable. Take a look [here](#Integrate-localauth0-in-existing-project) to see how to configure your 
 docker compose cluster.
 
 ### Local development
