@@ -1,17 +1,13 @@
 use std::collections::HashSet;
 
+use crate::pages::{bindgen, bridge};
 use gloo_timers::callback::Timeout;
-#[cfg(not(target_arch = "wasm32"))]
-use tokio::task::spawn_local;
-use wasm_bindgen::prelude::*;
-#[cfg(target_arch = "wasm32")]
-use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
 use yew::prelude::{html, Component, Html, NodeRef};
 use yew::Context;
 
 use crate::pages::home::msg::Msg;
-use crate::pages::model::{Jwt, PermissionsForAudience, TokenRequest};
+use crate::pages::model::Jwt;
 use crate::util::IsEmpty;
 
 mod msg;
@@ -48,24 +44,8 @@ impl Component for Home {
             Msg::AudienceFocusOut => {
                 if let Some(input) = self.audience_input_ref.cast::<HtmlInputElement>() {
                     let audience: String = input.value();
-                    let url: String = format!("/permissions/{}", &audience);
                     self.audience = Some(audience.clone());
-                    let link = ctx.link().clone();
-
-                    spawn_local(async move {
-                        let permissions_opt: Option<Vec<String>> = reqwasm::http::Request::get(url.as_str())
-                            .header("Content-type", "application/json")
-                            .send()
-                            .await
-                            .unwrap()
-                            .json()
-                            .await
-                            .unwrap();
-
-                        link.send_message(Msg::ShowPermissions(
-                            permissions_opt.unwrap_or_default().into_iter().collect(),
-                        ))
-                    });
+                    bridge::get_permissions_by_audience(ctx, |v| Msg::ShowPermissions(v), audience)
                 }
                 true
             }
@@ -75,28 +55,19 @@ impl Component for Home {
             }
             Msg::GenerateToken => {
                 let audience: String = self.audience.clone().unwrap();
-                let link = ctx.link().clone();
-
-                spawn_local(async move {
-                    let body: String = serde_json::to_string(&TokenRequest::new(audience)).unwrap();
-
-                    let jwt: Jwt = reqwasm::http::Request::post("/oauth/token")
-                        .header("Content-type", "application/json")
-                        .body(body)
-                        .send()
-                        .await
-                        .unwrap()
-                        .json()
-                        .await
-                        .unwrap();
-
-                    link.send_message(Msg::TokenReceived(Some(jwt)))
-                });
-
+                bridge::generate_token(ctx, |v| Msg::TokenReceived(v), audience);
                 false
             }
             Msg::CopyToken => {
-                do_copy(&self, ctx);
+                match &self.token {
+                    None => (),
+                    Some(token) => bindgen::copy_to_clipboard(
+                        ctx,
+                        token.access_token().to_string(),
+                        |_| Msg::TokenCopied,
+                        |_| Msg::CopyFailed,
+                    ),
+                }
                 false
             }
             Msg::TokenCopied => {
@@ -114,8 +85,8 @@ impl Component for Home {
                 self.copied = false;
                 true
             }
-            Msg::TokenReceived(token_opt) => {
-                self.token = token_opt;
+            Msg::TokenReceived(token) => {
+                self.token = Some(token);
                 true
             }
             Msg::AddPermission => {
@@ -139,30 +110,9 @@ impl Component for Home {
             }
             Msg::SetPermissions => {
                 if let Some(input) = self.audience_input_ref.cast::<HtmlInputElement>() {
-                    self.audience = Some(input.value());
-                    let request = PermissionsForAudience::new(
-                        self.audience.clone().unwrap(),
-                        self.permissions.clone().into_iter().collect(),
-                    );
-
-                    let link = ctx.link().clone();
-
-                    spawn_local(async move {
-                        let body: String = serde_json::to_string(&request).unwrap();
-                        let response: String = reqwasm::http::Request::post("/permissions")
-                            .header("Content-type", "application/json")
-                            .body(body)
-                            .send()
-                            .await
-                            .unwrap()
-                            .text()
-                            .await
-                            .unwrap();
-
-                        log::info!("Actual mapping for given audience is: {}", response);
-
-                        link.send_message(Msg::GenerateToken)
-                    });
+                    let audience: String = input.value();
+                    self.audience = Some(audience.clone());
+                    bridge::set_permissions_for_audience(ctx, || Msg::GenerateToken, audience, self.permissions.clone())
                 }
 
                 true
@@ -287,37 +237,4 @@ fn permission_delete_icon() -> Html {
             <path d="M12.714 11.976l9.121-9.121a.5.5 0 1 0-.707-.707l-9.121 9.121-9.121-9.121a.5.5 0 0 0-.707.707l9.121 9.121-9.121 9.121a.5.5 0 1 0 .707.707l9.121-9.121 9.121 9.121a.5.5 0 1 0 .707-.707z"></path>
         </svg>
     }
-}
-
-pub fn do_copy(home: &Home, ctx: &Context<Home>) {
-    match &home.token {
-        None => (),
-        Some(jwt) => {
-            let ok = ctx.link().callback(|_| Msg::TokenCopied);
-            let err = ctx.link().callback(|_| Msg::CopyFailed);
-            let access_token: String = jwt.access_token().to_string();
-            wasm_bindgen_futures::spawn_local(async move {
-                match copy_to_clipboard(access_token).await {
-                    Ok(_) => ok.emit(()),
-                    Err(_) => err.emit(()),
-                };
-            });
-        }
-    }
-}
-
-#[wasm_bindgen(inline_js=r#"
-export function copy_to_clipboard(value) {
-    try {
-        return window.navigator.clipboard.writeText(value);
-    } catch(e) {
-        console.log(e);
-        return Promise.reject(e)
-    }
-}
-"#)]
-#[rustfmt::skip] // required to keep the "async" keyword
-extern "C" {
-    #[wasm_bindgen(catch)]
-    async fn copy_to_clipboard(value: String) -> Result<(), JsValue>;
 }

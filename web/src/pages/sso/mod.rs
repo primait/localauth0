@@ -1,17 +1,16 @@
 use std::str::FromStr;
 
 use serde::Deserialize;
-#[cfg(not(target_arch = "wasm32"))]
-use tokio::task::spawn_local;
 use url::Url;
-#[cfg(target_arch = "wasm32")]
-use wasm_bindgen_futures::spawn_local;
 use yew::{html, Component, Context, Html};
+use yew_router::history::History;
 use yew_router::prelude::{Location, RouterScopeExt};
 
 use msg::Msg;
 
-use crate::pages::model::{Jwt, TokenRequest};
+use crate::pages::model::Jwt;
+use crate::pages::{bindgen, bridge};
+use crate::route::Route;
 
 mod msg;
 
@@ -26,6 +25,7 @@ struct QueryParams {
     redirect_uri: String,
     response_type: Option<String>,
     state: Option<String>,
+    bypass: Option<bool>,
 }
 
 pub struct SSO {
@@ -42,6 +42,27 @@ impl Component for SSO {
             .link()
             .location()
             .and_then(|location| location.query::<QueryParams>().ok());
+
+        let bypass: bool = query_params_opt
+            .as_ref()
+            .map(|query_params| query_params.bypass.unwrap_or(false))
+            .unwrap_or(false);
+        if bypass {
+            let redirect_uri: Option<Url> = query_params_opt
+                .as_ref()
+                .map(|query_params| query_params.redirect_uri.as_str())
+                .and_then(|uri| Url::parse(uri).ok());
+
+            match redirect_uri {
+                None => {
+                    ctx.link()
+                        .history()
+                        .expect("Something went wrong getting history")
+                        .push(Route::NotFound);
+                }
+                Some(url) => bindgen::redirect(url),
+            }
+        }
 
         Self {
             query_params_opt,
@@ -82,7 +103,8 @@ impl Component for SSO {
                     Ok(_) if response_type == "code" => error_page("`code` response type is not supported yet. Sorry"),
                     Ok(mut url) => match self.token.clone() {
                         None => {
-                            let () = generate_token(ctx, query_params.audience.clone());
+                            let () =
+                                bridge::generate_token(ctx, |v| Msg::TokenReceived(v), query_params.audience.clone());
                             html! { <div>{"Loading.."}</div> }
                         }
                         Some(token) => {
@@ -105,25 +127,6 @@ impl Component for SSO {
             }
         }
     }
-}
-
-fn generate_token(ctx: &Context<SSO>, audience: String) {
-    let link = ctx.link().clone();
-    spawn_local(async move {
-        let body: String = serde_json::to_string(&TokenRequest::new(audience)).unwrap();
-
-        let jwt: Jwt = reqwasm::http::Request::post("/oauth/token")
-            .header("Content-type", "application/json")
-            .body(body)
-            .send()
-            .await
-            .unwrap()
-            .json()
-            .await
-            .unwrap();
-
-        link.send_message(Msg::TokenReceived(jwt))
-    });
 }
 
 fn login_view(redirect_uri: Url) -> Html {

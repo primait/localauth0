@@ -10,7 +10,7 @@ pub enum Msg {
     TokenCopied,
     CopyFailed,
     ResetCopyButton,
-    TokenReceived(Option<Jwt>),
+    TokenReceived(Jwt),
     ShowPermissions(HashSet<String>),
     AddPermission,
     RemovePermission(String),
