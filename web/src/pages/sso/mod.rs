@@ -24,7 +24,7 @@ struct QueryParams {
     connection: String,
     audience: String,
     redirect_uri: String,
-    scope: String, // "openid profile email",
+    scope: String,
     response_type: String,
     state: Option<String>,
     bypass: Option<bool>,
