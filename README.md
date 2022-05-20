@@ -83,7 +83,7 @@ Localauth0 could behave like Google SSO page. In order to achieve this your web 
   then it is returned to the application as part of the `redirect_uri`.
 - bypass (optional): this is a dev feature. If set to true directly redirect to `redirect_uri`.
 
-After redirection the redirect_url will contain those http fragments:
+After redirection the redirect_url will contain these http fragments:
 - access_token: the JWT token.
 - token_type: always set to `Bearer`.
 - expires_in: when will the jwt expires.
