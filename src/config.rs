@@ -1,6 +1,7 @@
 use std::fs;
 
 use derive_getters::Getters;
+use prima_rs_logger::{error, info};
 use serde::Deserialize;
 use thiserror::Error;
 
@@ -8,7 +9,10 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Deserialize, Getters)]
 pub struct Config {
+    #[serde(default)]
     audience: Vec<Audience>,
+    #[serde(default)]
+    user: Vec<User>,
 }
 
 #[derive(Debug, Error)]
@@ -28,20 +32,29 @@ impl Config {
         let config: Self = match Self::load_env() {
             Ok(config) => config,
             Err(Error::VarError(_)) => {
-                println!("LOCALAUTH0_CONFIG_PATH env var not set. Configuration not loaded!");
-                Self { audience: vec![] }
+                info!("LOCALAUTH0_CONFIG_PATH env var not set. Configuration not loaded!");
+                Self {
+                    audience: vec![],
+                    user: vec![],
+                }
             }
             Err(Error::ReadFileError(error)) => {
-                println!("Failed to read file: {}", error);
-                Self { audience: vec![] }
+                error!("Failed to read file: {}", error);
+                Self {
+                    audience: vec![],
+                    user: vec![],
+                }
             }
             Err(Error::TomlError(error)) => {
-                println!("Provided file not parsable: {}", error);
-                Self { audience: vec![] }
+                error!("Provided file not parsable: {}", error);
+                Self {
+                    audience: vec![],
+                    user: vec![],
+                }
             }
         };
 
-        println!("{:?}", &config);
+        info!("Configuration is '{:?}'", &config);
         config
     }
 
@@ -54,6 +67,12 @@ impl Config {
 
 #[derive(Debug, Deserialize, Getters)]
 pub struct Audience {
+    name: String,
+    permissions: Vec<String>,
+}
+
+#[derive(Debug, Deserialize, Getters)]
+pub struct User {
     name: String,
     permissions: Vec<String>,
 }

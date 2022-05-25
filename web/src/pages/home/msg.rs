@@ -1,5 +1,6 @@
-use crate::model::Jwt;
 use std::collections::HashSet;
+
+use crate::pages::model::Jwt;
 
 #[derive(Debug)]
 pub enum Msg {
@@ -9,7 +10,7 @@ pub enum Msg {
     TokenCopied,
     CopyFailed,
     ResetCopyButton,
-    TokenReceived(Option<Jwt>),
+    TokenReceived(Jwt),
     ShowPermissions(HashSet<String>),
     AddPermission,
     RemovePermission(String),

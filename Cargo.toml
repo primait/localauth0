@@ -27,3 +27,5 @@ rand = "0.8.5"
 uuid = "0.8.2"
 
 toml = "0.5.9"
+
+prima_rs_logger = "0.1"
