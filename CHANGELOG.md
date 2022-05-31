@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2022-05-31
+
+### Added
+
+- New page for SSO login at <http://localhost:3000/authorize>
+
 ## [0.2.2] - 2022-05-04
 
 ### Added
@@ -44,7 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release 🎉
 
-[Unreleased]: https://github.com/primait/localauth0/compare/0.2.2...HEAD
+[Unreleased]: https://github.com/primait/localauth0/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/primait/localauth0/compare/0.2.2...0.3.0
 [0.2.2]: https://github.com/primait/localauth0/compare/0.2.1...0.2.2
 [0.2.1]: https://github.com/primait/localauth0/compare/0.2.0...0.2.1
 [0.2.0]: https://github.com/primait/localauth0/compare/0.1.1...0.2.0

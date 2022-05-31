@@ -18,7 +18,6 @@ pub struct Home {
     pub audience: Option<String>,
     pub permissions: HashSet<String>,
     pub token: Option<Jwt>,
-    // pub fetch_task: Option<FetchTask>,
     pub timeout_task: Option<Timeout>,
     pub copied: bool,
 }
