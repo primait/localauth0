@@ -5,19 +5,18 @@ services:
     build: .
     container_name: localauth0_web
     volumes:
-      # All .doker contained directories and files are mounted in order to prevent index check, version check and recompilation
-      # everytime user get into new container.
-      - "./.docker:/home/app/.cargo"
-      - "./.docker:/home/app/.cache"
-      - "./.docker/cargo-make:/home/app/.config"
-      - "./.docker:/home/app/target-docker"
-      - .:$PWD:cached
+      - .:/code
+      - "app:/home/app/"
     ports:
       - "3000:3000"
-    working_dir: $PWD
+    working_dir: /code
     environment:
       CARGO_HOME: /home/app/.cargo
-      CARGO_TARGET_DIR: /home/app/target-docker
+      CARGO_TARGET_DIR: /home/app/target
+      CARGO_MAKE_DISABLE_UPDATE_CHECK: 1
       RUST_LOG: info,sqlx=warn,actix_web::middleware::logger=warn
     networks:
       - default
+
+volumes:
+  app:
