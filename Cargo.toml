@@ -22,9 +22,9 @@ chrono = {version = "0.4.19", features = ["serde"]}
 thiserror = "1.0.31"
 
 jsonwebtoken = "8.1.0"
-moka = "0.7.2"
+moka = "0.9.3"
 rand = "0.8.5"
-uuid = "0.8.2"
+uuid = "1.1.2"
 
 toml = "0.5.9"
 
