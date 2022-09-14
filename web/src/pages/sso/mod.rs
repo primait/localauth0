@@ -128,6 +128,7 @@ impl Component for SSO {
     }
 }
 
+// Redirects browser directly to redirect uri
 fn token_login_view(redirect_uri: Url) -> Html {
     html! {
         <div class="form-grid">
@@ -142,6 +143,7 @@ fn token_login_view(redirect_uri: Url) -> Html {
     }
 }
 
+// When users are supported this view can collect credentials to forward to the backend, but currently no credentials are required.
 fn code_login_view(ctx: &Context<SSO>) -> Html {
     html! {
         <div class="form-grid">

@@ -18,12 +18,13 @@ pub async fn jwks(app_data: Data<AppData>) -> HttpResponse {
         .body(serde_json::to_string(&jwks).expect("Failed to serialize JWKS to json"))
 }
 
-/// Handler for json body posts to the token endpoint
+/// Handler for application/json encoded post bodies to the token endpoint
 pub async fn jwt_json_body_handler(app_data: Data<AppData>, token_request: Json<TokenRequest>) -> HttpResponse {
     jwt(app_data, token_request.0).await
 }
 
-/// Handler for url form encoded posts to the token endpoint
+/// Handler for application/x-www-form-urlencoded encoded post bodies to the token endpoint.
+/// This is the required format specified by `https://www.rfc-editor.org/rfc/rfc6749#section-4.4.2`. and auth0
 pub async fn jwt_form_body_handler(app_data: Data<AppData>, token_request: Form<TokenRequest>) -> HttpResponse {
     jwt(app_data, token_request.0).await
 }
