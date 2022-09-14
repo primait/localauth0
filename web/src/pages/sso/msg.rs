@@ -3,4 +3,6 @@ use crate::pages::model::Jwt;
 #[derive(Debug)]
 pub enum Msg {
     TokenReceived(Jwt),
+    CodeRecieved(String),
+    LoginPressed,
 }
