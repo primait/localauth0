@@ -22,7 +22,7 @@ async fn main() -> std::io::Result<()> {
     let data: Data<AppData> = Data::new(AppData::new().expect("Failed to create AppData"));
 
     Config::load().audience().iter().for_each(|request| {
-        data.audience()
+        data.audiences()
             .put_permissions(request.name().as_str(), request.permissions().clone())
             .expect("Failed to set permissions for audience");
     });

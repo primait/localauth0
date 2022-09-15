@@ -3,11 +3,11 @@ use std::sync::RwLock;
 
 use crate::error::Error;
 
-pub struct Audience {
+pub struct AudiencesStore {
     cache: RwLock<HashMap<String, Vec<String>>>,
 }
 
-impl Default for Audience {
+impl Default for AudiencesStore {
     fn default() -> Self {
         Self {
             cache: RwLock::new(HashMap::new()),
@@ -15,7 +15,7 @@ impl Default for Audience {
     }
 }
 
-impl Audience {
+impl AudiencesStore {
     pub fn get_permissions(&self, audience: &str) -> Result<Vec<String>, Error> {
         Ok(self
             .cache

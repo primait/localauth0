@@ -1,25 +1,25 @@
 use crate::error::Error;
-use crate::model::audience::Audience;
+use crate::model::audience::AudiencesStore;
 use crate::model::jwks::JwksStore;
 
 pub struct AppData {
-    audience: Audience,
+    audiences_store: AudiencesStore,
     jwks_store: JwksStore,
 }
 
 impl AppData {
     pub fn new() -> Result<Self, Error> {
         Ok(Self {
-            audience: Audience::default(),
+            audiences_store: AudiencesStore::default(),
             jwks_store: JwksStore::new()?,
         })
     }
 
-    pub fn audience(&self) -> &Audience {
-        &self.audience
+    pub fn audiences(&self) -> &AudiencesStore {
+        &self.audiences_store
     }
 
-    pub fn jwks_store(&self) -> &JwksStore {
+    pub fn jwks(&self) -> &JwksStore {
         &self.jwks_store
     }
 }
