@@ -61,7 +61,7 @@ impl Component for SSO {
                 self.token = Some(jwt);
                 true
             }
-            Msg::CodeRecieved(code) => {
+            Msg::CodeReceived(code) => {
                 self.code = Some(code);
                 true
             }
@@ -97,11 +97,11 @@ impl Component for SSO {
                             html! { <div></div> }
                         }
                         None if Some(true) == query_params.bypass => {
-                            let () = bridge::login(ctx, |code| Msg::CodeRecieved(code), query_params.audience.clone());
+                            let () = bridge::login(ctx, |code| Msg::CodeReceived(code), query_params.audience.clone());
                             html! { <div>{"Loading.."}</div>}
                         }
                         None if self.login_pressed => {
-                            let () = bridge::login(ctx, |code| Msg::CodeRecieved(code), query_params.audience.clone());
+                            let () = bridge::login(ctx, |code| Msg::CodeReceived(code), query_params.audience.clone());
                             html! { <div>{"Loading.."}</div>}
                         }
                         None => code_login_view(ctx),

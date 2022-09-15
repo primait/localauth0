@@ -39,7 +39,7 @@ async fn jwt(app_data: Data<AppData>, token_request: TokenRequest) -> HttpRespon
     }
 }
 
-/// Logs the "user" in and generates returns an auth code which can be exchanged with for a token
+/// Logs the "user" in and returns an auth code which can be exchanged for a token
 #[post("/oauth/login")]
 pub async fn login(app_data: Data<AppData>, login_request: Json<LoginRequest>) -> HttpResponse {
     let code = uuid::Uuid::new_v4().to_string();
@@ -124,7 +124,7 @@ pub async fn jwt_for_client_credentials(
             .get_permissions(&request.audience)
             .expect("Failed to get permissions");
 
-        let claims: Claims = Claims::new(request.audience, permissions);
+        let claims: Claims = Claims::new(request.audience, permissions, "client_credentials".to_string());
         let random_jwk: Jwk = app_data.jwks_store().random_jwk().expect("Failed to get JWK");
         let access_token: String = claims.to_string(&random_jwk).expect("Failed to generate JWT");
         let response: TokenResponse = TokenResponse::new(access_token, None);
@@ -154,7 +154,7 @@ pub async fn jwt_for_authorization_code(
             .get_permissions(&audience)
             .expect("Failed to get permissions");
 
-        let claims: Claims = Claims::new(audience, permissions);
+        let claims: Claims = Claims::new(audience, permissions, "authorization_code".to_string());
 
         let random_jwk: Jwk = app_data.jwks_store().random_jwk().expect("Failed to get JWK");
         let access_token: String = claims.to_string(&random_jwk).expect("Failed to generate JWT");
@@ -164,7 +164,6 @@ pub async fn jwt_for_authorization_code(
             .content_type("application/json")
             .body(serde_json::to_string(&response).expect("Failed to serialize TokenResponse"))
     } else {
-        println!("Unauthorized!");
         HttpResponse::Unauthorized()
             .content_type("application/json")
             .body(r#"{"error":"access_denied","error_description":"Unauthorized"}"#)

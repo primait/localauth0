@@ -41,6 +41,17 @@ Here it's possible to:
     "grant_type": "client_credentials"
   }
   ```
+  for the client credentials grant and
+
+  ```json
+  {
+    "client_id": "client_id",
+    "client_secret": "client_secret",
+    "grant_type": "authorization_code",
+    "code": "{{your-auth-code}}"
+  }
+  ```
+  for the authorization code grant.
 
 - `GET` <http://localhost:3000/permissions>: used to get a the list of all audiences with their associated permissions.
 
@@ -77,8 +88,10 @@ Localauth0 could behave like Google SSO page. In order to achieve this your web 
 
 - redirect_uri: your web app callback page
 - audience: the audience you want to use to generate the token
-- response_type (optional): could be `token` or `code`. Actually only `token` is provided and is used by default. 
-  This option mean that after the redirect the url will contain the `access_token` in query string.  
+- response_type (optional): could be `token` or `code`. Use `token` to perform an implicit grant flow
+  and retrieve an access token directly and use `code` to perform an authorization code flow and recieve
+  an authorization code. If auth is succesful, the requested redirect is performed with the code or token contained
+  in the query params.
 - state (optional): An opaque value, used for security purposes. If this request parameter is set in the request, 
   then it is returned to the application as part of the `redirect_uri`.
 - bypass (optional): this is a dev feature. If set to true directly redirect to `redirect_uri`.
@@ -91,7 +104,7 @@ After redirection the redirect_url will contain these http fragments:
 
 For example navigating to:
 
-<http://localhost:3000/authorize?redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F&audience=audience1&client_id=whatever&connection=whatever&response_type=token&scope=whatever&state=test-state&bypass=true>
+<http://localhost:3000/authorize?redirect_uri=http%3A%2F%2Flocalhost%3A3000%2F&audience=audience1&client_id=client_id&connection=whatever&response_type=token&scope=whatever&state=test-state&bypass=true>
 
 The page will automatically redirect to:
 
