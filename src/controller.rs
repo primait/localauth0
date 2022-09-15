@@ -27,7 +27,13 @@ pub async fn jwt(app_data: Data<AppData>, token_request: Json<TokenRequest>) -> 
             .get_permissions(&request.audience)
             .expect("Failed to get permissions");
 
-        let claims: Claims = Claims::new(request.audience, permissions);
+        let claims: Claims = Claims::new(
+            request.audience,
+            permissions,
+            app_data.config().issuer().to_string(),
+            "client_credentials".to_string(),
+        );
+
         let random_jwk: Jwk = app_data.jwks().random_jwk().expect("Failed to get JWK");
         let access_token: String = claims.to_string(&random_jwk).expect("Failed to generate JWT");
         let response: TokenResponse = TokenResponse::new(access_token, None);

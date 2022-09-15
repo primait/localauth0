@@ -12,19 +12,21 @@ pub struct Claims {
     iat: Option<i64>,
     exp: Option<i64>,
     scope: String,
+    iss: String,
     gty: String,
     #[serde(default)]
     permissions: Vec<String>,
 }
 
 impl Claims {
-    pub fn new(aud: String, permissions: Vec<String>) -> Self {
+    pub fn new(aud: String, permissions: Vec<String>, iss: String, gty: String) -> Self {
         Self {
             aud,
             iat: Some(chrono::Utc::now().timestamp()),
             exp: Some(chrono::Utc::now().timestamp() + 60000),
             scope: permissions.join(" "),
-            gty: "client-credentials".to_string(),
+            iss,
+            gty,
             permissions,
         }
     }
@@ -59,5 +61,13 @@ impl Claims {
 
     pub fn audience(&self) -> &str {
         &self.aud
+    }
+
+    pub fn issuer(&self) -> &str {
+        &self.iss
+    }
+
+    pub fn grant_type(&self) -> &str {
+        &self.gty
     }
 }

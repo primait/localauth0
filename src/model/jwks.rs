@@ -148,13 +148,20 @@ mod tests {
         let jwk_store: JwksStore = JwksStore::new().unwrap();
         let audience: &str = "audience";
         let permission: &str = "permission";
+        let issuer: &str = "issuer";
+        let gty: &str = "gty";
 
         let jwks: Jwks = jwk_store.get().unwrap();
         let random_jwk: Jwk = jwks.random_jwk().unwrap();
 
-        let jwt: String = Claims::new(audience.to_string(), vec![permission.to_string()])
-            .to_string(&random_jwk)
-            .unwrap();
+        let jwt: String = Claims::new(
+            audience.to_string(),
+            vec![permission.to_string()],
+            issuer.to_string(),
+            gty.to_string(),
+        )
+        .to_string(&random_jwk)
+        .unwrap();
 
         let result: Result<Claims, Error> = Claims::parse(jwt.as_ref(), &[audience], &jwks);
 
@@ -162,5 +169,7 @@ mod tests {
         let claims: Claims = result.unwrap();
         assert_eq!(claims.audience(), audience);
         assert!(claims.has_permission(permission));
+        assert_eq!(claims.issuer(), issuer);
+        assert_eq!(claims.grant_type(), gty);
     }
 }
