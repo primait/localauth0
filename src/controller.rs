@@ -1,9 +1,12 @@
 use std::collections::HashMap;
 
-use actix_web::web::{Data, Json, Path};
+use actix_web::web::{Data, Form, Json, Path};
 use actix_web::{get, post, HttpResponse};
 
-use crate::model::{AppData, Claims, Jwk, Jwks, PermissionsForAudienceRequest, TokenRequest, TokenResponse};
+use crate::model::{
+    AppData, AuthorizationCodeTokenRequest, Claims, ClientCredentialsTokenRequest, GrantType, Jwk, Jwks, LoginRequest,
+    LoginResponse, PermissionsForAudienceRequest, TokenRequest, TokenResponse,
+};
 use crate::{CLIENT_ID_VALUE, CLIENT_SECRET_VALUE};
 
 /// .well-known/jwks.json route. This is the standard route exposed by authorities to fetch jwks
@@ -15,37 +18,39 @@ pub async fn jwks(app_data: Data<AppData>) -> HttpResponse {
         .body(serde_json::to_string(&jwks).expect("Failed to serialize JWKS to json"))
 }
 
-/// Generate a new jwt token for a given audience. All the permissions found in the local store
-/// will be included in the generated token.
-#[post("/oauth/token")]
-pub async fn jwt(app_data: Data<AppData>, token_request: Json<TokenRequest>) -> HttpResponse {
-    let request: TokenRequest = token_request.0;
+/// Handler for application/json encoded post bodies to the token endpoint
+pub async fn jwt_json_body_handler(app_data: Data<AppData>, token_request: Json<TokenRequest>) -> HttpResponse {
+    jwt(app_data, token_request.0).await
+}
 
-    if request.client_id == CLIENT_ID_VALUE && request.client_secret == CLIENT_SECRET_VALUE {
-        let permissions: Vec<String> = app_data
-            .audiences()
-            .get_permissions(&request.audience)
-            .expect("Failed to get permissions");
+/// Handler for application/x-www-form-urlencoded encoded post bodies to the token endpoint.
+/// This is the required format specified by `https://www.rfc-editor.org/rfc/rfc6749#section-4.4.2`. and auth0
+pub async fn jwt_form_body_handler(app_data: Data<AppData>, token_request: Form<TokenRequest>) -> HttpResponse {
+    jwt(app_data, token_request.0).await
+}
 
-        let claims: Claims = Claims::new(
-            request.audience,
-            permissions,
-            app_data.config().issuer().to_string(),
-            "client_credentials".to_string(),
-        );
-
-        let random_jwk: Jwk = app_data.jwks().random_jwk().expect("Failed to get JWK");
-        let access_token: String = claims.to_string(&random_jwk).expect("Failed to generate JWT");
-        let response: TokenResponse = TokenResponse::new(access_token, None);
-
-        HttpResponse::Ok()
-            .content_type("application/json")
-            .body(serde_json::to_string(&response).expect("Failed to serialize TokenResponse"))
-    } else {
-        HttpResponse::Unauthorized()
-            .content_type("application/json")
-            .body(r#"{"error":"access_denied","error_description":"Unauthorized"}"#)
+/// Generate a new jwt token for a given audience. For `client_credentials` the audience is found in the post body
+/// and for `authorization_code` the audience is found in the authorizations cache.
+/// All the permissions found in the local store will be included in the generated token.
+async fn jwt(app_data: Data<AppData>, token_request: TokenRequest) -> HttpResponse {
+    match token_request {
+        TokenRequest::ClientCredentials(request) => jwt_for_client_credentials(app_data, request).await,
+        TokenRequest::AuthorizationCode(request) => jwt_for_authorization_code(app_data, request).await,
     }
+}
+
+/// Logs the "user" in and returns an auth code which can be exchanged for a token
+#[post("/oauth/login")]
+pub async fn login(app_data: Data<AppData>, login_request: Json<LoginRequest>) -> HttpResponse {
+    let code = uuid::Uuid::new_v4().to_string();
+    app_data
+        .authorizations()
+        .put_authorization(&code, login_request.0.audience)
+        .expect("Failed to insert authorization");
+
+    HttpResponse::Ok()
+        .content_type("application/json")
+        .body(serde_json::to_string(&LoginResponse { code }).expect("Failed to serialize login response to json"))
 }
 
 /// List all audience-permissions mappings present in local implementation
@@ -107,4 +112,71 @@ pub async fn rotate_keys(app_data: Data<AppData>) -> HttpResponse {
 pub async fn revoke_keys(app_data: Data<AppData>) -> HttpResponse {
     app_data.jwks().revoke_keys().expect("Failed to revoke keys");
     HttpResponse::Ok().content_type("text/plain").body("ok")
+}
+
+pub async fn jwt_for_client_credentials(
+    app_data: Data<AppData>,
+    request: ClientCredentialsTokenRequest,
+) -> HttpResponse {
+    if request.client_id == CLIENT_ID_VALUE && request.client_secret == CLIENT_SECRET_VALUE {
+        let permissions: Vec<String> = app_data
+            .audiences()
+            .get_permissions(&request.audience)
+            .expect("Failed to get permissions");
+
+        let claims: Claims = Claims::new(
+            request.audience,
+            permissions,
+            app_data.config().issuer().to_string(),
+            GrantType::ClientCredentials,
+        );
+
+        let random_jwk: Jwk = app_data.jwks().random_jwk().expect("Failed to get JWK");
+        let access_token: String = claims.to_string(&random_jwk).expect("Failed to generate JWT");
+        let response: TokenResponse = TokenResponse::new(access_token, None);
+
+        HttpResponse::Ok()
+            .content_type("application/json")
+            .body(serde_json::to_string(&response).expect("Failed to serialize TokenResponse"))
+    } else {
+        HttpResponse::Unauthorized()
+            .content_type("application/json")
+            .body(r#"{"error":"access_denied","error_description":"Unauthorized"}"#)
+    }
+}
+
+pub async fn jwt_for_authorization_code(
+    app_data: Data<AppData>,
+    request: AuthorizationCodeTokenRequest,
+) -> HttpResponse {
+    if request.client_id == CLIENT_ID_VALUE && request.client_secret == CLIENT_SECRET_VALUE {
+        let audience = app_data
+            .authorizations()
+            .get_audience_for_authorization(&request.code)
+            .expect("Failed to get audience for authorization");
+
+        let permissions: Vec<String> = app_data
+            .audiences()
+            .get_permissions(&audience)
+            .expect("Failed to get permissions");
+
+        let claims: Claims = Claims::new(
+            audience,
+            permissions,
+            app_data.config().issuer().to_string(),
+            GrantType::AuthorizationCode,
+        );
+
+        let random_jwk: Jwk = app_data.jwks().random_jwk().expect("Failed to get JWK");
+        let access_token: String = claims.to_string(&random_jwk).expect("Failed to generate JWT");
+        let response: TokenResponse = TokenResponse::new(access_token, None);
+
+        HttpResponse::Ok()
+            .content_type("application/json")
+            .body(serde_json::to_string(&response).expect("Failed to serialize TokenResponse"))
+    } else {
+        HttpResponse::Unauthorized()
+            .content_type("application/json")
+            .body(r#"{"error":"access_denied","error_description":"Unauthorized"}"#)
+    }
 }

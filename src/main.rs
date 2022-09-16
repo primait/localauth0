@@ -2,8 +2,8 @@ use std::time::Duration;
 
 use actix_files::{Files, NamedFile};
 use actix_web::dev::{ServiceRequest, ServiceResponse};
-use actix_web::web::Data;
-use actix_web::{middleware, App, HttpServer};
+use actix_web::web::{self, Data};
+use actix_web::{guard, middleware, App, HttpServer};
 use prima_rs_logger::GuardLoggerCell;
 
 use localauth0::config::{Audience, Config};
@@ -35,12 +35,25 @@ async fn main() -> std::io::Result<()> {
             .app_data(data.clone())
             .wrap(middleware::Logger::default())
             .service(controller::jwks)
-            .service(controller::jwt)
             .service(controller::get_permissions)
             .service(controller::set_permissions_for_audience)
             .service(controller::get_permissions_by_audience)
             .service(controller::rotate_keys)
             .service(controller::revoke_keys)
+            .service(controller::login)
+            .service(
+                web::resource("/oauth/token")
+                    .route(
+                        web::post()
+                            .guard(guard::Header("content-type", "application/json"))
+                            .to(controller::jwt_json_body_handler),
+                    )
+                    .route(
+                        web::post()
+                            .guard(guard::Header("content-type", "application/x-www-form-urlencoded"))
+                            .to(controller::jwt_form_body_handler),
+                    ),
+            )
             .service(Files::new("/", "./web/dist").index_file("index.html").default_handler(
                 |req: ServiceRequest| async {
                     let (http_req, _payload) = req.into_parts();

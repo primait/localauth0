@@ -20,3 +20,8 @@ impl TokenResponse {
         }
     }
 }
+
+#[derive(Serialize)]
+pub struct LoginResponse {
+    pub code: String,
+}

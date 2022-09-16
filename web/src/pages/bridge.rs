@@ -8,7 +8,7 @@ use wasm_bindgen_futures::spawn_local;
 use yew::html::Scope;
 use yew::{Component, Context};
 
-use crate::pages::model::{Jwt, PermissionsForAudience, TokenRequest};
+use crate::pages::model::{Jwt, PermissionsForAudience, TokenRequest, LoginRequest, LoginResponse};
 
 pub fn generate_token<T, F>(ctx: &Context<T>, msg: F, audience: String)
 where
@@ -78,5 +78,28 @@ where
         log::info!("Actual mapping for given audience is: {}", response);
 
         link.send_message(msg())
+    });
+}
+
+pub fn login<T, F>(ctx: &Context<T>, msg: F, audience: String)
+where
+    T: Component,
+    F: 'static + FnOnce(String) -> T::Message,
+{
+    let link: Scope<T> = ctx.link().clone();
+    spawn_local(async move {
+        let body: String = serde_json::to_string(&LoginRequest::new(audience)).unwrap();
+
+        let response: LoginResponse = Request::post("/oauth/login")
+            .header("Content-type", "application/json")
+            .body(body)
+            .send()
+            .await
+            .unwrap()
+            .json()
+            .await
+            .unwrap();
+
+        link.send_message(msg(response.code))
     });
 }

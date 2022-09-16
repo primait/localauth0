@@ -141,7 +141,7 @@ impl Jwk {
 mod tests {
     use crate::error::Error;
     use crate::model::jwks::JwksStore;
-    use crate::model::{Claims, Jwk, Jwks};
+    use crate::model::{Claims, GrantType, Jwk, Jwks};
 
     #[test]
     fn its_possible_to_generate_jwks_and_parse_claims_using_given_jwks_test() {
@@ -149,7 +149,7 @@ mod tests {
         let audience: &str = "audience";
         let permission: &str = "permission";
         let issuer: &str = "issuer";
-        let gty: &str = "gty";
+        let gty: GrantType = GrantType::ClientCredentials;
 
         let jwks: Jwks = jwk_store.get().unwrap();
         let random_jwk: Jwk = jwks.random_jwk().unwrap();
@@ -158,7 +158,7 @@ mod tests {
             audience.to_string(),
             vec![permission.to_string()],
             issuer.to_string(),
-            gty.to_string(),
+            gty.clone(),
         )
         .to_string(&random_jwk)
         .unwrap();
@@ -170,6 +170,6 @@ mod tests {
         assert_eq!(claims.audience(), audience);
         assert!(claims.has_permission(permission));
         assert_eq!(claims.issuer(), issuer);
-        assert_eq!(claims.grant_type(), gty);
+        assert_eq!(claims.grant_type().to_string(), gty.to_string());
     }
 }

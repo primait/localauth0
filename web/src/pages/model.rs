@@ -41,3 +41,19 @@ impl PermissionsForAudience {
         Self { audience, permissions }
     }
 }
+
+#[derive(serde::Serialize)]
+pub struct LoginRequest {
+    pub audience: String,
+}
+
+impl LoginRequest {
+    pub fn new(audience: String) -> Self {
+        Self { audience }
+    }
+}
+
+#[derive(Deserialize)]
+pub struct LoginResponse {
+    pub code: String,
+}

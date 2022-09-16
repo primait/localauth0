@@ -33,6 +33,8 @@ struct QueryParams {
 pub struct SSO {
     query_params_opt: Option<QueryParams>,
     token: Option<Jwt>,
+    code: Option<String>,
+    login_pressed: bool,
 }
 
 impl Component for SSO {
@@ -48,6 +50,8 @@ impl Component for SSO {
         Self {
             query_params_opt,
             token: None,
+            code: None,
+            login_pressed: false,
         }
     }
 
@@ -55,6 +59,14 @@ impl Component for SSO {
         match msg {
             Msg::TokenReceived(jwt) => {
                 self.token = Some(jwt);
+                true
+            }
+            Msg::CodeReceived(code) => {
+                self.code = Some(code);
+                true
+            }
+            Msg::LoginPressed => {
+                self.login_pressed = true;
                 true
             }
         }
@@ -78,7 +90,22 @@ impl Component for SSO {
                         let error: String = format!("Provided response type is not valid: {}", response_type);
                         error_page(error.as_str())
                     }
-                    Ok(_) if response_type == "code" => error_page("`code` response type is not supported yet. Sorry"),
+                    Ok(url) if response_type == "code" => match self.code.clone() {
+                        Some(code) => {
+                            let url: Url = build_code_url(query_params.state.as_ref(), url, code);
+                            let _ = bindgen::redirect(url);
+                            html! { <div></div> }
+                        }
+                        None if Some(true) == query_params.bypass => {
+                            let () = bridge::login(ctx, |code| Msg::CodeReceived(code), query_params.audience.clone());
+                            html! { <div>{"Loading.."}</div>}
+                        }
+                        None if self.login_pressed => {
+                            let () = bridge::login(ctx, |code| Msg::CodeReceived(code), query_params.audience.clone());
+                            html! { <div>{"Loading.."}</div>}
+                        }
+                        None => code_login_view(ctx),
+                    },
                     Ok(url) => match self.token.clone() {
                         None => {
                             let () =
@@ -86,13 +113,13 @@ impl Component for SSO {
                             html! { <div>{"Loading.."}</div> }
                         }
                         Some(token) if Some(true) == query_params.bypass => {
-                            let url: Url = build_url(query_params.state.as_ref(), url, token);
+                            let url: Url = build_token_url(query_params.state.as_ref(), url, token);
                             let _ = bindgen::redirect(url);
                             html! { <div></div> }
                         }
                         Some(token) => {
-                            let url: Url = build_url(query_params.state.as_ref(), url, token);
-                            login_view(url)
+                            let url: Url = build_token_url(query_params.state.as_ref(), url, token);
+                            token_login_view(url)
                         }
                     },
                 }
@@ -101,7 +128,8 @@ impl Component for SSO {
     }
 }
 
-fn login_view(redirect_uri: Url) -> Html {
+// Redirects browser directly to redirect uri
+fn token_login_view(redirect_uri: Url) -> Html {
     html! {
         <div class="form-grid">
             <div class="form-grid__row form-grid__row--small">
@@ -115,13 +143,28 @@ fn login_view(redirect_uri: Url) -> Html {
     }
 }
 
+// When users are supported this view can collect credentials to forward to the backend, but currently no credentials are required.
+fn code_login_view(ctx: &Context<SSO>) -> Html {
+    html! {
+        <div class="form-grid">
+            <div class="form-grid__row form-grid__row--small">
+                <div class="form-grid__row__column">
+                    <div class="button-row button-row--center">
+                        <a class="button button--primary button--huge" type="button" onclick={ctx.link().callback(|_|Msg::LoginPressed)}>{"Login"}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
 fn error_page(message: &str) -> Html {
     html! {
         <span class="title-xl-bold">{message}</span>
     }
 }
 
-fn build_url(state_opt: Option<&String>, mut url: Url, token: Jwt) -> Url {
+fn build_token_url(state_opt: Option<&String>, mut url: Url, token: Jwt) -> Url {
     let state: String = state_opt.map(|state| format!("&state={}", state)).unwrap_or_default();
 
     let access_token: String = format!(
@@ -129,6 +172,16 @@ fn build_url(state_opt: Option<&String>, mut url: Url, token: Jwt) -> Url {
         token.access_token(),
         state
     );
+
     url.set_fragment(Some(access_token.as_str()));
+    url
+}
+
+fn build_code_url(state_opt: Option<&String>, mut url: Url, code: String) -> Url {
+    let state: String = state_opt.map(|state| format!("&state={}", state)).unwrap_or_default();
+
+    let code: String = format!("code={}{}", code, state);
+
+    url.set_query(Some(code.as_str()));
     url
 }
