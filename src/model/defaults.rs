@@ -1,11 +1,11 @@
 const ISSUER: &str = "https://prima.localauth0.com/";
-const USER_INFO_NAME: &str = "";
-const USER_INFO_GIVEN_NAME: &str = "";
-const USER_INFO_FAMILY_NAME: &str = "";
-const USER_INFO_GENDER: &str = "";
-const USER_INFO_BIRTHDATE: &str = "";
-const USER_INFO_EMAIL: &str = "";
-const USER_INFO_PICTURE: &str = "";
+const USER_INFO_NAME: &str = "Local";
+const USER_INFO_GIVEN_NAME: &str = "Locie";
+const USER_INFO_FAMILY_NAME: &str = "Auth0";
+const USER_INFO_GENDER: &str = "none";
+const USER_INFO_BIRTHDATE: &str = "2022-02-11";
+const USER_INFO_EMAIL: &str = "developers@prima.it";
+const USER_INFO_PICTURE: &str = "https://github.com/primait/localauth0/blob/6f71c9318250219a9d03fb72afe4308b8824aef7/web/assets/static/media/localauth0.png";
 
 pub fn issuer() -> String {
     ISSUER.to_string()

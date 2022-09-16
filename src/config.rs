@@ -119,3 +119,16 @@ fn log_error(error: Error) {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::config::{Config, Error};
+
+    #[test]
+    fn local_localauth0_config_is_loadable() {
+        std::env::set_var("LOCALAUTH0_CONFIG_PATH", "./localauth0.toml");
+        let config_result: Result<Config, Error> = Config::load_env();
+
+        assert!(config_result.is_ok());
+    }
+}

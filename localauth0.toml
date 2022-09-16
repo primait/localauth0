@@ -1,5 +1,14 @@
 issuer = "https://prima.localauth0.com/"
 
+[[user-info]]
+name = "Local"
+given_name = "Locie"
+family_name = "Auth0"
+gender = "none"
+birthdate = "2022-02-11"
+email = "developers@prima.it"
+picture = "https://github.com/primait/localauth0/blob/6f71c9318250219a9d03fb72afe4308b8824aef7/web/assets/static/media/localauth0.png"
+
 [[audience]]
 name = "audience1"
 permissions = ["audience1:permission1", "audience1:permission2"]
