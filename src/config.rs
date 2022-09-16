@@ -9,7 +9,7 @@ use crate::model::defaults;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug, Deserialize, Getters, Clone)]
+#[derive(Debug, Deserialize, Getters)]
 pub struct Config {
     #[serde(default = "defaults::issuer")]
     issuer: String,
@@ -62,19 +62,19 @@ impl Config {
     }
 }
 
-#[derive(Debug, Deserialize, Getters, Clone)]
+#[derive(Debug, Deserialize, Getters)]
 pub struct Audience {
     name: String,
     permissions: Vec<String>,
 }
 
-#[derive(Debug, Deserialize, Getters, Clone)]
+#[derive(Debug, Deserialize, Getters)]
 pub struct User {
     name: String,
     permissions: Vec<String>,
 }
 
-#[derive(Debug, Deserialize, Getters, Clone)]
+#[derive(Debug, Deserialize, Getters)]
 pub struct UserInfo {
     #[serde(default = "defaults::user_info_name")]
     name: String,

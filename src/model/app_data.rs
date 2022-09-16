@@ -15,10 +15,10 @@ pub struct AppData {
 impl AppData {
     pub fn new(config: Config) -> Result<Self, Error> {
         Ok(Self {
-            config,
-            audiences_store: AudiencesStore::default(),
+            audiences_store: AudiencesStore::new(config.audience()),
             jwks_store: JwksStore::new()?,
             authorizations: Authorizations::default(),
+            config,
         })
     }
 
