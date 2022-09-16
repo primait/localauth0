@@ -5,16 +5,21 @@ use prima_rs_logger::{error, info};
 use serde::Deserialize;
 use thiserror::Error;
 
-pub type Result<T> = std::result::Result<T, Error>;
+use crate::model::defaults;
 
-const DEFAULT_ISSUER: &str = "https://prima.localauth0.com/";
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Deserialize, Getters, Clone)]
 pub struct Config {
-    #[serde(default = "default_issuer")]
+    #[serde(default = "defaults::issuer")]
     issuer: String,
+
+    #[serde(default)]
+    user_info: UserInfo,
+
     #[serde(default)]
     audience: Vec<Audience>,
+
     #[serde(default)]
     user: Vec<User>,
 }
@@ -41,7 +46,8 @@ impl Config {
             Err(error) => {
                 log_error(error);
                 Self {
-                    issuer: default_issuer(),
+                    issuer: defaults::issuer(),
+                    user_info: Default::default(),
                     audience: vec![],
                     user: vec![],
                 }
@@ -56,10 +62,6 @@ impl Config {
     }
 }
 
-fn default_issuer() -> String {
-    DEFAULT_ISSUER.to_string()
-}
-
 #[derive(Debug, Deserialize, Getters, Clone)]
 pub struct Audience {
     name: String,
@@ -70,6 +72,38 @@ pub struct Audience {
 pub struct User {
     name: String,
     permissions: Vec<String>,
+}
+
+#[derive(Debug, Deserialize, Getters, Clone)]
+pub struct UserInfo {
+    #[serde(default = "defaults::user_info_name")]
+    name: String,
+    #[serde(default = "defaults::user_info_given_name")]
+    given_name: String,
+    #[serde(default = "defaults::user_info_family_name")]
+    family_name: String,
+    #[serde(default = "defaults::user_info_gender")]
+    gender: String,
+    #[serde(default = "defaults::user_info_birthdate")]
+    birthdate: String,
+    #[serde(default = "defaults::user_info_email")]
+    email: String,
+    #[serde(default = "defaults::user_info_picture")]
+    picture: String,
+}
+
+impl Default for UserInfo {
+    fn default() -> Self {
+        Self {
+            name: defaults::user_info_name(),
+            given_name: defaults::user_info_given_name(),
+            family_name: defaults::user_info_family_name(),
+            gender: defaults::user_info_gender(),
+            birthdate: defaults::user_info_birthdate(),
+            email: defaults::user_info_email(),
+            picture: defaults::user_info_picture(),
+        }
+    }
 }
 
 fn log_error(error: Error) {
