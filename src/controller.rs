@@ -4,7 +4,7 @@ use actix_web::web::{Data, Form, Json, Path};
 use actix_web::{get, post, HttpResponse};
 
 use crate::model::{
-    AppData, AuthorizationCodeTokenRequest, Claims, ClientCredentialsTokenRequest, Jwk, Jwks, LoginRequest,
+    AppData, AuthorizationCodeTokenRequest, Claims, ClientCredentialsTokenRequest, GrantType, Jwk, Jwks, LoginRequest,
     LoginResponse, PermissionsForAudienceRequest, TokenRequest, TokenResponse,
 };
 use crate::{CLIENT_ID_VALUE, CLIENT_SECRET_VALUE};
@@ -120,12 +120,18 @@ pub async fn jwt_for_client_credentials(
 ) -> HttpResponse {
     if request.client_id == CLIENT_ID_VALUE && request.client_secret == CLIENT_SECRET_VALUE {
         let permissions: Vec<String> = app_data
-            .audience()
+            .audiences()
             .get_permissions(&request.audience)
             .expect("Failed to get permissions");
 
-        let claims: Claims = Claims::new(request.audience, permissions, "client_credentials".to_string());
-        let random_jwk: Jwk = app_data.jwks_store().random_jwk().expect("Failed to get JWK");
+        let claims: Claims = Claims::new(
+            request.audience,
+            permissions,
+            app_data.config().issuer().to_string(),
+            GrantType::ClientCredentials,
+        );
+
+        let random_jwk: Jwk = app_data.jwks().random_jwk().expect("Failed to get JWK");
         let access_token: String = claims.to_string(&random_jwk).expect("Failed to generate JWT");
         let response: TokenResponse = TokenResponse::new(access_token, None);
 
@@ -150,13 +156,18 @@ pub async fn jwt_for_authorization_code(
             .expect("Failed to get audience for authorization");
 
         let permissions: Vec<String> = app_data
-            .audience()
+            .audiences()
             .get_permissions(&audience)
             .expect("Failed to get permissions");
 
-        let claims: Claims = Claims::new(audience, permissions, "authorization_code".to_string());
+        let claims: Claims = Claims::new(
+            audience,
+            permissions,
+            app_data.config().issuer().to_string(),
+            GrantType::AuthorizationCode,
+        );
 
-        let random_jwk: Jwk = app_data.jwks_store().random_jwk().expect("Failed to get JWK");
+        let random_jwk: Jwk = app_data.jwks().random_jwk().expect("Failed to get JWK");
         let access_token: String = claims.to_string(&random_jwk).expect("Failed to generate JWT");
         let response: TokenResponse = TokenResponse::new(access_token, None);
 
