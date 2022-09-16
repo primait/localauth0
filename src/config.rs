@@ -7,8 +7,12 @@ use thiserror::Error;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug, Deserialize, Getters)]
+const DEFAULT_ISSUER: &str = "https://prima.localauth0.com/";
+
+#[derive(Debug, Deserialize, Getters, Clone)]
 pub struct Config {
+    #[serde(default = "default_issuer")]
+    issuer: String,
     #[serde(default)]
     audience: Vec<Audience>,
     #[serde(default)]
@@ -29,33 +33,20 @@ pub enum Error {
 
 impl Config {
     pub fn load() -> Self {
-        let config: Self = match Self::load_env() {
-            Ok(config) => config,
-            Err(Error::VarError(_)) => {
-                info!("LOCALAUTH0_CONFIG_PATH env var not set. Configuration not loaded!");
+        match Self::load_env() {
+            Ok(config) => {
+                info!("Configuration is '{:?}'", &config);
+                config
+            }
+            Err(error) => {
+                log_error(error);
                 Self {
+                    issuer: default_issuer(),
                     audience: vec![],
                     user: vec![],
                 }
             }
-            Err(Error::ReadFileError(error)) => {
-                error!("Failed to read file: {}", error);
-                Self {
-                    audience: vec![],
-                    user: vec![],
-                }
-            }
-            Err(Error::TomlError(error)) => {
-                error!("Provided file not parsable: {}", error);
-                Self {
-                    audience: vec![],
-                    user: vec![],
-                }
-            }
-        };
-
-        info!("Configuration is '{:?}'", &config);
-        config
+        }
     }
 
     fn load_env() -> Result<Self> {
@@ -65,14 +56,32 @@ impl Config {
     }
 }
 
-#[derive(Debug, Deserialize, Getters)]
+fn default_issuer() -> String {
+    DEFAULT_ISSUER.to_string()
+}
+
+#[derive(Debug, Deserialize, Getters, Clone)]
 pub struct Audience {
     name: String,
     permissions: Vec<String>,
 }
 
-#[derive(Debug, Deserialize, Getters)]
+#[derive(Debug, Deserialize, Getters, Clone)]
 pub struct User {
     name: String,
     permissions: Vec<String>,
+}
+
+fn log_error(error: Error) {
+    match error {
+        Error::VarError(_) => {
+            info!("LOCALAUTH0_CONFIG_PATH env var not set. Configuration not loaded!");
+        }
+        Error::TomlError(error) => {
+            error!("Provided file not parsable: {}", error);
+        }
+        Error::ReadFileError(error) => {
+            error!("Failed to read file: {}", error);
+        }
+    }
 }

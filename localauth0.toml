@@ -1,3 +1,5 @@
+issuer = "https://prima.localauth0.com/"
+
 [[audience]]
 name = "audience1"
 permissions = ["audience1:permission1", "audience1:permission2"]

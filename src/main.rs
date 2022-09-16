@@ -6,7 +6,7 @@ use actix_web::web::Data;
 use actix_web::{middleware, App, HttpServer};
 use prima_rs_logger::GuardLoggerCell;
 
-use localauth0::config::Config;
+use localauth0::config::{Audience, Config};
 use localauth0::model::AppData;
 use localauth0::{controller, APP_NAME};
 
@@ -19,10 +19,13 @@ async fn main() -> std::io::Result<()> {
         .set(prima_rs_logger::term_guard(APP_NAME))
         .expect("Cannot set global logger guard");
 
-    let data: Data<AppData> = Data::new(AppData::new().expect("Failed to create AppData"));
+    let config: Config = Config::load();
+    let audiences: Vec<Audience> = config.audience().clone();
 
-    Config::load().audience().iter().for_each(|request| {
-        data.audience()
+    let data: Data<AppData> = Data::new(AppData::new(config).expect("Failed to create AppData"));
+
+    audiences.iter().for_each(|request| {
+        data.audiences()
             .put_permissions(request.name().as_str(), request.permissions().clone())
             .expect("Failed to set permissions for audience");
     });
@@ -38,15 +41,13 @@ async fn main() -> std::io::Result<()> {
             .service(controller::get_permissions_by_audience)
             .service(controller::rotate_keys)
             .service(controller::revoke_keys)
-            .service(
-                Files::new("/", "./web/dist")
-                    .index_file("index.html")
-                    .default_handler(|req: ServiceRequest| async {
-                        let (http_req, _payload) = req.into_parts();
-                        let response = NamedFile::open("./web/dist/index.html")?.into_response(&http_req);
-                        Ok(ServiceResponse::new(http_req, response))
-                    }),
-            )
+            .service(Files::new("/", "./web/dist").index_file("index.html").default_handler(
+                |req: ServiceRequest| async {
+                    let (http_req, _payload) = req.into_parts();
+                    let response = NamedFile::open("./web/dist/index.html")?.into_response(&http_req);
+                    Ok(ServiceResponse::new(http_req, response))
+                },
+            ))
     })
     .keep_alive(Duration::from_secs(61))
     .bind("0.0.0.0:3000")?
