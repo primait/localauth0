@@ -31,7 +31,7 @@ pub async fn jwt_form_body_handler(app_data: Data<AppData>, token_request: Form<
 
 /// Generate a new jwt token for a given audience. For `client_credentials` the audience is found in the post body
 /// and for `authorization_code` the audience is found in the authorizations cache.
-///  All the permissions found in the local store will be included in the generated token.
+/// All the permissions found in the local store will be included in the generated token.
 async fn jwt(app_data: Data<AppData>, token_request: TokenRequest) -> HttpResponse {
     match token_request {
         TokenRequest::ClientCredentials(request) => jwt_for_client_credentials(app_data, request).await,

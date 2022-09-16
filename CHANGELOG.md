@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Extend `/oauth/token` endpoint content type compatibility with `application/x-www-form-urlencoded`.
+- Added `/oauth/login` endpoint to support authentication with `response_type: code`.
+- Grant type field added to claims with values `client_credentials` and `authorization_code`.
+
 ## [0.3.0] - 2022-05-31
 
 ### Added
