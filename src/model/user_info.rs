@@ -1,45 +1,12 @@
 use chrono::Utc;
-use serde::de::Error;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde::ser::SerializeMap;
+use serde::{Serialize, Serializer};
 
-use crate::config::{AdditionalFieldValue, Config};
+use crate::config::{AdditionalField, AdditionalFieldValue, Config};
 
-pub struct UserInfo;
-
-impl UserInfo {
-    pub fn encode_to_value(config: &Config, aud: String) -> Result<Value, serde_json::Error> {
-        let inner_user_info: InnerUserInfo = InnerUserInfo::from_config(config, aud);
-        let value: Value = serde_json::to_value(&inner_user_info)?;
-        match value {
-            Value::Object(mut map) => {
-                for additional_field in config.user_info().additional_fields() {
-                    let name: String = additional_field.name().to_string();
-                    match additional_field.value() {
-                        AdditionalFieldValue::String(string) => {
-                            map.insert(name, Value::String(string.to_string()));
-                        }
-                        AdditionalFieldValue::Vec(vec) => {
-                            let values: Vec<Value> = vec
-                                .iter()
-                                .map(|string| Value::String(string.to_string()))
-                                .collect();
-
-                            map.insert(name, Value::Array(values));
-                        }
-                    }
-                }
-                Ok(Value::Object(map))
-            }
-            _ => Err(serde_json::Error::custom(
-                "Something went wrong putting additional fields to user info",
-            )),
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct InnerUserInfo {
+#[derive(Debug)]
+pub struct UserInfo<'s> {
+    additional_fields: &'s [AdditionalField],
     aud: String,
     iat: Option<i64>,
     exp: Option<i64>,
@@ -53,10 +20,11 @@ struct InnerUserInfo {
     picture: String,
 }
 
-impl InnerUserInfo {
-    fn from_config(config: &Config, aud: String) -> Self {
+impl<'s> UserInfo<'s> {
+    pub fn new(config: &'s Config, audience: String) -> Self {
         Self {
-            aud,
+            additional_fields: config.user_info().additional_fields(),
+            aud: audience,
             iat: Some(Utc::now().timestamp()),
             exp: Some(Utc::now().timestamp() + 60000),
             iss: config.issuer().to_string(),
@@ -68,6 +36,38 @@ impl InnerUserInfo {
             email: config.user_info().email().to_string(),
             picture: config.user_info().picture().to_string(),
         }
+    }
+}
+
+impl<'s> Serialize for UserInfo<'s> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        // Should be serialized as map being that keys should be statically defined to serialize as
+        // struct
+        let mut map = serializer.serialize_map(None)?;
+
+        map.serialize_entry("aud", &self.aud)?;
+        map.serialize_entry("iat", &self.iat)?;
+        map.serialize_entry("exp", &self.exp)?;
+        map.serialize_entry("iss", &self.iss)?;
+        map.serialize_entry("name", &self.name)?;
+        map.serialize_entry("given_name", &self.given_name)?;
+        map.serialize_entry("family_name", &self.family_name)?;
+        map.serialize_entry("gender", &self.gender)?;
+        map.serialize_entry("birthdate", &self.birthdate)?;
+        map.serialize_entry("email", &self.email)?;
+        map.serialize_entry("picture", &self.picture)?;
+
+        for additional_field in self.additional_fields {
+            match additional_field.value() {
+                AdditionalFieldValue::String(string) => map.serialize_entry(additional_field.name(), &string),
+                AdditionalFieldValue::Vec(vec) => map.serialize_entry(additional_field.name(), &vec),
+            }?;
+        }
+
+        map.end()
     }
 }
 
@@ -108,7 +108,8 @@ mod tests {
 
         let config: Config = toml::from_str(config_str).unwrap();
 
-        let value: Value = UserInfo::encode_to_value(&config, "audience".to_string()).unwrap();
+        let user_info: UserInfo = UserInfo::new(&config, "audience".to_string());
+        let value: Value = serde_json::to_value(user_info).unwrap();
 
         let asserted: Value = json!({
             "aud": "audience",

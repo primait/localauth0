@@ -167,8 +167,7 @@ fn new_token_response(app_data: &AppData, audience: &str, grant_type: GrantType)
         grant_type,
     );
 
-    let user_info: serde_json::Value =
-        UserInfo::encode_to_value(app_data.config(), audience.to_string()).expect("Failed to generate user info");
+    let user_info: UserInfo = UserInfo::new(app_data.config(), audience.to_string());
 
     let random_jwk: Jwk = app_data.jwks().random_jwk().expect("Failed to get JWK");
     let access_token: String = random_jwk.encode(&claims).expect("Failed to generate JWT");
