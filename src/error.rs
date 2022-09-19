@@ -1,5 +1,6 @@
-use openssl::error::ErrorStack;
 use std::string::FromUtf8Error;
+
+use openssl::error::ErrorStack;
 use thiserror::Error;
 
 #[derive(Debug, Error)]

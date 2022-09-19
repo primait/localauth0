@@ -1,8 +1,11 @@
+use std::str::FromStr;
 use std::sync::{RwLock, RwLockWriteGuard};
 
+use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use openssl::pkey::{PKey, Private};
 use openssl::rsa::Rsa;
 use rand::seq::SliceRandom;
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -66,6 +69,23 @@ impl Jwks {
             .map(|jwks| jwks.clone())
     }
 
+    pub fn parse<T: DeserializeOwned>(&self, token: &str, audience: &[impl ToString]) -> Result<T, Error> {
+        let header: Header = jsonwebtoken::decode_header(token)?;
+
+        if let Some(jwk) = header.kid.and_then(|kid| self.find(kid)) {
+            let mut validation: Validation = Validation::new(Algorithm::from_str(jwk.alg())?);
+
+            if !audience.is_empty() {
+                validation.set_audience(audience);
+            }
+
+            let decoding_key: DecodingKey = DecodingKey::from_rsa_components(jwk.modulus(), jwk.exponent())?;
+            Ok(jsonwebtoken::decode(token, &decoding_key, &validation)?.claims)
+        } else {
+            Err(Error::JwtMissingKid)
+        }
+    }
+
     pub fn rotate_keys(&self) -> Result<Self, Error> {
         let mut keys: Vec<Jwk> = self.keys.clone();
         keys.insert(0, Jwk::new(None)?);
@@ -112,6 +132,13 @@ impl Jwk {
         })
     }
 
+    pub fn encode<T: Serialize>(&self, t: &T) -> Result<String, Error> {
+        let mut header: Header = Header::new(Algorithm::RS256);
+        header.kid = Some(self.kid().to_string());
+        let key: EncodingKey = EncodingKey::from_rsa_pem(self.private_key_pem())?;
+        Ok(jsonwebtoken::encode(&header, &t, &key)?)
+    }
+
     pub fn kid(&self) -> &str {
         &self.kid
     }
@@ -154,16 +181,16 @@ mod tests {
         let jwks: Jwks = jwk_store.get().unwrap();
         let random_jwk: Jwk = jwks.random_jwk().unwrap();
 
-        let jwt: String = Claims::new(
+        let claims: Claims = Claims::new(
             audience.to_string(),
             vec![permission.to_string()],
             issuer.to_string(),
             gty.clone(),
-        )
-        .to_string(&random_jwk)
-        .unwrap();
+        );
 
-        let result: Result<Claims, Error> = Claims::parse(jwt.as_ref(), &[audience], &jwks);
+        let jwt: String = random_jwk.encode(&claims).unwrap();
+
+        let result: Result<Claims, Error> = jwks.parse(jwt.as_ref(), &[audience]);
 
         assert!(result.is_ok());
         let claims: Claims = result.unwrap();

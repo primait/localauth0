@@ -1,3 +1,4 @@
+use crate::config::Audience;
 use std::collections::HashMap;
 use std::sync::RwLock;
 
@@ -7,15 +8,19 @@ pub struct AudiencesStore {
     cache: RwLock<HashMap<String, Vec<String>>>,
 }
 
-impl Default for AudiencesStore {
-    fn default() -> Self {
+impl AudiencesStore {
+    pub fn new(audiences: &[Audience]) -> Self {
+        let mut map: HashMap<String, Vec<String>> = HashMap::new();
+
+        for audience in audiences {
+            map.insert(audience.name().to_string(), audience.permissions().clone());
+        }
+
         Self {
-            cache: RwLock::new(HashMap::new()),
+            cache: RwLock::new(map),
         }
     }
-}
 
-impl AudiencesStore {
     pub fn get_permissions(&self, audience: &str) -> Result<Vec<String>, Error> {
         Ok(self
             .cache

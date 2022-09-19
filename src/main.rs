@@ -6,7 +6,7 @@ use actix_web::web::{self, Data};
 use actix_web::{guard, middleware, App, HttpServer};
 use prima_rs_logger::GuardLoggerCell;
 
-use localauth0::config::{Audience, Config};
+use localauth0::config::Config;
 use localauth0::model::AppData;
 use localauth0::{controller, APP_NAME};
 
@@ -20,15 +20,7 @@ async fn main() -> std::io::Result<()> {
         .expect("Cannot set global logger guard");
 
     let config: Config = Config::load();
-    let audiences: Vec<Audience> = config.audience().clone();
-
     let data: Data<AppData> = Data::new(AppData::new(config).expect("Failed to create AppData"));
-
-    audiences.iter().for_each(|request| {
-        data.audiences()
-            .put_permissions(request.name().as_str(), request.permissions().clone())
-            .expect("Failed to set permissions for audience");
-    });
 
     HttpServer::new(move || {
         App::new()
