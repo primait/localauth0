@@ -90,6 +90,8 @@ pub struct UserInfo {
     email: String,
     #[serde(default = "defaults::user_info_picture")]
     picture: String,
+    #[serde(default)]
+    additional_fields: Vec<AdditionalField>,
 }
 
 impl Default for UserInfo {
@@ -102,8 +104,22 @@ impl Default for UserInfo {
             birthdate: defaults::user_info_birthdate(),
             email: defaults::user_info_email(),
             picture: defaults::user_info_picture(),
+            additional_fields: vec![],
         }
     }
+}
+
+#[derive(Debug, Deserialize, Getters)]
+pub struct AdditionalField {
+    name: String,
+    value: AdditionalFieldValue,
+}
+
+#[derive(Debug, Deserialize)]
+#[cfg_attr(test, derive(PartialEq))]
+pub enum AdditionalFieldValue {
+    String(String),
+    Vec(Vec<String>),
 }
 
 fn log_error(error: Error) {
@@ -122,13 +138,71 @@ fn log_error(error: Error) {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::{Config, Error};
+    use crate::config::{AdditionalField, AdditionalFieldValue, Audience, Config};
 
     #[test]
     fn local_localauth0_config_is_loadable() {
-        std::env::set_var("LOCALAUTH0_CONFIG_PATH", "./localauth0.toml");
-        let config_result: Result<Config, Error> = Config::load_env();
+        let config_str: &str = r#"
+        issuer = "issuer"
 
-        assert!(config_result.is_ok());
+        [user_info]
+        name = "name"
+        given_name = "given_name"
+        family_name = "family_name"
+        gender = "gender"
+        birthdate = "birthdate"
+        email = "email"
+        picture = "picture"
+        additional_fields = [
+            { name = "additional_str", value = { String = "str" } },
+            { name = "additional_vec", value = { Vec = ["vec"] } }
+        ]
+
+        [[audience]]
+        name = "audience1"
+        permissions = ["audience1:permission1", "audience1:permission2"]
+
+        [[audience]]
+        name = "audience2"
+        permissions = ["audience2:permission2"]
+        "#;
+
+        let config: Config = toml::from_str(config_str).unwrap();
+
+        assert_eq!(config.issuer(), "issuer");
+
+        assert_eq!(config.user_info().name, "name");
+        assert_eq!(config.user_info().given_name, "given_name");
+        assert_eq!(config.user_info().family_name, "family_name");
+        assert_eq!(config.user_info().gender, "gender");
+        assert_eq!(config.user_info().birthdate, "birthdate");
+        assert_eq!(config.user_info().email, "email");
+        assert_eq!(config.user_info().picture, "picture");
+
+        assert_eq!(config.audience.len(), 2);
+
+        let audience1: Option<&Audience> = config.audience.iter().find(|v| v.name == "audience1");
+        assert!(audience1.is_some());
+        assert_eq!(
+            audience1.unwrap().permissions,
+            ["audience1:permission1", "audience1:permission2"]
+        );
+
+        let audience2: Option<&Audience> = config.audience.iter().find(|v| v.name == "audience2");
+        assert!(audience2.is_some());
+        assert_eq!(audience2.unwrap().permissions, ["audience2:permission2"]);
+
+        let additional_fields: &Vec<AdditionalField> = config.user_info().additional_fields();
+
+        assert_eq!(additional_fields.len(), 2);
+
+        let additional_field: &AdditionalField = additional_fields.iter().find(|v| v.name == "additional_vec").unwrap();
+        assert_eq!(
+            additional_field.value,
+            AdditionalFieldValue::Vec(vec!["vec".to_string()])
+        );
+
+        let additional_field: &AdditionalField = additional_fields.iter().find(|v| v.name == "additional_str").unwrap();
+        assert_eq!(additional_field.value, AdditionalFieldValue::String("str".to_string()));
     }
 }
