@@ -2,11 +2,11 @@ use chrono::Utc;
 use serde::ser::SerializeMap;
 use serde::{Serialize, Serializer};
 
-use crate::config::{AdditionalField, AdditionalFieldValue, Config};
+use crate::config::{Config, CustomField, CustomFieldValue};
 
 #[derive(Debug)]
 pub struct UserInfo<'s> {
-    additional_fields: &'s [AdditionalField],
+    custom_fields: &'s [CustomField],
     aud: String,
     iat: Option<i64>,
     exp: Option<i64>,
@@ -23,7 +23,7 @@ pub struct UserInfo<'s> {
 impl<'s> UserInfo<'s> {
     pub fn new(config: &'s Config, audience: String) -> Self {
         Self {
-            additional_fields: config.user_info().additional_fields(),
+            custom_fields: config.user_info().custom_fields(),
             aud: audience,
             iat: Some(Utc::now().timestamp()),
             exp: Some(Utc::now().timestamp() + 60000),
@@ -60,10 +60,10 @@ impl<'s> Serialize for UserInfo<'s> {
         map.serialize_entry("email", &self.email)?;
         map.serialize_entry("picture", &self.picture)?;
 
-        for additional_field in self.additional_fields {
-            match additional_field.value() {
-                AdditionalFieldValue::String(string) => map.serialize_entry(additional_field.name(), &string),
-                AdditionalFieldValue::Vec(vec) => map.serialize_entry(additional_field.name(), &vec),
+        for custom_field in self.custom_fields {
+            match custom_field.value() {
+                CustomFieldValue::String(string) => map.serialize_entry(custom_field.name(), &string),
+                CustomFieldValue::Vec(vec) => map.serialize_entry(custom_field.name(), &vec),
             }?;
         }
 
@@ -92,9 +92,9 @@ mod tests {
         birthdate = "birthdate"
         email = "email"
         picture = "picture"
-        additional_fields = [
-            { name = "additional_str", value = { String = "str" } },
-            { name = "additional_vec", value = { Vec = ["vec"] } }
+        custom_fields = [
+            { name = "custom_field_str", value = { String = "str" } },
+            { name = "custom_field_vec", value = { Vec = ["vec"] } }
         ]
 
         [[audience]]
@@ -123,8 +123,8 @@ mod tests {
             "birthdate": config.user_info().birthdate(),
             "email": config.user_info().email(),
             "picture": config.user_info().picture(),
-            "additional_str": "str",
-            "additional_vec": ["vec"]
+            "custom_field_str": "str",
+            "custom_field_vec": ["vec"]
         });
 
         assert_eq!(value, asserted);

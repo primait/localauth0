@@ -91,7 +91,7 @@ pub struct UserInfo {
     #[serde(default = "defaults::user_info_picture")]
     picture: String,
     #[serde(default)]
-    additional_fields: Vec<AdditionalField>,
+    custom_fields: Vec<CustomField>,
 }
 
 impl Default for UserInfo {
@@ -104,20 +104,20 @@ impl Default for UserInfo {
             birthdate: defaults::user_info_birthdate(),
             email: defaults::user_info_email(),
             picture: defaults::user_info_picture(),
-            additional_fields: vec![],
+            custom_fields: vec![],
         }
     }
 }
 
 #[derive(Debug, Deserialize, Getters)]
-pub struct AdditionalField {
+pub struct CustomField {
     name: String,
-    value: AdditionalFieldValue,
+    value: CustomFieldValue,
 }
 
 #[derive(Debug, Deserialize)]
 #[cfg_attr(test, derive(PartialEq))]
-pub enum AdditionalFieldValue {
+pub enum CustomFieldValue {
     String(String),
     Vec(Vec<String>),
 }
@@ -138,10 +138,16 @@ fn log_error(error: Error) {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::{AdditionalField, AdditionalFieldValue, Audience, Config};
+    use crate::config::{Audience, Config, CustomField, CustomFieldValue};
+    #[test]
+    fn local_localauth0_config_file_is_loadable() {
+        let config_string: String = std::fs::read_to_string("./localauth0.toml").unwrap();
+        let loaded_config_result: Result<Config, toml::de::Error> = toml::from_str(config_string.as_str());
+        assert!(loaded_config_result.is_ok())
+    }
 
     #[test]
-    fn local_localauth0_config_is_loadable() {
+    fn localauth0_config_is_loadable() {
         let config_str: &str = r#"
         issuer = "issuer"
 
@@ -153,9 +159,9 @@ mod tests {
         birthdate = "birthdate"
         email = "email"
         picture = "picture"
-        additional_fields = [
-            { name = "additional_str", value = { String = "str" } },
-            { name = "additional_vec", value = { Vec = ["vec"] } }
+        custom_fields = [
+            { name = "custom_field_str", value = { String = "str" } },
+            { name = "custom_field_vec", value = { Vec = ["vec"] } }
         ]
 
         [[audience]]
@@ -192,17 +198,14 @@ mod tests {
         assert!(audience2.is_some());
         assert_eq!(audience2.unwrap().permissions, ["audience2:permission2"]);
 
-        let additional_fields: &Vec<AdditionalField> = config.user_info().additional_fields();
+        let custom_fields: &Vec<CustomField> = config.user_info().custom_fields();
 
-        assert_eq!(additional_fields.len(), 2);
+        assert_eq!(custom_fields.len(), 2);
 
-        let additional_field: &AdditionalField = additional_fields.iter().find(|v| v.name == "additional_vec").unwrap();
-        assert_eq!(
-            additional_field.value,
-            AdditionalFieldValue::Vec(vec!["vec".to_string()])
-        );
+        let custom_field: &CustomField = custom_fields.iter().find(|v| v.name == "custom_field_vec").unwrap();
+        assert_eq!(custom_field.value, CustomFieldValue::Vec(vec!["vec".to_string()]));
 
-        let additional_field: &AdditionalField = additional_fields.iter().find(|v| v.name == "additional_str").unwrap();
-        assert_eq!(additional_field.value, AdditionalFieldValue::String("str".to_string()));
+        let custom_field: &CustomField = custom_fields.iter().find(|v| v.name == "custom_field_str").unwrap();
+        assert_eq!(custom_field.value, CustomFieldValue::String("str".to_string()));
     }
 }
