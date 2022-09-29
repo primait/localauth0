@@ -29,4 +29,3 @@ uuid = "1.1.2"
 toml = "0.5.9"
 
 prima_rs_logger = "0.1"
-cargo-make = "0.36.1"
