@@ -160,11 +160,13 @@ fn new_token_response(app_data: &AppData, audience: &str, grant_type: GrantType)
         .get_permissions(audience)
         .expect("Failed to get permissions");
 
+    let custom_claims = app_data.config().access_token().custom_claims().to_owned();
     let claims: Claims = Claims::new(
         audience.to_string(),
         permissions,
         app_data.config().issuer().to_string(),
         grant_type,
+        custom_claims,
     );
 
     let user_info: UserInfo = UserInfo::new(app_data.config(), audience.to_string());
@@ -174,4 +176,41 @@ fn new_token_response(app_data: &AppData, audience: &str, grant_type: GrantType)
     let id_token: String = random_jwk.encode(&user_info).expect("Failed to generate IdToken");
 
     TokenResponse::new(access_token, id_token, None)
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{
+        config::Config,
+        model::{AppData, GrantType},
+    };
+
+    use super::new_token_response;
+
+    #[test]
+    fn generate_access_token_with_custom_claims() {
+        let config_string: String = std::fs::read_to_string("./localauth0.toml").unwrap();
+        let config: Config = toml::from_str(config_string.as_str()).unwrap();
+        let app_data = AppData::new(config).unwrap();
+        let audience = "my-audience";
+        let grant_type = GrantType::AuthorizationCode;
+
+        let token_response = new_token_response(&app_data, audience, grant_type);
+
+        let access_token = token_response.access_token();
+        let jwks = app_data.jwks().get().unwrap();
+        let claims_json: serde_json::Value = jwks
+            .parse(access_token, &[audience])
+            .expect("failed to parse access_token");
+
+        assert_eq!(claims_json.get("aud").unwrap(), "my-audience");
+        assert!(claims_json.get("iat").is_some());
+        assert!(claims_json.get("exp").is_some());
+        assert!(claims_json.get("scope").is_some());
+        assert_eq!(claims_json.get("iss").unwrap(), "https://prima.localauth0.com/");
+        assert_eq!(claims_json.get("gty").unwrap(), "authorization_code");
+        assert!(claims_json.get("permissions").is_some());
+
+        assert_eq!(claims_json.get("at_custom_claims_str").unwrap(), "str");
+    }
 }

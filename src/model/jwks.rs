@@ -166,9 +166,11 @@ impl Jwk {
 
 #[cfg(test)]
 mod tests {
+    use crate::config::{CustomField, CustomFieldValue};
     use crate::error::Error;
     use crate::model::jwks::JwksStore;
-    use crate::model::{Claims, GrantType, Jwk, Jwks};
+    use crate::model::{app_data, Claims, GrantType, Jwk, Jwks};
+    use serde_json::json;
 
     #[test]
     fn its_possible_to_generate_jwks_and_parse_claims_using_given_jwks_test() {
@@ -180,23 +182,30 @@ mod tests {
 
         let jwks: Jwks = jwk_store.get().unwrap();
         let random_jwk: Jwk = jwks.random_jwk().unwrap();
+        let custom_claims: Vec<CustomField> =
+            vec![
+                serde_json::from_value(json!({ "name": "at_custom_claims_str", "value": { "String": "str" } }))
+                    .unwrap(),
+            ];
 
         let claims: Claims = Claims::new(
             audience.to_string(),
             vec![permission.to_string()],
             issuer.to_string(),
             gty.clone(),
+            custom_claims.clone(),
         );
 
         let jwt: String = random_jwk.encode(&claims).unwrap();
-
         let result: Result<Claims, Error> = jwks.parse(jwt.as_ref(), &[audience]);
-
         assert!(result.is_ok());
+
         let claims: Claims = result.unwrap();
         assert_eq!(claims.audience(), audience);
         assert!(claims.has_permission(permission));
         assert_eq!(claims.issuer(), issuer);
         assert_eq!(claims.grant_type().to_string(), gty.to_string());
+
+        assert_eq!(claims.custom_claims(), &custom_claims);
     }
 }

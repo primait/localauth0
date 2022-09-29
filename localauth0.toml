@@ -20,3 +20,8 @@ permissions = ["audience1:permission1", "audience1:permission2"]
 [[audience]]
 name = "audience2"
 permissions = ["audience2:permission2"]
+
+[access_token]
+custom_claims = [
+    { name = "at_custom_claims_str", value = { String = "str" } }
+]

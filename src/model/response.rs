@@ -21,6 +21,11 @@ impl TokenResponse {
             token_type: BEARER.to_string(),
         }
     }
+
+    #[cfg(test)]
+    pub fn access_token(&self) -> &str {
+        &self.access_token
+    }
 }
 
 #[derive(Serialize)]

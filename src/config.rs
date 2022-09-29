@@ -22,6 +22,9 @@ pub struct Config {
 
     #[serde(default)]
     user: Vec<User>,
+
+    #[serde(default)]
+    access_token: AccessToken,
 }
 
 #[derive(Debug, Error)]
@@ -50,6 +53,7 @@ impl Config {
                     user_info: Default::default(),
                     audience: vec![],
                     user: vec![],
+                    access_token: Default::default(),
                 }
             }
         }
@@ -109,13 +113,26 @@ impl Default for UserInfo {
     }
 }
 
-#[derive(Debug, Deserialize, Getters)]
+#[derive(Debug, Deserialize, Getters, Default)]
+pub struct AccessToken {
+    #[serde(default)]
+    custom_claims: Vec<CustomField>,
+}
+
+#[derive(Debug, Deserialize, Getters, Clone)]
+#[cfg_attr(test, derive(PartialEq))]
 pub struct CustomField {
     name: String,
     value: CustomFieldValue,
 }
 
-#[derive(Debug, Deserialize)]
+impl CustomField {
+    pub fn new(name: String, value: CustomFieldValue) -> Self {
+        Self { name, value }
+    }
+}
+
+#[derive(Debug, Deserialize, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
 pub enum CustomFieldValue {
     String(String),
@@ -171,6 +188,11 @@ mod tests {
         [[audience]]
         name = "audience2"
         permissions = ["audience2:permission2"]
+
+        [access_token]
+        custom_claims = [
+            { name = "at_custom_claim_str", value = { String = "str" } }
+        ]
         "#;
 
         let config: Config = toml::from_str(config_str).unwrap();
@@ -207,5 +229,14 @@ mod tests {
 
         let custom_field: &CustomField = custom_fields.iter().find(|v| v.name == "custom_field_str").unwrap();
         assert_eq!(custom_field.value, CustomFieldValue::String("str".to_string()));
+
+        let access_token = config.access_token();
+        let at_custom_claims = access_token.custom_claims();
+
+        let at_custom_claim: &CustomField = at_custom_claims
+            .iter()
+            .find(|v| v.name == "at_custom_claim_str")
+            .unwrap();
+        assert_eq!(at_custom_claim.value, CustomFieldValue::String("str".to_string()))
     }
 }
