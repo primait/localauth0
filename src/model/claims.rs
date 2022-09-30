@@ -17,9 +17,7 @@ pub struct Claims {
     scope: String,
     iss: String,
     gty: GrantType,
-    //#[serde(default)]
     permissions: Vec<String>,
-    //#[serde(default)]
     custom_claims: Vec<CustomField>,
 }
 
