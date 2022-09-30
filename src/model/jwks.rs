@@ -166,10 +166,10 @@ impl Jwk {
 
 #[cfg(test)]
 mod tests {
-    use crate::config::{CustomField, CustomFieldValue};
+    use crate::config::CustomField;
     use crate::error::Error;
     use crate::model::jwks::JwksStore;
-    use crate::model::{app_data, Claims, GrantType, Jwk, Jwks};
+    use crate::model::{Claims, GrantType, Jwk, Jwks};
     use serde_json::json;
 
     #[test]

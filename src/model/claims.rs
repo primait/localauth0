@@ -1,11 +1,11 @@
-use std::fmt::{Display, Formatter};
-
+use core::fmt;
 use serde::{
-    de, Deserialize, Serialize, Serializer,
-    __private::fmt,
+    de,
     de::{MapAccess, Visitor},
     ser::SerializeMap,
+    Deserialize, Serialize, Serializer,
 };
+use std::fmt::{Display, Formatter};
 
 use crate::config::{CustomField, CustomFieldValue};
 
@@ -72,8 +72,6 @@ impl<'de> Deserialize<'de> for Claims {
     {
         struct ClaimsVisitor;
 
-        // #[derive(Deserialize)]
-        // #[serde(field_identifier)]
         enum Field {
             Aud,
             Iat,
@@ -123,7 +121,7 @@ impl<'de> Deserialize<'de> for Claims {
         impl<'de> Visitor<'de> for ClaimsVisitor {
             type Value = Claims;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, formatter: &mut core::fmt::Formatter) -> core::fmt::Result {
                 formatter.write_str("struct Claims")
             }
 
@@ -185,10 +183,10 @@ impl<'de> Deserialize<'de> for Claims {
                             permissions = Some(map.next_value()?);
                         }
                         Field::CustomClaims(field_name) => {
-                            // TODO: check
-                            // if custom_claims.contains(&field_name) {
-                            //     return Err(de::Error::duplicate_field(&field_name));
-                            // }
+                            if custom_claims.iter().any(|claim| claim.name() == &field_name) {
+                                let duplicated_field = Box::leak(Box::new(field_name));
+                                return Err(de::Error::duplicate_field(duplicated_field));
+                            }
                             let custom_field =
                                 CustomField::new(field_name.to_string(), CustomFieldValue::String(map.next_value()?));
                             custom_claims.push(custom_field);
@@ -233,8 +231,6 @@ impl Serialize for Claims {
     where
         S: Serializer,
     {
-        // Should be serialized as map being that keys should be statically defined to serialize as
-        // struct
         let mut map = serializer.serialize_map(None)?;
 
         map.serialize_entry("aud", &self.aud)?;
