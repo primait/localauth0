@@ -79,7 +79,7 @@ fn generate_ca_cert_and_key_pair() -> Result<(X509, PKey<Private>), ErrorStack> 
     Ok((cert, key_pair))
 }
 
-pub fn generate_x509_cert(
+fn generate_x509_cert(
     key_pair: &PKey<Private>,
     ca_cert: &X509Ref,
     ca_key_pair: &PKeyRef<Private>,
