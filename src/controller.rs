@@ -103,14 +103,20 @@ pub async fn get_permissions_by_audience(app_data: Data<AppData>, audience: Path
 /// Remove one jwk and generate new one
 #[get("/rotate")]
 pub async fn rotate_keys(app_data: Data<AppData>) -> HttpResponse {
-    app_data.jwks().rotate_keys().expect("Failed to rotate keys");
+    app_data
+        .jwks()
+        .rotate_keys(app_data.ca())
+        .expect("Failed to rotate keys");
     HttpResponse::Ok().content_type("text/plain").body("ok")
 }
 
 /// Revoke all jwks keys and generate 3 new jwks
 #[get("/revoke")]
 pub async fn revoke_keys(app_data: Data<AppData>) -> HttpResponse {
-    app_data.jwks().revoke_keys().expect("Failed to revoke keys");
+    app_data
+        .jwks()
+        .revoke_keys(app_data.ca())
+        .expect("Failed to revoke keys");
     HttpResponse::Ok().content_type("text/plain").body("ok")
 }
 
