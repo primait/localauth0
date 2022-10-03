@@ -106,6 +106,7 @@ pub struct Jwk {
     alg: String,
     kid: String,
     r#use: String,
+    x5c: Vec<String>,
     #[serde(skip_serializing)]
     private_key_pem: Vec<u8>,
 }
@@ -121,6 +122,10 @@ impl Jwk {
         let exponent: Vec<u8> = rsa.e().to_vec();
         let pkey: PKey<Private> = PKey::from_rsa(rsa)?;
 
+        let pem = pkey.public_key_to_pem()?;
+        let last_index = pem.len();
+        let cert = &String::from_utf8(pem)?[27..last_index-26];
+
         Ok(Self {
             kty: "RSA".to_string(),
             n: base64_url::encode(&modulus),
@@ -128,6 +133,7 @@ impl Jwk {
             alg: "RS256".to_string(),
             kid: Uuid::new_v4().to_string(),
             r#use: "sig".to_string(),
+            x5c: vec![(*cert).to_string()],
             private_key_pem: pkey.private_key_to_pem_pkcs8()?,
         })
     }
