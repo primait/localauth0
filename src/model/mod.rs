@@ -8,7 +8,6 @@ pub use user_info::*;
 mod app_data;
 mod audience;
 mod authorizations;
-mod ca;
 mod claims;
 pub mod defaults;
 mod jwks;
