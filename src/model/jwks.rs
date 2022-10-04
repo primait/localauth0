@@ -9,7 +9,7 @@ use openssl::hash::MessageDigest;
 use openssl::pkey::{PKey, Private};
 use openssl::rsa::Rsa;
 use openssl::x509::extension::{BasicConstraints, KeyUsage, SubjectKeyIdentifier};
-use openssl::x509::{X509NameBuilder, X509};
+use openssl::x509::X509;
 use rand::seq::SliceRandom;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -180,12 +180,6 @@ impl Jwk {
 }
 
 fn generate_x509_cert(key_pair: &PKey<Private>) -> Result<X509, ErrorStack> {
-    let mut x509_name = X509NameBuilder::new()?;
-    x509_name.append_entry_by_text("C", "IT")?;
-    x509_name.append_entry_by_text("O", "Prima CA")?;
-    x509_name.append_entry_by_text("CN", "Prima CA")?;
-    let x509_name = x509_name.build();
-
     let mut cert_builder = X509::builder()?;
     cert_builder.set_version(2)?;
     let serial_number = {
@@ -194,8 +188,6 @@ fn generate_x509_cert(key_pair: &PKey<Private>) -> Result<X509, ErrorStack> {
         serial.to_asn1_integer()?
     };
     cert_builder.set_serial_number(&serial_number)?;
-    cert_builder.set_subject_name(&x509_name)?;
-    cert_builder.set_issuer_name(&x509_name)?;
     cert_builder.set_pubkey(key_pair)?;
     let not_before = Asn1Time::days_from_now(0)?;
     cert_builder.set_not_before(&not_before)?;
@@ -217,18 +209,12 @@ fn generate_x509_cert(key_pair: &PKey<Private>) -> Result<X509, ErrorStack> {
 #[cfg(test)]
 mod tests {
     use crate::error::Error;
-    use crate::model::ca::CA;
     use crate::model::jwks::JwksStore;
     use crate::model::{Claims, GrantType, Jwk, Jwks};
 
     #[test]
     fn its_possible_to_generate_jwks_and_parse_claims_using_given_jwks_test() {
-        let ca = match CA::new() {
-            Ok(ca) => ca,
-            _ => panic!("Cannot initialize CA"),
-        };
-
-        let jwk_store: JwksStore = JwksStore::new(&ca).unwrap();
+        let jwk_store: JwksStore = JwksStore::new().unwrap();
         let audience: &str = "audience";
         let permission: &str = "permission";
         let issuer: &str = "issuer";
