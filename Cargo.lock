@@ -852,6 +852,7 @@ version = "0.4.0"
 dependencies = [
  "actix-files",
  "actix-web",
+ "base64",
  "base64-url",
  "chrono",
  "derive-getters",

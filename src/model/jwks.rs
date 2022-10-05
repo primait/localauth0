@@ -1,4 +1,3 @@
-use base64_url::base64;
 use std::str::FromStr;
 use std::sync::{RwLock, RwLockWriteGuard};
 
