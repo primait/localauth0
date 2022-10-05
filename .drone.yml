@@ -28,15 +28,54 @@ steps:
   depends_on:
   - git-clone
 
+- name: cargo-deps
+  image: prima/localauth0-ci:${DRONE_COMMIT}
+  commands:
+  - cargo fetch
+  environment:
+    CARGO_HOME: /drone/src/.cargo
+  depends_on:
+  - build-image
+
+- name: cargo-format
+  image: prima/localauth0-ci:${DRONE_COMMIT}
+  commands:
+  - cargo fmt --all -- --check
+  environment:
+    CARGO_HOME: /drone/src/.cargo
+  depends_on:
+  - cargo-deps
+
+- name: cargo-clippy-ci
+  image: prima/localauth0-ci:${DRONE_COMMIT}
+  commands:
+  - cargo clippy -- -D warnings
+  environment:
+    BUILD_ENV: dev
+    CARGO_HOME: /drone/src/.cargo
+  depends_on:
+  - cargo-format
+
+- name: cargo-test
+  image: prima/localauth0-ci:${DRONE_COMMIT}
+  commands:
+  - cargo test --all
+  environment:
+    BUILD_ENV: dev
+    CARGO_HOME: /drone/src/.cargo
+    CARGO_HTTP_CAINFO: ""
+  depends_on:
+  - cargo-clippy-ci
+
 - name: build-artifact
   image: prima/localauth0-ci:${DRONE_COMMIT}
   commands:
-  - cargo build
+  - cargo build --all-features
   volumes:
   - name: docker
     path: /var/run/docker.sock
   depends_on:
-  - build-image
+  - cargo-test
 
 - name: build-web
   image: prima/localauth0-ci:${DRONE_COMMIT}
@@ -46,7 +85,7 @@ steps:
   - name: docker
     path: /var/run/docker.sock
   depends_on:
-  - build-image
+  - cargo-test
 
 - name: build-localauth0
   image: public.ecr.aws/prima/drone-tools:1.21.4
@@ -118,6 +157,6 @@ depends_on:
 
 ---
 kind: signature
-hmac: 1fcf3e74e96da3fedd654806a851e64809ee340011fbe770245290de2436f573
+hmac: 02ab26b6d8d7f3f43172092cf10608d0ee5fd92c6e0d83b8894d5c6723393155
 
 ...
