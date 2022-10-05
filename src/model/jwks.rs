@@ -1,3 +1,4 @@
+use base64_url::base64;
 use std::str::FromStr;
 use std::sync::{RwLock, RwLockWriteGuard};
 
@@ -9,7 +10,7 @@ use openssl::hash::MessageDigest;
 use openssl::pkey::{PKey, Private};
 use openssl::rsa::Rsa;
 use openssl::x509::extension::{BasicConstraints, KeyUsage, SubjectKeyIdentifier};
-use openssl::x509::X509;
+use openssl::x509::{X509NameBuilder, X509};
 use rand::seq::SliceRandom;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -129,11 +130,7 @@ impl Jwk {
         let key_pair: PKey<Private> = PKey::from_rsa(rsa)?;
 
         let x509 = generate_x509_cert(&key_pair)?;
-        let x509pem = x509.to_pem()?;
-        let x509cert = String::from_utf8(x509pem)?
-            .replace('\n', "")
-            .replace("-----BEGIN CERTIFICATE-----", "")
-            .replace("-----END CERTIFICATE-----", "");
+        let x509cert = base64::encode(x509.to_der()?);
 
         Ok(Self {
             kty: "RSA".to_string(),
@@ -180,6 +177,12 @@ impl Jwk {
 }
 
 fn generate_x509_cert(key_pair: &PKey<Private>) -> Result<X509, ErrorStack> {
+    let mut x509_name = X509NameBuilder::new()?;
+    x509_name.append_entry_by_text("C", "US")?;
+    x509_name.append_entry_by_text("O", "LocalAuth0 CA")?;
+    x509_name.append_entry_by_text("CN", "LocalAuth0 CA")?;
+    let x509_name = x509_name.build();
+
     let mut cert_builder = X509::builder()?;
     cert_builder.set_version(2)?;
     let serial_number = {
@@ -188,6 +191,8 @@ fn generate_x509_cert(key_pair: &PKey<Private>) -> Result<X509, ErrorStack> {
         serial.to_asn1_integer()?
     };
     cert_builder.set_serial_number(&serial_number)?;
+    cert_builder.set_subject_name(&x509_name)?;
+    cert_builder.set_issuer_name(&x509_name)?;
     cert_builder.set_pubkey(key_pair)?;
     let not_before = Asn1Time::days_from_now(0)?;
     cert_builder.set_not_before(&not_before)?;
