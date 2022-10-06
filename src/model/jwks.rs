@@ -272,9 +272,7 @@ mod tests {
         );
 
         let jwt: String = random_jwk.encode(&claims).unwrap();
-        let content: serde_json::Value = jwks
-            .parse(jwt.as_ref(), &[audience])
-            .expect("unable to parse jwt");
+        let content: serde_json::Value = jwks.parse(jwt.as_ref(), &[audience]).expect("unable to parse jwt");
         assert_eq!(content.get("at_custom_claims_str").unwrap(), "my_str");
         let custom_claim_vec: Vec<String> =
             serde_json::from_value(content.get("at_custom_claims_vec").unwrap().to_owned()).unwrap();
