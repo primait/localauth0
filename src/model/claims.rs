@@ -56,7 +56,7 @@ impl Claims {
 
     #[cfg(test)]
     pub fn custom_claims(&self) -> &Vec<CustomField> {
-        &&self.custom_claims
+        &self.custom_claims
     }
 }
 
