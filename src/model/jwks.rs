@@ -267,13 +267,13 @@ mod tests {
             audience.to_string(),
             vec![permission.to_string()],
             issuer.to_string(),
-            gty.clone(),
-            custom_claims.clone(),
+            gty,
+            custom_claims,
         );
 
         let jwt: String = random_jwk.encode(&claims).unwrap();
-        let content = jwks
-            .parse::<serde_json::Value>(jwt.as_ref(), &[audience])
+        let content: serde_json::Value = jwks
+            .parse(jwt.as_ref(), &[audience])
             .expect("unable to parse jwt");
         assert_eq!(content.get("at_custom_claims_str").unwrap(), "my_str");
         let custom_claim_vec: Vec<String> =
@@ -302,12 +302,12 @@ mod tests {
             audience.to_string(),
             vec![permission.to_string()],
             issuer.to_string(),
-            gty.clone(),
-            custom_claims.clone(),
+            gty,
+            custom_claims,
         );
 
         let jwt: String = random_jwk.encode(&claims).unwrap();
-        let result = jwks.parse::<serde_json::Value>(jwt.as_ref(), &[audience]).unwrap();
+        let result: serde_json::Value = jwks.parse(jwt.as_ref(), &[audience]).unwrap();
         assert_eq!(result.get("at_custom_claims_str").unwrap(), "my-str-2");
     }
 }
