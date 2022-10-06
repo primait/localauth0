@@ -13,7 +13,7 @@ pub struct Claims {
     gty: GrantType,
     permissions: Vec<String>,
     // skip deserializing since deserialization from a jwt wouldn't match this struct
-    // a custom deserialized would be needed
+    // a custom deserializer would be needed
     #[serde(skip_deserializing)]
     custom_claims: Vec<CustomField>,
 }
