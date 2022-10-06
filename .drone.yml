@@ -1,90 +1,165 @@
+---
 kind: pipeline
 name: default
 
-volumes:
-  - name: docker
-    host:
-      path: /var/run/docker.sock
-  - name: ecs
-    host:
-      path: /etc/profile.d/ecs-credentials-endpoint
+platform:
+  os: linux
+  arch: amd64
 
 clone:
   disable: true
 
+steps:
+- name: git-clone
+  image: public.ecr.aws/prima/drone-git:1.3-3
+  environment:
+    DRONE_SSH_KEY:
+      from_secret: drone_ssh_key
+    PLUGIN_DEPTH: 5
+
+- name: build-image
+  image: public.ecr.aws/prima/drone-tools:1.21.11
+  commands:
+  - sed -i 's/USER app/USER root/g' ./Dockerfile
+  - docker build -t prima/localauth0-ci:${DRONE_COMMIT} ./
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+  depends_on:
+  - git-clone
+
+- name: cargo-deps
+  image: prima/localauth0-ci:${DRONE_COMMIT}
+  commands:
+  - cargo fetch
+  environment:
+    CARGO_HOME: /drone/src/.cargo
+  depends_on:
+  - build-image
+
+- name: cargo-format
+  image: prima/localauth0-ci:${DRONE_COMMIT}
+  commands:
+  - cargo fmt --all -- --check
+  environment:
+    CARGO_HOME: /drone/src/.cargo
+  depends_on:
+  - cargo-deps
+
+- name: cargo-clippy-ci
+  image: prima/localauth0-ci:${DRONE_COMMIT}
+  commands:
+  - cargo clippy -- -D warnings
+  environment:
+    BUILD_ENV: dev
+    CARGO_HOME: /drone/src/.cargo
+  depends_on:
+  - cargo-format
+
+- name: cargo-test
+  image: prima/localauth0-ci:${DRONE_COMMIT}
+  commands:
+  - cargo test --all
+  environment:
+    BUILD_ENV: dev
+    CARGO_HOME: /drone/src/.cargo
+  depends_on:
+  - cargo-clippy-ci
+
+- name: build-artifact
+  image: prima/localauth0-ci:${DRONE_COMMIT}
+  commands:
+  - cargo build --all-features
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+  depends_on:
+  - cargo-test
+
+- name: build-web
+  image: prima/localauth0-ci:${DRONE_COMMIT}
+  commands:
+  - trunk build web/index.html
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+  depends_on:
+  - cargo-test
+
+- name: build-localauth0
+  image: public.ecr.aws/prima/drone-tools:1.21.11
+  commands:
+  - ./build.sh . 'public.ecr.aws/prima/localauth0:'
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+  - name: ecs
+    path: /etc/profile.d/ecs-credentials-endpoint
+  when:
+    event:
+    - tag
+    ref:
+    - refs/tags/*
+  depends_on:
+  - build-image
+  - cargo-deps
+  - cargo-format
+  - cargo-clippy-ci
+  - cargo-test
+  - build-artifact
+  - build-web
+
+volumes:
+- name: docker
+  host:
+    path: /var/run/docker.sock
+- name: ecs
+  host:
+    path: /etc/profile.d/ecs-credentials-endpoint
+
 node:
   reserved: common
-
-
-steps:
-  - name: git-clone
-    image: public.ecr.aws/prima/drone-git:1.3-3
-    environment:
-      PLUGIN_DEPTH: "5"
-      DRONE_SSH_KEY:
-        from_secret: drone_ssh_key
-
-  - {'name': 'build-image', 'image': 'public.ecr.aws/prima/drone-tools:1.21.11', 'commands': ["sed -i 's/USER app/USER root/g' ./Dockerfile", 'docker build -t prima/localauth0-ci:${DRONE_COMMIT} ./'], 'volumes': [{'name': 'docker', 'path': '/var/run/docker.sock'}], 'depends_on': ['git-clone']}
-  - {'name': 'cargo-deps', 'image': 'prima/localauth0-ci:${DRONE_COMMIT}', 'commands': ['cargo fetch'], 'environment': {'CARGO_HOME': '/drone/src/.cargo'}, 'depends_on': ['build-image']}
-  - {'name': 'cargo-format', 'image': 'prima/localauth0-ci:${DRONE_COMMIT}', 'commands': ['cargo fmt --all -- --check'], 'environment': {'CARGO_HOME': '/drone/src/.cargo'}, 'depends_on': ['cargo-deps']}
-  - {'name': 'cargo-clippy-ci', 'image': 'prima/localauth0-ci:${DRONE_COMMIT}', 'commands': ['cargo clippy -- -D warnings'], 'environment': {'BUILD_ENV': 'dev', 'CARGO_HOME': '/drone/src/.cargo'}, 'depends_on': ['cargo-format']}
-  - {'name': 'cargo-test', 'image': 'prima/localauth0-ci:${DRONE_COMMIT}', 'commands': ['cargo test --all'], 'environment': {'BUILD_ENV': 'dev', 'CARGO_HOME': '/drone/src/.cargo', 'CARGO_HTTP_CAINFO': ''}, 'depends_on': ['cargo-clippy-ci']}
-  - {'name': 'build-artifact', 'image': 'prima/localauth0-ci:${DRONE_COMMIT}', 'commands': ['cargo build --all-features'], 'volumes': [{'name': 'docker', 'path': '/var/run/docker.sock'}], 'depends_on': ['cargo-test']}
-  - {'name': 'build-web', 'image': 'prima/localauth0-ci:${DRONE_COMMIT}', 'commands': ['trunk build web/index.html'], 'volumes': [{'name': 'docker', 'path': '/var/run/docker.sock'}], 'depends_on': ['cargo-test']}
-
-  - name: build-localauth0
-    image: public.ecr.aws/prima/drone-tools:1.21.11
-    commands:
-    - ./build.sh . 'public.ecr.aws/prima/localauth0:'
-    volumes:
-    - name: docker
-      path: /var/run/docker.sock
-    - name: ecs
-      path: /etc/profile.d/ecs-credentials-endpoint
-    when:
-      event:
-        tag
-      ref:
-        - refs/tags/*
-    depends_on:
-    - build-image
-    - cargo-deps
-    - cargo-format
-    - cargo-clippy-ci
-    - cargo-test
-    - build-artifact
-    - build-web
 
 ---
 kind: pipeline
 name: email-failure
 
-node:
-  reserved: common
-
+platform:
+  os: linux
+  arch: amd64
 
 clone:
   disable: true
 
 steps:
-  - name: email-failure
-    image: public.ecr.aws/prima/drone-email
-    environment:
-      PLUGIN_USERNAME:
-        from_secret: email_username
-      PLUGIN_PASSWORD:
-        from_secret: email_password
-    settings:
-      host: email-smtp.eu-west-1.amazonaws.com
-      from: drone@prima.it
+- name: email-failure
+  image: public.ecr.aws/prima/drone-email
+  settings:
+    from: drone@prima.it
+    host: email-smtp.eu-west-1.amazonaws.com
+  environment:
+    PLUGIN_PASSWORD:
+      from_secret: email_password
+    PLUGIN_USERNAME:
+      from_secret: email_username
+
+node:
+  reserved: common
+
 trigger:
   status:
-    - failure
+  - failure
   target:
     exclude:
-      - qa-stack
-      - qa-it
-      - qa
+    - qa-stack
+    - qa-it
+    - qa
 
 depends_on:
 - default
+
+---
+kind: signature
+hmac: d207d46b0971d0178fb017767d927d7e9a5e98ee7bdc8e7d7ea61eea70e2ae5b
+
+...
