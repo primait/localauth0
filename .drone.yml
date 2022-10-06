@@ -18,7 +18,7 @@ steps:
     PLUGIN_DEPTH: 5
 
 - name: build-image
-  image: public.ecr.aws/prima/drone-tools:1.21.11
+  image: public.ecr.aws/prima/drone-tools:1.21.4
   commands:
   - sed -i 's/USER app/USER root/g' ./Dockerfile
   - docker build -t prima/localauth0-ci:${DRONE_COMMIT} ./
@@ -63,6 +63,7 @@ steps:
   environment:
     BUILD_ENV: dev
     CARGO_HOME: /drone/src/.cargo
+    CARGO_HTTP_CAINFO: ""
   depends_on:
   - cargo-clippy-ci
 
@@ -87,7 +88,7 @@ steps:
   - cargo-test
 
 - name: build-localauth0
-  image: public.ecr.aws/prima/drone-tools:1.21.11
+  image: public.ecr.aws/prima/drone-tools:1.21.4
   commands:
   - ./build.sh . 'public.ecr.aws/prima/localauth0:'
   volumes:
@@ -102,10 +103,6 @@ steps:
     - refs/tags/*
   depends_on:
   - build-image
-  - cargo-deps
-  - cargo-format
-  - cargo-clippy-ci
-  - cargo-test
   - build-artifact
   - build-web
 
@@ -160,6 +157,6 @@ depends_on:
 
 ---
 kind: signature
-hmac: d207d46b0971d0178fb017767d927d7e9a5e98ee7bdc8e7d7ea61eea70e2ae5b
+hmac: 02ab26b6d8d7f3f43172092cf10608d0ee5fd92c6e0d83b8894d5c6723393155
 
 ...
