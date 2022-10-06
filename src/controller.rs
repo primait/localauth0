@@ -189,8 +189,37 @@ mod test {
 
     #[test]
     fn generate_access_token_with_custom_claims() {
-        let config_string: String = std::fs::read_to_string("./localauth0.toml").unwrap();
-        let config: Config = toml::from_str(config_string.as_str()).unwrap();
+        let config_string: &str = r#"
+        issuer = "https://prima.localauth0.com/"
+
+        [user_info]
+        name = "Local"
+        given_name = "Locie"
+        family_name = "Auth0"
+        gender = "none"
+        birthdate = "2022-02-11"
+        email = "developers@prima.it"
+        picture = "https://github.com/primait/localauth0/blob/6f71c9318250219a9d03fb72afe4308b8824aef7/web/assets/static/media/localauth0.png"
+        custom_fields = [
+            { name = "address", value = { String = "github street" } },
+            { name = "roles", value = { Vec = ["fake:auth"] } }
+        ]
+
+        [[audience]]
+        name = "audience1"
+        permissions = ["audience1:permission1", "audience1:permission2"]
+
+        [[audience]]
+        name = "audience2"
+        permissions = ["audience2:permission2"]
+
+        [access_token]
+        custom_claims = [
+            { name = "at_custom_claims_str", value = { String = "str" } }
+        ]
+        
+        "#;
+        let config: Config = toml::from_str(config_string).unwrap();
         let app_data = AppData::new(config).unwrap();
         let audience = "my-audience";
         let grant_type = GrantType::AuthorizationCode;
