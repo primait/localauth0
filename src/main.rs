@@ -32,26 +32,28 @@ async fn main() -> std::io::Result<()> {
 }
 
 fn start_http_server(data: Data<AppData>) -> impl Future<Output = Result<(), std::io::Error>> {
+    let port = *data.config().http().port();
     HttpServer::new(move || {
         App::new()
             .app_data(data.clone())
             .wrap(middleware::Logger::default())
             .configure(setup_service)
     })
-    .bind("0.0.0.0:3000")
+    .bind(("0.0.0.0", port))
     .unwrap()
     .keep_alive(Duration::from_secs(61))
     .run()
 }
 
 fn start_https_server(data: Data<AppData>) -> impl Future<Output = Result<(), std::io::Error>> {
+    let port = *data.config().https().port();
     HttpServer::new(move || {
         App::new()
             .app_data(data.clone())
             .wrap(middleware::Logger::default())
             .configure(setup_service)
     })
-    .bind_openssl("0.0.0.0:3001", setup_ssl_acceptor())
+    .bind_openssl(("0.0.0.0", port), setup_ssl_acceptor())
     .expect("Cannot bind openssl socket")
     .keep_alive(Duration::from_secs(61))
     .run()

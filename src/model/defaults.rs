@@ -6,6 +6,8 @@ const USER_INFO_GENDER: &str = "none";
 const USER_INFO_BIRTHDATE: &str = "2022-02-11";
 const USER_INFO_EMAIL: &str = "developers@prima.it";
 const USER_INFO_PICTURE: &str = "https://github.com/primait/localauth0/blob/6f71c9318250219a9d03fb72afe4308b8824aef7/web/assets/static/media/localauth0.png";
+const HTTP_PORT: u16 = 3000;
+const HTTPS_PORT: u16 = 3001;
 
 pub fn issuer() -> String {
     ISSUER.to_string()
@@ -37,4 +39,12 @@ pub fn user_info_email() -> String {
 
 pub fn user_info_picture() -> String {
     USER_INFO_PICTURE.to_string()
+}
+
+pub fn http_port() -> u16 {
+    HTTP_PORT
+}
+
+pub fn https_port() -> u16 {
+    HTTPS_PORT
 }
