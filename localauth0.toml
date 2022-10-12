@@ -25,3 +25,9 @@ permissions = ["audience2:permission2"]
 custom_claims = [
     { name = "at_custom_claims_str", value = { String = "str" } }
 ]
+
+[http]
+port = 3000
+
+[https]
+port = 3001
