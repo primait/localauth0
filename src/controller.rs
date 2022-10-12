@@ -169,7 +169,7 @@ fn new_token_response(app_data: &AppData, audience: &str, grant_type: GrantType)
         custom_claims,
     );
 
-    let user_info: UserInfo = UserInfo::new(app_data.config(), audience.to_string());
+    let user_info: UserInfo = UserInfo::new(app_data.config(), CLIENT_ID_VALUE.to_string());
 
     let random_jwk: Jwk = app_data.jwks().random_jwk().expect("Failed to get JWK");
     let access_token: String = random_jwk.encode(&claims).expect("Failed to generate JWT");
