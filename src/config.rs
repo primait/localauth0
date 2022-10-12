@@ -80,6 +80,8 @@ pub struct User {
 
 #[derive(Debug, Deserialize, Getters)]
 pub struct UserInfo {
+    #[serde(default = "defaults::user_info_subject")]
+    subject: String,
     #[serde(default = "defaults::user_info_name")]
     name: String,
     #[serde(default = "defaults::user_info_given_name")]
@@ -101,6 +103,7 @@ pub struct UserInfo {
 impl Default for UserInfo {
     fn default() -> Self {
         Self {
+            subject: defaults::user_info_subject(),
             name: defaults::user_info_name(),
             given_name: defaults::user_info_given_name(),
             family_name: defaults::user_info_family_name(),
@@ -169,6 +172,7 @@ mod tests {
         issuer = "issuer"
 
         [user_info]
+        subject = "subject"
         name = "name"
         given_name = "given_name"
         family_name = "family_name"
@@ -199,6 +203,7 @@ mod tests {
 
         assert_eq!(config.issuer(), "issuer");
 
+        assert_eq!(config.user_info().subject, "subject");
         assert_eq!(config.user_info().name, "name");
         assert_eq!(config.user_info().given_name, "given_name");
         assert_eq!(config.user_info().family_name, "family_name");

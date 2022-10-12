@@ -7,6 +7,7 @@ use crate::config::{Config, CustomField, CustomFieldValue};
 #[derive(Debug)]
 pub struct UserInfo<'s> {
     custom_fields: &'s [CustomField],
+    sub: String,
     aud: String,
     iat: Option<i64>,
     exp: Option<i64>,
@@ -24,6 +25,7 @@ impl<'s> UserInfo<'s> {
     pub fn new(config: &'s Config, audience: String) -> Self {
         Self {
             custom_fields: config.user_info().custom_fields(),
+            sub: config.user_info().subject().to_string(),
             aud: audience,
             iat: Some(Utc::now().timestamp()),
             exp: Some(Utc::now().timestamp() + 60000),
@@ -48,6 +50,7 @@ impl<'s> Serialize for UserInfo<'s> {
         // struct
         let mut map = serializer.serialize_map(None)?;
 
+        map.serialize_entry("sub", &self.sub)?;
         map.serialize_entry("aud", &self.aud)?;
         map.serialize_entry("iat", &self.iat)?;
         map.serialize_entry("exp", &self.exp)?;
@@ -85,6 +88,7 @@ mod tests {
         issuer = "issuer"
 
         [user_info]
+        subject = "subject"
         name = "name"
         given_name = "given_name"
         family_name = "family_name"
@@ -112,6 +116,7 @@ mod tests {
         let value: Value = serde_json::to_value(user_info).unwrap();
 
         let asserted: Value = json!({
+            "sub": config.user_info().subject(),
             "aud": "audience",
             "iat": Utc::now().timestamp(),
             "exp": Utc::now().timestamp() + 60000,

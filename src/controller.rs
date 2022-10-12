@@ -201,7 +201,6 @@ mod test {
         email = "developers@prima.it"
         picture = "https://github.com/primait/localauth0/blob/6f71c9318250219a9d03fb72afe4308b8824aef7/web/assets/static/media/localauth0.png"
         custom_fields = [
-            { name = "address", value = { String = "github street" } },
             { name = "roles", value = { Vec = ["fake:auth"] } }
         ]
 
