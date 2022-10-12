@@ -7,7 +7,7 @@ version = "0.4.1"
 
 [dependencies]
 actix-files = "0.6.0"
-actix-web = "4.0.1"
+actix-web = { version = "4", features = ["openssl"] }
 
 derive-getters = "0.2.0"
 
@@ -30,3 +30,5 @@ uuid = "1.1.2"
 toml = "0.5.9"
 
 prima_rs_logger = "0.1"
+
+futures = "0.3.21"

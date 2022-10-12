@@ -9,6 +9,7 @@ services:
       - "app:/home/app/"
     ports:
       - "3000:3000"
+      - "3001:3001"
     working_dir: /code
     environment:
       CARGO_HOME: /home/app/.cargo
