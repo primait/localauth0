@@ -26,6 +26,11 @@ impl TokenResponse {
     pub fn access_token(&self) -> &str {
         &self.access_token
     }
+
+    #[cfg(test)]
+    pub fn id_token(&self) -> &str {
+        &self.id_token
+    }
 }
 
 #[derive(Serialize)]
