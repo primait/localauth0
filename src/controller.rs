@@ -169,7 +169,7 @@ fn new_token_response(app_data: &AppData, audience: &str, grant_type: GrantType)
         custom_claims,
     );
 
-    let user_info: UserInfo = UserInfo::new(app_data.config(), audience.to_string());
+    let user_info: UserInfo = UserInfo::new(app_data.config(), CLIENT_ID_VALUE.to_string());
 
     let random_jwk: Jwk = app_data.jwks().random_jwk().expect("Failed to get JWK");
     let access_token: String = random_jwk.encode(&claims).expect("Failed to generate JWT");
@@ -180,19 +180,23 @@ fn new_token_response(app_data: &AppData, audience: &str, grant_type: GrantType)
 
 #[cfg(test)]
 mod test {
+    use serde_json::json;
+
     use crate::{
         config::Config,
         model::{AppData, GrantType},
+        CLIENT_ID_VALUE,
     };
 
     use super::new_token_response;
 
     #[test]
-    fn generate_access_token_with_custom_claims() {
+    fn new_token_response_should_return_an_access_token_and_an_id_token() {
         let config_string: &str = r#"
         issuer = "https://prima.localauth0.com/"
 
         [user_info]
+        subject = "google-apps|developers@prima.it"
         name = "Local"
         given_name = "Locie"
         family_name = "Auth0"
@@ -201,7 +205,6 @@ mod test {
         email = "developers@prima.it"
         picture = "https://github.com/primait/localauth0/blob/6f71c9318250219a9d03fb72afe4308b8824aef7/web/assets/static/media/localauth0.png"
         custom_fields = [
-            { name = "address", value = { String = "github street" } },
             { name = "roles", value = { Vec = ["fake:auth"] } }
         ]
 
@@ -211,7 +214,7 @@ mod test {
 
         [[audience]]
         name = "audience2"
-        permissions = ["audience2:permission2"]
+        permissions = ["audience2:permission1"]
 
         [access_token]
         custom_claims = [
@@ -221,7 +224,7 @@ mod test {
         "#;
         let config: Config = toml::from_str(config_string).unwrap();
         let app_data = AppData::new(config).unwrap();
-        let audience = "my-audience";
+        let audience = "audience2";
         let grant_type = GrantType::AuthorizationCode;
 
         let token_response = new_token_response(&app_data, audience, grant_type);
@@ -232,14 +235,37 @@ mod test {
             .parse(access_token, &[audience])
             .expect("failed to parse access_token");
 
-        assert_eq!(claims_json.get("aud").unwrap(), "my-audience");
+        assert_eq!(claims_json.get("aud").unwrap(), audience);
         assert!(claims_json.get("iat").is_some());
         assert!(claims_json.get("exp").is_some());
         assert!(claims_json.get("scope").is_some());
         assert_eq!(claims_json.get("iss").unwrap(), "https://prima.localauth0.com/");
         assert_eq!(claims_json.get("gty").unwrap(), "authorization_code");
-        assert!(claims_json.get("permissions").is_some());
+        assert_eq!(
+            claims_json.get("permissions").unwrap(),
+            &json!(["audience2:permission1"])
+        );
 
         assert_eq!(claims_json.get("at_custom_claims_str").unwrap(), "str");
+
+        let id_token = token_response.id_token();
+
+        let jwks = app_data.jwks().get().unwrap();
+        let claims_json: serde_json::Value = jwks
+            .parse(id_token, &[CLIENT_ID_VALUE])
+            .expect("failed to parse id_token");
+
+        assert_eq!(claims_json.get("sub").unwrap(), "google-apps|developers@prima.it");
+        assert_eq!(claims_json.get("aud").unwrap(), CLIENT_ID_VALUE);
+        assert!(claims_json.get("iat").is_some());
+        assert!(claims_json.get("exp").is_some());
+        assert_eq!(claims_json.get("iss").unwrap(), "https://prima.localauth0.com/");
+        assert_eq!(claims_json.get("name").unwrap(), "Local");
+        assert_eq!(claims_json.get("given_name").unwrap(), "Locie");
+        assert_eq!(claims_json.get("family_name").unwrap(), "Auth0");
+        assert_eq!(claims_json.get("gender").unwrap(), "none");
+        assert_eq!(claims_json.get("birthdate").unwrap(), "2022-02-11");
+        assert_eq!(claims_json.get("email").unwrap(), "developers@prima.it");
+        assert_eq!(claims_json.get("picture").unwrap(), "https://github.com/primait/localauth0/blob/6f71c9318250219a9d03fb72afe4308b8824aef7/web/assets/static/media/localauth0.png");
     }
 }

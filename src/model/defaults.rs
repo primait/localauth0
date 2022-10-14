@@ -1,4 +1,5 @@
 const ISSUER: &str = "https://prima.localauth0.com/";
+const USER_INFO_SUBJECT: &str = "google-apps|developers@prima.it";
 const USER_INFO_NAME: &str = "Local";
 const USER_INFO_GIVEN_NAME: &str = "Locie";
 const USER_INFO_FAMILY_NAME: &str = "Auth0";
@@ -9,6 +10,10 @@ const USER_INFO_PICTURE: &str = "https://github.com/primait/localauth0/blob/6f71
 
 pub fn issuer() -> String {
     ISSUER.to_string()
+}
+
+pub fn user_info_subject() -> String {
+    USER_INFO_SUBJECT.to_string()
 }
 
 pub fn user_info_name() -> String {
