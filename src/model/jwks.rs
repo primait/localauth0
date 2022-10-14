@@ -2,20 +2,15 @@ use std::str::FromStr;
 use std::sync::{RwLock, RwLockWriteGuard};
 
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
-use openssl::asn1::Asn1Time;
-use openssl::bn::{BigNum, MsbOption};
-use openssl::error::ErrorStack;
-use openssl::hash::MessageDigest;
-use openssl::pkey::{PKey, Private};
+use openssl::pkey::Private;
 use openssl::rsa::Rsa;
-use openssl::x509::extension::{BasicConstraints, KeyUsage, SubjectKeyIdentifier};
-use openssl::x509::{X509NameBuilder, X509};
 use rand::seq::SliceRandom;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::error::Error;
+use crate::model::certificates;
 
 pub struct JwksStore {
     cache: RwLock<Jwks>,
@@ -59,7 +54,7 @@ impl Jwks {
         Ok(Self {
             keys: (1..=3)
                 .into_iter()
-                .map(|_| Jwk::new(None))
+                .map(|_| Jwk::new())
                 .collect::<Result<Vec<Jwk>, Error>>()?,
         })
     }
@@ -94,7 +89,7 @@ impl Jwks {
 
     pub fn rotate_keys(&self) -> Result<Self, Error> {
         let mut keys: Vec<Jwk> = self.keys.clone();
-        keys.insert(0, Jwk::new(None)?);
+        keys.insert(0, Jwk::new()?);
         keys.pop();
         Ok(Self { keys })
     }
@@ -118,17 +113,12 @@ pub struct Jwk {
 }
 
 impl Jwk {
-    pub fn new(rsa: Option<Rsa<Private>>) -> Result<Jwk, Error> {
-        let rsa: Rsa<Private> = match rsa {
-            Some(rsa) => rsa,
-            None => Rsa::generate(2048)?,
-        };
+    pub fn new() -> Result<Jwk, Error> {
+        let key_pair = certificates::generate_private_key()?;
+        let modulus = key_pair.rsa()?.n().to_vec();
+        let exponent = key_pair.rsa()?.e().to_vec();
 
-        let modulus: Vec<u8> = rsa.n().to_vec();
-        let exponent: Vec<u8> = rsa.e().to_vec();
-        let key_pair: PKey<Private> = PKey::from_rsa(rsa)?;
-
-        let x509 = generate_x509_cert(&key_pair)?;
+        let x509 = certificates::generate_certificate(&key_pair)?;
         let x509cert = base64::encode(x509.to_der()?);
 
         Ok(Self {
@@ -173,41 +163,6 @@ impl Jwk {
     pub fn rsa(&self) -> Result<Rsa<Private>, Error> {
         Ok(Rsa::private_key_from_pem(&self.private_key_pem)?)
     }
-}
-
-fn generate_x509_cert(key_pair: &PKey<Private>) -> Result<X509, ErrorStack> {
-    let mut x509_name = X509NameBuilder::new()?;
-    x509_name.append_entry_by_text("C", "US")?;
-    x509_name.append_entry_by_text("O", "LocalAuth0 CA")?;
-    x509_name.append_entry_by_text("CN", "LocalAuth0 CA")?;
-    let x509_name = x509_name.build();
-
-    let mut cert_builder = X509::builder()?;
-    cert_builder.set_version(2)?;
-    let serial_number = {
-        let mut serial = BigNum::new()?;
-        serial.rand(159, MsbOption::MAYBE_ZERO, false)?;
-        serial.to_asn1_integer()?
-    };
-    cert_builder.set_serial_number(&serial_number)?;
-    cert_builder.set_subject_name(&x509_name)?;
-    cert_builder.set_issuer_name(&x509_name)?;
-    cert_builder.set_pubkey(key_pair)?;
-    let not_before = Asn1Time::days_from_now(0)?;
-    cert_builder.set_not_before(&not_before)?;
-    let not_after = Asn1Time::days_from_now(365)?;
-    cert_builder.set_not_after(&not_after)?;
-
-    cert_builder.append_extension(BasicConstraints::new().critical().ca().build()?)?;
-    cert_builder.append_extension(KeyUsage::new().critical().key_cert_sign().crl_sign().build()?)?;
-
-    let subject_key_identifier = SubjectKeyIdentifier::new().build(&cert_builder.x509v3_context(None, None))?;
-    cert_builder.append_extension(subject_key_identifier)?;
-
-    cert_builder.sign(key_pair, MessageDigest::sha256())?;
-    let cert = cert_builder.build();
-
-    Ok(cert)
 }
 
 #[cfg(test)]

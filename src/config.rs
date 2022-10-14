@@ -25,6 +25,12 @@ pub struct Config {
 
     #[serde(default)]
     access_token: AccessToken,
+
+    #[serde(default)]
+    http: Http,
+
+    #[serde(default)]
+    https: Https,
 }
 
 #[derive(Debug, Error)]
@@ -54,6 +60,8 @@ impl Config {
                     audience: vec![],
                     user: vec![],
                     access_token: Default::default(),
+                    http: Default::default(),
+                    https: Default::default(),
                 }
             }
         }
@@ -142,6 +150,32 @@ pub enum CustomFieldValue {
     Vec(Vec<String>),
 }
 
+#[derive(Debug, Deserialize, Getters)]
+pub struct Http {
+    port: u16,
+}
+
+impl Default for Http {
+    fn default() -> Self {
+        Http {
+            port: defaults::http_port(),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Getters)]
+pub struct Https {
+    port: u16,
+}
+
+impl Default for Https {
+    fn default() -> Self {
+        Https {
+            port: defaults::https_port(),
+        }
+    }
+}
+
 fn log_error(error: Error) {
     match error {
         Error::VarError(_) => {
@@ -197,6 +231,9 @@ mod tests {
         custom_claims = [
             { name = "at_custom_claim_str", value = { String = "str" } }
         ]
+
+        [http]
+        port = 8000
         "#;
 
         let config: Config = toml::from_str(config_str).unwrap();
@@ -242,6 +279,9 @@ mod tests {
             .iter()
             .find(|v| v.name == "at_custom_claim_str")
             .unwrap();
-        assert_eq!(at_custom_claim.value, CustomFieldValue::String("str".to_string()))
+        assert_eq!(at_custom_claim.value, CustomFieldValue::String("str".to_string()));
+
+        assert_eq!(&8000, config.http().port());
+        assert_eq!(&3001, config.https().port());
     }
 }

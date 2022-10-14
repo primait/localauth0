@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added https server in addition to the current http server.
+- Made http/https port configurable in toml file (defaults are 3000/3001).
+
 ---
 
 ## [0.4.1]

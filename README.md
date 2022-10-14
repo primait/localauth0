@@ -16,6 +16,8 @@ In order to run localauth0 docker image execute the following:
 docker run -d -p 3000:3000 public.ecr.aws/prima/localauth0:0.3.0
 ```
 
+By default, the container exposes an http server on the port 3000 and an https one on port 3001.
+
 Note: The latest version is the same `version` written in the `Cargo.toml` file.
 
 ## APIs
@@ -113,9 +115,9 @@ The page will automatically redirect to:
 
 ## Configuration
 
-Localauth0 can be configured using a `.toml` file, which can be specified using the `LOCALAUTH0_CONFIG_PATH` 
-environment variable. Take a look [here](#Integrate-localauth0-in-existing-project) to see how to configure your 
-docker compose cluster.
+Localauth0 can be configured using a `.toml` file (see [localauth0.toml](localauth0.toml) as an example), 
+which can be specified using the `LOCALAUTH0_CONFIG_PATH` environment variable.
+Take a look [here](#Integrate-localauth0-in-existing-project) to see how to configure your docker compose cluster.
 
 ### Local development
 
