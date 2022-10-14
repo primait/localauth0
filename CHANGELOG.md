@@ -7,10 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.5.0]
+
 ### Added
 
 - Added https server in addition to the current http server.
 - Made http/https port configurable in toml file (defaults are 3000/3001).
+- Added the subject field to the id_token and userinfo type.
+
+### Changed
+
+- Changed id_token audience to return the client_id as described in the [auth0 doc](https://auth0.com/docs/secure/tokens/id-tokens/validate-id-tokens).
 
 ---
 
@@ -93,7 +102,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release 🎉
 
-[Unreleased]: https://github.com/primait/localauth0/compare/0.4.1...HEAD
+[Unreleased]: https://github.com/primait/localauth0/compare/0.5.0...HEAD
+[0.5.0]: https://github.com/primait/localauth0/compare/0.4.1...0.5.0
 [0.4.1]: https://github.com/primait/localauth0/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/primait/localauth0/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/primait/localauth0/compare/0.2.2...0.3.0
