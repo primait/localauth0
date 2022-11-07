@@ -5,10 +5,14 @@ subject = "google-apps|developers@prima.it"
 name = "Local"
 given_name = "Locie"
 family_name = "Auth0"
+nickname = "locie.auth0"
+locale = "en"
 gender = "none"
 birthdate = "2022-02-11"
 email = "developers@prima.it"
+email_verified = true
 picture = "https://github.com/primait/localauth0/blob/6f71c9318250219a9d03fb72afe4308b8824aef7/web/assets/static/media/localauth0.png"
+updated_at = "2022-11-11T11:00:00Z"
 custom_fields = [
     { name = "roles", value = { Vec = ["fake:auth"] } }
 ]

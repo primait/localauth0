@@ -1,5 +1,6 @@
 use std::fs;
 
+use chrono::{DateTime, Utc};
 use derive_getters::Getters;
 use prima_rs_logger::{error, info};
 use serde::Deserialize;
@@ -96,14 +97,22 @@ pub struct UserInfo {
     given_name: String,
     #[serde(default = "defaults::user_info_family_name")]
     family_name: String,
+    #[serde(default = "defaults::user_info_nickname")]
+    nickname: String,
+    #[serde(default = "defaults::user_info_locale")]
+    locale: String,
     #[serde(default = "defaults::user_info_gender")]
     gender: String,
     #[serde(default = "defaults::user_info_birthdate")]
     birthdate: String,
     #[serde(default = "defaults::user_info_email")]
     email: String,
+    #[serde(default = "defaults::user_info_email_verified")]
+    email_verified: bool,
     #[serde(default = "defaults::user_info_picture")]
     picture: String,
+    #[serde(default = "defaults::user_info_updated_at")]
+    updated_at: DateTime<Utc>,
     #[serde(default)]
     custom_fields: Vec<CustomField>,
 }
@@ -115,10 +124,14 @@ impl Default for UserInfo {
             name: defaults::user_info_name(),
             given_name: defaults::user_info_given_name(),
             family_name: defaults::user_info_family_name(),
+            nickname: defaults::user_info_nickname(),
+            locale: defaults::user_info_locale(),
             gender: defaults::user_info_gender(),
             birthdate: defaults::user_info_birthdate(),
             email: defaults::user_info_email(),
+            email_verified: defaults::user_info_email_verified(),
             picture: defaults::user_info_picture(),
+            updated_at: defaults::user_info_updated_at(),
             custom_fields: vec![],
         }
     }
@@ -192,6 +205,8 @@ fn log_error(error: Error) {
 
 #[cfg(test)]
 mod tests {
+    use chrono::DateTime;
+
     use crate::config::{Audience, Config, CustomField, CustomFieldValue};
     #[test]
     fn local_localauth0_config_file_is_loadable() {
@@ -210,10 +225,14 @@ mod tests {
         name = "name"
         given_name = "given_name"
         family_name = "family_name"
+        nickname = "nickname"
+        locale = "locale"
         gender = "gender"
         birthdate = "birthdate"
         email = "email"
+        email_verified = true
         picture = "picture"
+        updated_at = "2022-11-11T11:00:00Z"
         custom_fields = [
             { name = "custom_field_str", value = { String = "str" } },
             { name = "custom_field_vec", value = { Vec = ["vec"] } }
@@ -244,9 +263,16 @@ mod tests {
         assert_eq!(config.user_info().name, "name");
         assert_eq!(config.user_info().given_name, "given_name");
         assert_eq!(config.user_info().family_name, "family_name");
+        assert_eq!(config.user_info().nickname, "nickname");
+        assert_eq!(config.user_info().locale, "locale");
         assert_eq!(config.user_info().gender, "gender");
         assert_eq!(config.user_info().birthdate, "birthdate");
         assert_eq!(config.user_info().email, "email");
+        assert_eq!(config.user_info().email_verified, true);
+        assert_eq!(
+            config.user_info().updated_at,
+            DateTime::parse_from_rfc3339("2022-11-11T11:00:00Z").unwrap()
+        );
         assert_eq!(config.user_info().picture, "picture");
 
         assert_eq!(config.audience.len(), 2);
