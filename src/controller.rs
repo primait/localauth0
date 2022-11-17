@@ -4,8 +4,8 @@ use actix_web::web::{Data, Form, Json, Path};
 use actix_web::{get, post, HttpResponse};
 
 use crate::model::{
-    AppData, AuthorizationCodeTokenRequest, Claims, ClientCredentialsTokenRequest, GrantType, Jwk, Jwks, LoginRequest,
-    LoginResponse, PermissionsForAudienceRequest, TokenRequest, TokenResponse, UserInfo,
+    AppData, AuthorizationCodeTokenRequest, Claims, ClientCredentialsTokenRequest, GrantType, IdTokenClaims, Jwk, Jwks,
+    LoginRequest, LoginResponse, PermissionsForAudienceRequest, TokenRequest, TokenResponse,
 };
 use crate::{CLIENT_ID_VALUE, CLIENT_SECRET_VALUE};
 
@@ -119,8 +119,12 @@ pub async fn jwt_for_client_credentials(
     request: ClientCredentialsTokenRequest,
 ) -> HttpResponse {
     if request.client_id == CLIENT_ID_VALUE && request.client_secret == CLIENT_SECRET_VALUE {
-        let response: TokenResponse =
-            new_token_response(&*app_data, request.audience.as_str(), GrantType::ClientCredentials);
+        let response: TokenResponse = new_token_response(
+            &*app_data,
+            request.audience.as_str(),
+            GrantType::ClientCredentials,
+            None,
+        );
 
         HttpResponse::Ok()
             .content_type("application/json")
@@ -142,7 +146,12 @@ pub async fn jwt_for_authorization_code(
             .get_audience_for_authorization(&request.code)
             .expect("Failed to get audience for authorization");
 
-        let response: TokenResponse = new_token_response(&*app_data, audience.as_str(), GrantType::AuthorizationCode);
+        let response: TokenResponse = new_token_response(
+            &*app_data,
+            audience.as_str(),
+            GrantType::AuthorizationCode,
+            request.nonce,
+        );
 
         HttpResponse::Ok()
             .content_type("application/json")
@@ -154,7 +163,12 @@ pub async fn jwt_for_authorization_code(
     }
 }
 
-fn new_token_response(app_data: &AppData, audience: &str, grant_type: GrantType) -> TokenResponse {
+fn new_token_response(
+    app_data: &AppData,
+    audience: &str,
+    grant_type: GrantType,
+    nonce: Option<String>,
+) -> TokenResponse {
     let permissions: Vec<String> = app_data
         .audiences()
         .get_permissions(audience)
@@ -169,11 +183,11 @@ fn new_token_response(app_data: &AppData, audience: &str, grant_type: GrantType)
         custom_claims,
     );
 
-    let user_info: UserInfo = UserInfo::new(app_data.config(), CLIENT_ID_VALUE.to_string());
+    let id_token_claims: IdTokenClaims = IdTokenClaims::new(app_data.config(), CLIENT_ID_VALUE.to_string(), nonce);
 
     let random_jwk: Jwk = app_data.jwks().random_jwk().expect("Failed to get JWK");
     let access_token: String = random_jwk.encode(&claims).expect("Failed to generate JWT");
-    let id_token: String = random_jwk.encode(&user_info).expect("Failed to generate IdToken");
+    let id_token: String = random_jwk.encode(&id_token_claims).expect("Failed to generate IdToken");
 
     TokenResponse::new(access_token, id_token, None)
 }
@@ -200,9 +214,12 @@ mod test {
         name = "Local"
         given_name = "Locie"
         family_name = "Auth0"
+        nickname = "locie.auth0"
+        locale = "en"
         gender = "none"
         birthdate = "2022-02-11"
         email = "developers@prima.it"
+        email_verified = true
         picture = "https://github.com/primait/localauth0/blob/6f71c9318250219a9d03fb72afe4308b8824aef7/web/assets/static/media/localauth0.png"
         custom_fields = [
             { name = "roles", value = { Vec = ["fake:auth"] } }
@@ -226,8 +243,9 @@ mod test {
         let app_data = AppData::new(config).unwrap();
         let audience = "audience2";
         let grant_type = GrantType::AuthorizationCode;
+        let nonce = Some("nonce".to_string());
 
-        let token_response = new_token_response(&app_data, audience, grant_type);
+        let token_response = new_token_response(&app_data, audience, grant_type, nonce);
 
         let access_token = token_response.access_token();
         let jwks = app_data.jwks().get().unwrap();
@@ -263,9 +281,13 @@ mod test {
         assert_eq!(claims_json.get("name").unwrap(), "Local");
         assert_eq!(claims_json.get("given_name").unwrap(), "Locie");
         assert_eq!(claims_json.get("family_name").unwrap(), "Auth0");
+        assert_eq!(claims_json.get("nickname").unwrap(), "locie.auth0");
+        assert_eq!(claims_json.get("locale").unwrap(), "en");
         assert_eq!(claims_json.get("gender").unwrap(), "none");
         assert_eq!(claims_json.get("birthdate").unwrap(), "2022-02-11");
         assert_eq!(claims_json.get("email").unwrap(), "developers@prima.it");
+        assert_eq!(claims_json.get("email_verified").unwrap(), true);
         assert_eq!(claims_json.get("picture").unwrap(), "https://github.com/primait/localauth0/blob/6f71c9318250219a9d03fb72afe4308b8824aef7/web/assets/static/media/localauth0.png");
+        assert_eq!(claims_json.get("nonce").unwrap(), "nonce");
     }
 }

@@ -1,4 +1,4 @@
-use chrono::Utc;
+use chrono::{DateTime, SecondsFormat, Utc};
 use serde::ser::SerializeMap;
 use serde::{Serialize, Serializer};
 
@@ -8,35 +8,35 @@ use crate::config::{Config, CustomField, CustomFieldValue};
 pub struct UserInfo<'s> {
     custom_fields: &'s [CustomField],
     sub: String,
-    aud: String,
-    iat: Option<i64>,
-    exp: Option<i64>,
-    iss: String,
     name: String,
     given_name: String,
     family_name: String,
+    nickname: String,
+    locale: String,
     gender: String,
     birthdate: String,
     email: String,
+    email_verified: bool,
     picture: String,
+    updated_at: DateTime<Utc>,
 }
 
 impl<'s> UserInfo<'s> {
-    pub fn new(config: &'s Config, audience: String) -> Self {
+    pub fn new(config: &'s Config) -> Self {
         Self {
             custom_fields: config.user_info().custom_fields(),
             sub: config.user_info().subject().to_string(),
-            aud: audience,
-            iat: Some(Utc::now().timestamp()),
-            exp: Some(Utc::now().timestamp() + 60000),
-            iss: config.issuer().to_string(),
             name: config.user_info().name().to_string(),
             given_name: config.user_info().given_name().to_string(),
             family_name: config.user_info().family_name().to_string(),
+            nickname: config.user_info().nickname().to_string(),
+            locale: config.user_info().locale().to_string(),
             gender: config.user_info().gender().to_string(),
             birthdate: config.user_info().birthdate().to_string(),
             email: config.user_info().email().to_string(),
+            email_verified: *config.user_info().email_verified(),
             picture: config.user_info().picture().to_string(),
+            updated_at: *config.user_info().updated_at(),
         }
     }
 }
@@ -51,17 +51,20 @@ impl<'s> Serialize for UserInfo<'s> {
         let mut map = serializer.serialize_map(None)?;
 
         map.serialize_entry("sub", &self.sub)?;
-        map.serialize_entry("aud", &self.aud)?;
-        map.serialize_entry("iat", &self.iat)?;
-        map.serialize_entry("exp", &self.exp)?;
-        map.serialize_entry("iss", &self.iss)?;
         map.serialize_entry("name", &self.name)?;
         map.serialize_entry("given_name", &self.given_name)?;
         map.serialize_entry("family_name", &self.family_name)?;
+        map.serialize_entry("nickname", &self.nickname)?;
+        map.serialize_entry("locale", &self.locale)?;
         map.serialize_entry("gender", &self.gender)?;
         map.serialize_entry("birthdate", &self.birthdate)?;
         map.serialize_entry("email", &self.email)?;
+        map.serialize_entry("email_verified", &self.email_verified)?;
         map.serialize_entry("picture", &self.picture)?;
+        map.serialize_entry(
+            "updated_at",
+            &self.updated_at.to_rfc3339_opts(SecondsFormat::Millis, true),
+        )?;
 
         for custom_field in self.custom_fields {
             match custom_field.value() {
@@ -76,7 +79,7 @@ impl<'s> Serialize for UserInfo<'s> {
 
 #[cfg(test)]
 mod tests {
-    use chrono::Utc;
+    use chrono::SecondsFormat;
     use serde_json::{json, Value};
 
     use crate::config::Config;
@@ -92,10 +95,14 @@ mod tests {
         name = "name"
         given_name = "given_name"
         family_name = "family_name"
+        nickname = "nickname"
+        locale = "en"
         gender = "gender"
         birthdate = "birthdate"
         email = "email"
+        email_verified = true
         picture = "picture"
+        updated_at = "2022-11-11T11:00:00Z"
         custom_fields = [
             { name = "custom_field_str", value = { String = "str" } },
             { name = "custom_field_vec", value = { Vec = ["vec"] } }
@@ -112,22 +119,22 @@ mod tests {
 
         let config: Config = toml::from_str(config_str).unwrap();
 
-        let user_info: UserInfo = UserInfo::new(&config, "audience".to_string());
+        let user_info: UserInfo = UserInfo::new(&config);
         let value: Value = serde_json::to_value(user_info).unwrap();
 
         let asserted: Value = json!({
             "sub": config.user_info().subject(),
-            "aud": "audience",
-            "iat": Utc::now().timestamp(),
-            "exp": Utc::now().timestamp() + 60000,
-            "iss": config.issuer(),
             "name": config.user_info().name(),
             "given_name": config.user_info().given_name(),
             "family_name": config.user_info().family_name(),
+            "nickname": config.user_info().nickname(),
+            "locale": config.user_info().locale(),
             "gender": config.user_info().gender(),
             "birthdate": config.user_info().birthdate(),
             "email": config.user_info().email(),
+            "email_verified": config.user_info().email_verified(),
             "picture": config.user_info().picture(),
+            "updated_at": config.user_info().updated_at().to_rfc3339_opts(SecondsFormat::Millis, true),
             "custom_field_str": "str",
             "custom_field_vec": ["vec"]
         });
