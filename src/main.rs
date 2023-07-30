@@ -67,19 +67,7 @@ fn setup_service(cfg: &mut web::ServiceConfig) {
         .service(controller::rotate_keys)
         .service(controller::revoke_keys)
         .service(controller::login)
-        .service(
-            web::resource("/oauth/token")
-                .route(
-                    web::post()
-                        .guard(guard::Header("content-type", "application/json"))
-                        .to(controller::jwt_json_body_handler),
-                )
-                .route(
-                    web::post()
-                        .guard(guard::Header("content-type", "application/x-www-form-urlencoded"))
-                        .to(controller::jwt_form_body_handler),
-                ),
-        )
+        .service(controller::token)
         .service(
             Files::new("/", "./web/dist")
                 .index_file("index.html")
