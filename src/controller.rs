@@ -18,6 +18,8 @@ pub async fn jwks(app_data: Data<AppData>) -> HttpResponse {
         .body(serde_json::to_string(&jwks).expect("Failed to serialize JWKS to json"))
 }
 
+impl jwks {
+    pub const ENDPOINT: &str = "/.well-known/jwks.json";
 }
 
 /// Generate a new jwt token for a given audience. For `client_credentials` the audience is found in the post body
@@ -34,6 +36,10 @@ async fn token(app_data: Data<AppData>, token_request: Either<Json<TokenRequest>
     }
 }
 
+impl token {
+    pub const ENDPOINT: &str = "/oauth/token";
+}
+
 /// Logs the "user" in and returns an auth code which can be exchanged for a token
 #[post("/oauth/login")]
 pub async fn login(app_data: Data<AppData>, login_request: Json<LoginRequest>) -> HttpResponse {
@@ -46,6 +52,9 @@ pub async fn login(app_data: Data<AppData>, login_request: Json<LoginRequest>) -
     HttpResponse::Ok()
         .content_type("application/json")
         .body(serde_json::to_string(&LoginResponse { code }).expect("Failed to serialize login response to json"))
+}
+impl login {
+    pub const ENDPOINT: &str = "/oauth/login";
 }
 
 /// List all audience-permissions mappings present in local implementation
@@ -102,11 +111,19 @@ pub async fn rotate_keys(app_data: Data<AppData>) -> HttpResponse {
     HttpResponse::Ok().content_type("text/plain").body("ok")
 }
 
+impl rotate_keys {
+    pub const ENDPOINT: &str = "/rotate";
+}
+
 /// Revoke all jwks keys and generate 3 new jwks
 #[get("/revoke")]
 pub async fn revoke_keys(app_data: Data<AppData>) -> HttpResponse {
     app_data.jwks().revoke_keys().expect("Failed to revoke keys");
     HttpResponse::Ok().content_type("text/plain").body("ok")
+}
+
+impl revoke_keys {
+    pub const ENDPOINT: &str = "/revoke";
 }
 
 pub async fn jwt_for_client_credentials(
