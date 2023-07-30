@@ -3,7 +3,7 @@ use std::time::Duration;
 use actix_files::{Files, NamedFile};
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::web::{self, Data};
-use actix_web::{guard, middleware, App, HttpServer};
+use actix_web::{middleware, App, HttpServer};
 
 use futures::Future;
 use openssl::ssl::{SslAcceptor, SslAcceptorBuilder, SslMethod};
