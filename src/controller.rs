@@ -27,7 +27,6 @@ impl jwks {
 /// All the permissions found in the local store will be included in the generated token.
 #[post("/oauth/token")]
 async fn token(app_data: Data<AppData>, token_request: Either<Json<TokenRequest>, Form<TokenRequest>>) -> HttpResponse {
-
     let (Either::Left(Json(token_request)) | Either::Right(Form(token_request))) = token_request;
 
     match token_request {
@@ -111,19 +110,11 @@ pub async fn rotate_keys(app_data: Data<AppData>) -> HttpResponse {
     HttpResponse::Ok().content_type("text/plain").body("ok")
 }
 
-impl rotate_keys {
-    pub const ENDPOINT: &str = "/rotate";
-}
-
 /// Revoke all jwks keys and generate 3 new jwks
 #[get("/revoke")]
 pub async fn revoke_keys(app_data: Data<AppData>) -> HttpResponse {
     app_data.jwks().revoke_keys().expect("Failed to revoke keys");
     HttpResponse::Ok().content_type("text/plain").body("ok")
-}
-
-impl revoke_keys {
-    pub const ENDPOINT: &str = "/revoke";
 }
 
 pub async fn jwt_for_client_credentials(

@@ -31,6 +31,10 @@ impl TokenResponse {
     pub fn id_token(&self) -> &str {
         &self.id_token
     }
+
+    pub fn response_types_supported() -> Vec<String> {
+        vec!["token id_token".to_string()]
+    }
 }
 
 #[derive(Serialize)]
