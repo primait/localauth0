@@ -15,20 +15,20 @@ pub struct OpenIDMetadata {
     id_token_signing_alg_values_supported: Vec<String>,
 }
 
-fn host_endpoint_to_url(host: &str, endpoint: &str) -> String {
-    format!("{host}{endpoint}")
+fn endpoint_to_url(base_uri: &str, endpoint: &str) -> String {
+    format!("{base_uri}{endpoint}")
 }
 
 impl OpenIDMetadata {
     pub fn new(
         jwks: &JwksStore,
         config: &Config,
-        // The host of the server, it will be used to generate the URLs in the returned metadata
-        host: &str,
+        // The base uri for, concatenated with endpoints to generate the urls
+        base_uri: &str,
     ) -> Self {
-        let authorization_endpoint = host_endpoint_to_url(host, controller::login::ENDPOINT);
-        let token_endpoint = host_endpoint_to_url(host, controller::token::ENDPOINT);
-        let jwks_uri = host_endpoint_to_url(host, controller::jwks::ENDPOINT);
+        let authorization_endpoint = endpoint_to_url(base_uri, controller::login::ENDPOINT);
+        let token_endpoint = endpoint_to_url(base_uri, controller::token::ENDPOINT);
+        let jwks_uri = endpoint_to_url(base_uri, controller::jwks::ENDPOINT);
 
         let jwk = jwks.random_jwk().expect("Failed to get a jwk");
 

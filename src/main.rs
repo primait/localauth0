@@ -68,6 +68,7 @@ fn setup_service(cfg: &mut web::ServiceConfig) {
         .service(controller::revoke_keys)
         .service(controller::login)
         .service(controller::token)
+        .service(controller::openid_configuration)
         .service(
             Files::new("/", "./web/dist")
                 .index_file("index.html")

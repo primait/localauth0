@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
 use actix_web::web::{Data, Either, Form, Json, Path};
-use actix_web::{get, post, HttpResponse};
+use actix_web::{get, post, HttpResponse, HttpRequest};
 
 use crate::model::{
     AppData, AuthorizationCodeTokenRequest, Claims, ClientCredentialsTokenRequest, GrantType, IdTokenClaims, Jwk, Jwks,
-    LoginRequest, LoginResponse, PermissionsForAudienceRequest, TokenRequest, TokenResponse,
+    LoginRequest, LoginResponse, PermissionsForAudienceRequest, TokenRequest, TokenResponse, OpenIDMetadata,
 };
 use crate::{CLIENT_ID_VALUE, CLIENT_SECRET_VALUE};
 
@@ -116,6 +116,18 @@ pub async fn revoke_keys(app_data: Data<AppData>) -> HttpResponse {
     app_data.jwks().revoke_keys().expect("Failed to revoke keys");
     HttpResponse::Ok().content_type("text/plain").body("ok")
 }
+
+/// .well-known/jwks.json route. This is the standard route to fetch the openid configuration
+/// See << https://openid.net/specs/openid-connect-discovery-1_0.html#WellKnownRegistry >>
+#[get("/.well-known/openid-configuration")]
+pub async fn openid_configuration(app_data: Data<AppData>, req: HttpRequest) -> HttpResponse {
+    let conn = req.connection_info();
+    let base_uri = format!("{}://{}",conn.scheme(), conn.host());
+
+    let metadata = OpenIDMetadata::new(app_data.jwks(), app_data.config(), &base_uri);
+    HttpResponse::Ok().json(&metadata)
+}
+
 
 pub async fn jwt_for_client_credentials(
     app_data: Data<AppData>,
