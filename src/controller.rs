@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
 use actix_web::web::{Data, Either, Form, Json, Path};
-use actix_web::{get, post, HttpResponse, HttpRequest};
+use actix_web::{get, post, HttpRequest, HttpResponse};
 
 use crate::model::{
     AppData, AuthorizationCodeTokenRequest, Claims, ClientCredentialsTokenRequest, GrantType, IdTokenClaims, Jwk, Jwks,
-    LoginRequest, LoginResponse, PermissionsForAudienceRequest, TokenRequest, TokenResponse, OpenIDMetadata,
+    LoginRequest, LoginResponse, OpenIDMetadata, PermissionsForAudienceRequest, TokenRequest, TokenResponse,
 };
 use crate::{CLIENT_ID_VALUE, CLIENT_SECRET_VALUE};
 
@@ -122,12 +122,11 @@ pub async fn revoke_keys(app_data: Data<AppData>) -> HttpResponse {
 #[get("/.well-known/openid-configuration")]
 pub async fn openid_configuration(app_data: Data<AppData>, req: HttpRequest) -> HttpResponse {
     let conn = req.connection_info();
-    let base_uri = format!("{}://{}",conn.scheme(), conn.host());
+    let base_uri = format!("{}://{}", conn.scheme(), conn.host());
 
     let metadata = OpenIDMetadata::new(app_data.jwks(), app_data.config(), &base_uri);
     HttpResponse::Ok().json(&metadata)
 }
-
 
 pub async fn jwt_for_client_credentials(
     app_data: Data<AppData>,
