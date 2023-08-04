@@ -120,7 +120,7 @@ pub async fn jwt_for_client_credentials(
 ) -> HttpResponse {
     if request.client_id == CLIENT_ID_VALUE && request.client_secret == CLIENT_SECRET_VALUE {
         let response: TokenResponse = new_token_response(
-            &*app_data,
+            &app_data,
             request.audience.as_str(),
             GrantType::ClientCredentials,
             None,
@@ -147,7 +147,7 @@ pub async fn jwt_for_authorization_code(
             .expect("Failed to get audience for authorization");
 
         let response: TokenResponse = new_token_response(
-            &*app_data,
+            &app_data,
             audience.as_str(),
             GrantType::AuthorizationCode,
             request.nonce,
