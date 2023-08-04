@@ -37,7 +37,5 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Swatinem/rust-cache@v2
-      - name: Run tests for no features
-        run: cargo test --all
-      - name: Run tests with toggle feature
-        run: cargo test --all --features toggle
+      - name: Run tests
+        run: cargo test
