@@ -119,12 +119,8 @@ pub async fn jwt_for_client_credentials(
     request: ClientCredentialsTokenRequest,
 ) -> HttpResponse {
     if request.client_id == CLIENT_ID_VALUE && request.client_secret == CLIENT_SECRET_VALUE {
-        let response: TokenResponse = new_token_response(
-            &app_data,
-            request.audience.as_str(),
-            GrantType::ClientCredentials,
-            None,
-        );
+        let response: TokenResponse =
+            new_token_response(&app_data, request.audience.as_str(), GrantType::ClientCredentials, None);
 
         HttpResponse::Ok()
             .content_type("application/json")
