@@ -1,0 +1,38 @@
+name: CI
+
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    # Avoid duplicate jobs on PR from a branch on the same repo
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+      - name: Build
+        run: cargo build --workspace --all-features
+      - name: Build Web
+        run: trunk build web/index.html
+      - name: cargo fmt
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-features -- -D warnings
+      - name: Build docs
+        run: cargo doc --document-private-items --workspace --all-features --no-deps
+    env:
+      RUSTDOCFLAGS: -Dwarnings
+  test:
+    # Avoid duplicate jobs on PR from a branch on the same repo
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Swatinem/rust-cache@v2
+      - name: Run tests for no features
+        run: cargo test --all
+      - name: Run tests with toggle feature
+        run: cargo test --all --features toggle
