@@ -12,6 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: true
+          token: ${{ secrets.PYXIS_TOKEN }}
+
       - uses: Swatinem/rust-cache@v2
 
       - run: rustup target add wasm32-unknown-unknown
