@@ -48,7 +48,12 @@ jobs:
         run: cargo test
 
   alls-green:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    # I hate github actions.
+    # A default status check of success() is applied unless you include another status check function, like always().
+    # https://docs.github.com/en/actions/learn-github-actions/expressions#status-check-functions
+    # https://stackoverflow.com/questions/58858429/how-to-run-a-github-actions-step-even-if-the-previous-step-fails-while-still-f
+
+    if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name)
     runs-on: ubuntu-latest
     needs:
       - lint
