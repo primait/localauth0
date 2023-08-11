@@ -14,7 +14,8 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: true
-          token: ${{ secrets.PYXIS_TOKEN }}
+          ssh-key: ${{ secrets.PYXIS_RO }}
+          persist-credentials: false
 
       - uses: Swatinem/rust-cache@v2
 
