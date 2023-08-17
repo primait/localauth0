@@ -36,7 +36,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: "TODO!"
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID_SHARED_SERVICES_PRODUCTION }}:role/oidc-github-ecr-localauth0
           aws-region: eu-west-1
 
       - name: Login to public ECR
