@@ -118,7 +118,7 @@ pub async fn revoke_keys(app_data: Data<AppData>) -> HttpResponse {
 }
 
 /// .well-known/jwks.json route. This is the standard route to fetch the openid configuration
-/// See << https://openid.net/specs/openid-connect-discovery-1_0.html#WellKnownRegistry >>
+/// See <https://openid.net/specs/openid-connect-discovery-1_0.html#WellKnownRegistry>
 #[get("/.well-known/openid-configuration")]
 pub async fn openid_configuration(app_data: Data<AppData>, req: HttpRequest) -> HttpResponse {
     let conn = req.connection_info();
