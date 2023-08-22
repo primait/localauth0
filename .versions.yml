@@ -1,0 +1,8 @@
+files:
+  - path: Cargo.toml
+    pattern: "\\[package\\][\\s\\S]*?version = \"{version}\""
+  - path: README.md
+    pattern: "    image: public.ecr.aws/prima/localauth0:{version}"
+  - path: README.md
+    pattern: "docker run -d -p 3000:3000 public.ecr.aws/prima/localauth0:{version}"
+

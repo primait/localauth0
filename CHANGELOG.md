@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.6.0] - 2023-08-22
+
 ### Added
 - A /.well-known/openid-configuration making it easier to use localauth0 as a generic openid server
 
@@ -105,7 +109,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - First release 🎉
 
-[Unreleased]: https://github.com/primait/localauth0/compare/0.5.0...HEAD
+
+[Unreleased]: https://github.com/primait/localauth0/compare/0.6.0...HEAD
+[0.6.0]: https://github.com/primait/localauth0/compare/0.5.0...0.6.0
 [0.5.0]: https://github.com/primait/localauth0/compare/0.4.1...0.5.0
 [0.4.1]: https://github.com/primait/localauth0/compare/0.4.0...0.4.1
 [0.4.0]: https://github.com/primait/localauth0/compare/0.3.0...0.4.0
