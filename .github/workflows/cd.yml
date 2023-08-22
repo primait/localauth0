@@ -1,0 +1,51 @@
+name: CD
+
+on:
+  release:
+    types: [published]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          ssh-key: ${{ secrets.PYXIS_RO }}
+          persist-credentials: false
+
+      - uses: Swatinem/rust-cache@v2
+
+      - run: rustup target add wasm32-unknown-unknown
+      - name: install tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: trunk@0.17
+
+      - name: Build
+        run: cargo build --release
+      - name: Build web
+        run: trunk build web/index.html
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID_SHARED_SERVICES_PRODUCTION }}:role/oidc-github-ecr-localauth0
+          aws-region: eu-west-1
+
+      - name: Login to public ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: "public.ecr.aws/prima/localauth0:${{ github.event.release.tag_name }}"
+          file: "Dockerfile_localauth0"
