@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- A /.well-known/openid-configuration making it easier to use localauth0 as a generic openid server
+
 ---
 
 ## [0.5.0]
