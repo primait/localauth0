@@ -37,7 +37,7 @@ jobs:
       - name: Build
         run: cargo build --release
       - name: Build web
-        run: trunk build web/index.html
+        run: trunk build --release web/index.html
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
