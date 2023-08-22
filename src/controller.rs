@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
-use actix_web::web::{Data, Form, Json, Path};
-use actix_web::{get, post, HttpResponse};
+use actix_web::web::{Data, Either, Form, Json, Path};
+use actix_web::{get, post, HttpRequest, HttpResponse};
 
 use crate::model::{
     AppData, AuthorizationCodeTokenRequest, Claims, ClientCredentialsTokenRequest, GrantType, IdTokenClaims, Jwk, Jwks,
-    LoginRequest, LoginResponse, PermissionsForAudienceRequest, TokenRequest, TokenResponse,
+    LoginRequest, LoginResponse, OpenIDMetadata, PermissionsForAudienceRequest, TokenRequest, TokenResponse,
 };
 use crate::{CLIENT_ID_VALUE, CLIENT_SECRET_VALUE};
 
@@ -18,25 +18,25 @@ pub async fn jwks(app_data: Data<AppData>) -> HttpResponse {
         .body(serde_json::to_string(&jwks).expect("Failed to serialize JWKS to json"))
 }
 
-/// Handler for application/json encoded post bodies to the token endpoint
-pub async fn jwt_json_body_handler(app_data: Data<AppData>, token_request: Json<TokenRequest>) -> HttpResponse {
-    jwt(app_data, token_request.0).await
-}
-
-/// Handler for application/x-www-form-urlencoded encoded post bodies to the token endpoint.
-/// This is the required format specified by `https://www.rfc-editor.org/rfc/rfc6749#section-4.4.2`. and auth0
-pub async fn jwt_form_body_handler(app_data: Data<AppData>, token_request: Form<TokenRequest>) -> HttpResponse {
-    jwt(app_data, token_request.0).await
+impl jwks {
+    pub const ENDPOINT: &str = "/.well-known/jwks.json";
 }
 
 /// Generate a new jwt token for a given audience. For `client_credentials` the audience is found in the post body
 /// and for `authorization_code` the audience is found in the authorizations cache.
 /// All the permissions found in the local store will be included in the generated token.
-async fn jwt(app_data: Data<AppData>, token_request: TokenRequest) -> HttpResponse {
+#[post("/oauth/token")]
+async fn token(app_data: Data<AppData>, token_request: Either<Json<TokenRequest>, Form<TokenRequest>>) -> HttpResponse {
+    let (Either::Left(Json(token_request)) | Either::Right(Form(token_request))) = token_request;
+
     match token_request {
         TokenRequest::ClientCredentials(request) => jwt_for_client_credentials(app_data, request).await,
         TokenRequest::AuthorizationCode(request) => jwt_for_authorization_code(app_data, request).await,
     }
+}
+
+impl token {
+    pub const ENDPOINT: &str = "/oauth/token";
 }
 
 /// Logs the "user" in and returns an auth code which can be exchanged for a token
@@ -51,6 +51,9 @@ pub async fn login(app_data: Data<AppData>, login_request: Json<LoginRequest>) -
     HttpResponse::Ok()
         .content_type("application/json")
         .body(serde_json::to_string(&LoginResponse { code }).expect("Failed to serialize login response to json"))
+}
+impl login {
+    pub const ENDPOINT: &str = "/oauth/login";
 }
 
 /// List all audience-permissions mappings present in local implementation
@@ -112,6 +115,17 @@ pub async fn rotate_keys(app_data: Data<AppData>) -> HttpResponse {
 pub async fn revoke_keys(app_data: Data<AppData>) -> HttpResponse {
     app_data.jwks().revoke_keys().expect("Failed to revoke keys");
     HttpResponse::Ok().content_type("text/plain").body("ok")
+}
+
+/// .well-known/jwks.json route. This is the standard route to fetch the openid configuration
+/// See <https://openid.net/specs/openid-connect-discovery-1_0.html#WellKnownRegistry>
+#[get("/.well-known/openid-configuration")]
+pub async fn openid_configuration(app_data: Data<AppData>, req: HttpRequest) -> HttpResponse {
+    let conn = req.connection_info();
+    let base_uri = format!("{}://{}", conn.scheme(), conn.host());
+
+    let metadata = OpenIDMetadata::new(app_data.jwks(), app_data.config(), &base_uri);
+    HttpResponse::Ok().json(&metadata)
 }
 
 pub async fn jwt_for_client_credentials(

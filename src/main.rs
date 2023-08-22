@@ -3,7 +3,7 @@ use std::time::Duration;
 use actix_files::{Files, NamedFile};
 use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::web::{self, Data};
-use actix_web::{guard, middleware, App, HttpServer};
+use actix_web::{middleware, App, HttpServer};
 
 use futures::Future;
 use openssl::ssl::{SslAcceptor, SslAcceptorBuilder, SslMethod};
@@ -67,19 +67,8 @@ fn setup_service(cfg: &mut web::ServiceConfig) {
         .service(controller::rotate_keys)
         .service(controller::revoke_keys)
         .service(controller::login)
-        .service(
-            web::resource("/oauth/token")
-                .route(
-                    web::post()
-                        .guard(guard::Header("content-type", "application/json"))
-                        .to(controller::jwt_json_body_handler),
-                )
-                .route(
-                    web::post()
-                        .guard(guard::Header("content-type", "application/x-www-form-urlencoded"))
-                        .to(controller::jwt_form_body_handler),
-                ),
-        )
+        .service(controller::token)
+        .service(controller::openid_configuration)
         .service(
             Files::new("/", "./web/dist")
                 .index_file("index.html")
