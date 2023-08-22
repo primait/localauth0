@@ -9,7 +9,7 @@ RUN apt-get update && \
   apt-get clean && \
   apt-get autoremove
 
-COPY target/debug/localauth0 /localauth0
+COPY target/release/localauth0 /localauth0
 COPY web/dist /web/dist
 
 ENTRYPOINT ["/localauth0"]
