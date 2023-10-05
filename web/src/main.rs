@@ -26,11 +26,11 @@ impl Component for Model {
                     <div class="columns is-centered">
                         <div class="column is-half">
                             <div class="level">
-                              <div class="level-item has-text-centered">
-                                  <figure class="image logo">
-                                    <img src="assets/static/media/localauth0.png" width="80" height="80" alt="Localauth0 logo" />
-                                </figure>
-                              </div>
+                                <div class="level-item has-text-centered">
+                                    <figure class="image logo">
+                                        <img src="assets/static/media/localauth0.png" width="80" height="80" alt="Localauth0 logo" />
+                                    </figure>
+                                </div>
                             </div>
                         </div>
                     </div>
