@@ -1,14 +1,13 @@
 use std::str::FromStr;
 
+use msg::Msg;
 use serde::Deserialize;
 use url::Url;
-use yew::{html, Component, Context, Html};
+use yew::{Component, Context, html, Html};
 use yew_router::prelude::{Location, RouterScopeExt};
 
-use msg::Msg;
-
-use crate::pages::model::Jwt;
 use crate::pages::{bindgen, bridge};
+use crate::pages::model::Jwt;
 
 mod msg;
 
@@ -28,6 +27,11 @@ struct QueryParams {
     response_type: String,
     state: Option<String>,
     bypass: Option<bool>,
+}
+
+enum View<'a> {
+    Token(Url),
+    Code(&'a Context<SSO>),
 }
 
 pub struct SSO {
@@ -104,7 +108,7 @@ impl Component for SSO {
                             let () = bridge::login(ctx, |code| Msg::CodeReceived(code), query_params.audience.clone());
                             html! { <div>{"Loading.."}</div>}
                         }
-                        None => code_login_view(ctx),
+                        None => login_view(View::Code(ctx)),
                     },
                     Ok(url) => match self.token.clone() {
                         None => {
@@ -119,7 +123,7 @@ impl Component for SSO {
                         }
                         Some(token) => {
                             let url: Url = build_token_url(query_params.state.as_ref(), url, token);
-                            token_login_view(url)
+                            login_view(View::Token(url))
                         }
                     },
                 }
@@ -129,13 +133,13 @@ impl Component for SSO {
 }
 
 // Redirects browser directly to redirect uri
-fn token_login_view(redirect_uri: Url) -> Html {
+fn login_view(view: View) -> Html {
     html! {
-        <div class="form-grid">
-            <div class="form-grid__row form-grid__row--small">
-                <div class="form-grid__row__column">
-                    <div class="button-row button-row--center">
-                        <a class="button button--primary button--huge" href={redirect_uri.to_string()}>{"Login"}</a>
+        <div class="columns is-centered">
+            <div class="column is-half">
+                <div class="level">
+                    <div class="level-item has-text-centered pt-6">
+                        {{button_for_view(view)}}
                     </div>
                 </div>
             </div>
@@ -143,18 +147,15 @@ fn token_login_view(redirect_uri: Url) -> Html {
     }
 }
 
-// When users are supported this view can collect credentials to forward to the backend, but currently no credentials are required.
-fn code_login_view(ctx: &Context<SSO>) -> Html {
-    html! {
-        <div class="form-grid">
-            <div class="form-grid__row form-grid__row--small">
-                <div class="form-grid__row__column">
-                    <div class="button-row button-row--center">
-                        <a class="button button--primary button--huge" type="button" onclick={ctx.link().callback(|_|Msg::LoginPressed)}>{"Login"}</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+fn button_for_view(view: View) -> Html {
+    match view {
+        View::Token(url) => html! {
+            <a class="button is-large is-responsive is-success is-light is-outlined" type="button" href={url.to_string()}>{"Login"}</a>
+        },
+        View::Code(ctx) => html! {
+            // When users are supported this view can collect credentials to forward to the backend, but currently no credentials are required.
+            <a class="button is-large is-responsive is-success is-light is-outlined" type="button" onclick={ctx.link().callback(|_|Msg::LoginPressed)}>{"Login"}</a>
+        }
     }
 }
 

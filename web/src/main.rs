@@ -44,7 +44,7 @@ impl Component for Model {
                         </div>
                     </div>
 
-                    // <Switch<Route> render={Switch::render(route::switch)} />
+                    <Switch<Route> render={Switch::render(route::switch)} />
                 </div>
             </BrowserRouter>
         }
