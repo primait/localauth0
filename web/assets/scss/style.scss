@@ -4,3 +4,17 @@
   width: 80px;
   height: 80px;
 }
+
+.copy-wrapper {
+  display: flex;
+  justify-content: end;
+}
+
+.button-copy {
+  cursor: pointer;
+}
+
+.padding-03 {
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+}

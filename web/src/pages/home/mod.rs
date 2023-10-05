@@ -116,6 +116,13 @@ impl Component for Home {
 
                 true
             }
+            Msg::PermissionKeyUp(event) => {
+                if 13 == event.key_code() {
+                    self.update(ctx, Msg::AddPermission)
+                } else {
+                    false
+                }
+            }
         }
     }
 
@@ -123,42 +130,85 @@ impl Component for Home {
         let onfocusout = ctx.link().callback(|_| Msg::AudienceFocusOut);
 
         html! {
-            <div class="form-grid">
-                <div class="form-grid__row form-grid__row--small">
-                    <div class="form-item">
-                        <label class="form-label" for="audience">{ "Audience" }</label>
-                        <div class="form-item__wrapper">
-                            <div class="form-field">
-                                <label class="form-field__wrapper">
-                                    <input id="form-item-name" class="form-field__text" name="audience" type="text" onblur={onfocusout} placeholder="audience" ref={self.audience_input_ref.clone()}/>
-                                </label>
+            <div>
+                // Audience form
+                <div class="columns is-centered pt-5">
+                    <div class="column is-one-third">
+                        <div class="field">
+                            <label class="label">{"Audience"}</label>
+                            <div class="control">
+                                <input class="input" type="text" placeholder="Audience" onblur={onfocusout} ref={self.audience_input_ref.clone()}/>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                {{permission_input_view(&self, ctx)}}
-
-                { for self.permissions.iter().map(|permission| view_entry(ctx, permission.to_string())) }
-
-                <div class="form-grid__row form-grid__row--small">
-                    <div class="form-item">
-                        <label class="form-label" for="label-and-textarea">{ "Token" }</label>
-                        <div class="form-item__wrapper">
-                            <div class="form-field">
-                                <div class="token-area">{self.token.as_ref().map(|jwt| jwt.access_token().to_string()).unwrap_or_else(|| "No token".to_string())}</div>
+                // Permissions form
+                {
+                    if !self.audience.is_empty() {
+                        html! {
+                            <div class="columns is-centered">
+                                <div class="column is-one-third">
+                                    <div class="field">
+                                        <label class="label">{"Permissions"}</label>
+                                        <div class="columns">
+                                            <div class="column is-four-fifths">
+                                                <input class="input" type="text" placeholder="Permissions" ref={&self.permission_input_ref.clone()} onkeyup={ctx.link().callback(|e| Msg::PermissionKeyUp(e))}/>
+                                            </div>
+                                            <div class="column level">
+                                                <div class="level-right">
+                                                    <a class="button is-responsive is-success is-light is-outlined" type="button" onclick={ctx.link().batch_callback(|_| { Some(Msg::AddPermission) })}>
+                                                        <div aria-hidden="false" aria-label="Add permission" class="icon icon--size-l" role="img">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                                                                <path d="M22.281 11.5H12.5V1.719a.5.5 0 1 0-1 0V11.5H1.719a.5.5 0 1 0 0 1H11.5v9.781a.5.5 0 0 0 1 0V12.5h9.781a.5.5 0 0 0 0-1z"></path>
+                                                            </svg>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    } else {
+                        html! {}
+                    }
+                }
+                // Permission entries
+                {
+                    if !self.permissions.is_empty() {
+                        html! {
+                            <div class="pt-4 pb-6">
+                            {
+                                for self.permissions.iter().map(|permission| permission_entry(ctx, permission.to_string()))
+                            }
+                            </div>
+                        }
+                    } else {
+                        html! {}
+                    }
+                }
+                // Token form
+                <div class="columns is-centered">
+                    <div class="column is-one-third">
+                        <div class="field">
+                            <label class="label">{"Token"}</label>
+                            <div class="control">
+                                <textarea class="textarea" value={self.token.as_ref().map(|jwt| jwt.access_token().to_string()).unwrap_or_else(|| "No token".to_string())} readonly=true></textarea>
                                 <div class="copy-wrapper">
-                                    <span class="badge button-copy" onclick={ctx.link().callback(|_| Msg::CopyToken)}>{if self.copied { "Copied!" } else { "Copy" } }</span>
+                                    <span class="tag button-copy" onclick={ctx.link().callback(|_| Msg::CopyToken)}>{if self.copied { "Copied!" } else { "Copy" } }</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="form-grid__row form-grid__row--small">
-                    <div class="form-grid__row__column">
-                        <div class="button-row button-row--center">
-                            <button class="button button--primary button--huge" disabled={self.audience.is_empty()} onclick={ctx.link().callback(|_| Msg::SetPermissions)}>{"Generate token"}</button>
+                // Generate token button
+                <div class="columns is-centered">
+                    <div class="column is-one-third">
+                        <div class="level">
+                            <div class="level-item has-text-centered">
+                                <button class="button is-responsive is-success is-light is-outlined" type="button" disabled={self.audience.is_empty()} onclick={ctx.link().callback(|_| Msg::SetPermissions)}>{"Generate token"}</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -167,73 +217,29 @@ impl Component for Home {
     }
 }
 
-fn permission_input_view(home: &Home, ctx: &Context<Home>) -> Html {
+fn permission_entry(ctx: &Context<Home>, permission: String) -> Html {
     html! {
-        <div class="form-grid__row form-grid__row--small">
-            <div class="form-grid__row__column form-grid__row__column--span-5">
-                <div class="form-item">
-                    <label class="form-label" for="permission">{ "Permission" }</label>
-                    <div class="form-item__wrapper">
-                        <div class="form-field">
-                            <label class="form-field__wrapper">
-                                <input id="form-item-name" class="form-field__text" type="text" placeholder="permission" ref={home.permission_input_ref.clone()}/>
-                            </label>
+        <div class="columns is-centered padding-03">
+            <div class="column is-one-third padding-03">
+                <div class="field">
+                    <div class="columns">
+                        <div class="column is-four-fifths padding-03">
+                            <p style="padding-top: 5px;">{permission.clone()}</p>
+                        </div>
+                        <div class="column level padding-03">
+                            <div class="level-right">
+                                <a class="button is-small is-responsive is-success is-light is-outlined" type="button" onclick={ctx.link().callback(move |_| Msg::RemovePermission(permission.clone()))}>
+                                    <div aria-hidden="false" aria-label="Add permission" class="icon icon--size-l" role="img">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                                            <path d="M12.714 11.976l9.121-9.121a.5.5 0 1 0-.707-.707l-9.121 9.121-9.121-9.121a.5.5 0 0 0-.707.707l9.121 9.121-9.121 9.121a.5.5 0 1 0 .707.707l9.121-9.121 9.121 9.121a.5.5 0 1 0 .707-.707z"></path>
+                                        </svg>
+                                    </div>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="form-grid__row__column display-grid">
-                <button class="button button--primary button--huge button--icon-only permission-button" type="button" onclick={ctx.link().batch_callback(|_| { Some(Msg::AddPermission) })}>
-                    <div aria-hidden="false" aria-label="Add permission" class="icon icon--size-l" role="img">
-                        {{permission_add_icon()}}
-                    </div>
-                </button>
-            </div>
         </div>
-    }
-}
-
-fn view_entry(ctx: &Context<Home>, permission: String) -> Html {
-    html! {
-        <div class="form-grid__row form-grid__row--small">
-            <div class="form-grid__row__column form-grid__row__column--span-5">
-                <div class="form-item">
-                    <div class="form-item__wrapper">
-                        <div class="form-field">
-                            <label class="form-field__wrapper">
-                                <input id="form-item-name" class="form-field__text" readonly=true type="text" value={permission.clone()} />
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-grid__row__column display-grid">
-                <button
-                    type="button"
-                    class="button button--primary button--huge button--icon-only permission-button"
-                    onclick={ctx.link().callback(move |_| Msg::RemovePermission(permission.clone()))}>
-                    <div aria-hidden="false" aria-label="Remove permission" class="icon icon--size-l" role="img">
-                        {{permission_delete_icon()}}
-                    </div>
-                </button>
-            </div>
-        </div>
-    }
-}
-
-fn permission_add_icon() -> Html {
-    html! {
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-            <path d="M22.281 11.5H12.5V1.719a.5.5 0 1 0-1 0V11.5H1.719a.5.5 0 1 0 0 1H11.5v9.781a.5.5 0 0 0 1 0V12.5h9.781a.5.5 0 0 0 0-1z"></path>
-        </svg>
-    }
-}
-
-fn permission_delete_icon() -> Html {
-    html! {
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-            <path d="M12.714 11.976l9.121-9.121a.5.5 0 1 0-.707-.707l-9.121 9.121-9.121-9.121a.5.5 0 0 0-.707.707l9.121 9.121-9.121 9.121a.5.5 0 1 0 .707.707l9.121-9.121 9.121 9.121a.5.5 0 1 0 .707-.707z"></path>
-        </svg>
     }
 }
