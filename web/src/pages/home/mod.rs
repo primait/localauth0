@@ -12,6 +12,8 @@ use crate::util::IsEmpty;
 
 mod msg;
 
+const ENTER_KEY: u32 = 13;
+
 pub struct Home {
     pub audience_input_ref: NodeRef,
     pub permission_input_ref: NodeRef,
@@ -117,7 +119,7 @@ impl Component for Home {
                 true
             }
             Msg::PermissionKeyUp(event) => {
-                if 13 == event.key_code() {
+                if ENTER_KEY == event.key_code() {
                     self.update(ctx, Msg::AddPermission)
                 } else {
                     false

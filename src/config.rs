@@ -268,7 +268,7 @@ mod tests {
         assert_eq!(config.user_info().gender, "gender");
         assert_eq!(config.user_info().birthdate, "birthdate");
         assert_eq!(config.user_info().email, "email");
-        assert_eq!(config.user_info().email_verified, true);
+        assert!(config.user_info().email_verified);
         assert_eq!(
             config.user_info().updated_at,
             DateTime::parse_from_rfc3339("2022-11-11T11:00:00Z").unwrap()
