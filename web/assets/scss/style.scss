@@ -1,26 +1,6 @@
-.display-grid {
-  display: grid;
-}
+@import "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma-rtl.min.css";
 
-.permission-button {
-  align-self: end;
-}
-
-.token-area {
-  font-family: monospace;
-  word-break: break-all;
-  padding-bottom: 0;
-}
-
-.button-row--center {
-  justify-content: center;
-}
-
-.copy-wrapper {
-  display: flex;
-  justify-content: end;
-}
-
-.button-copy {
-  cursor: pointer;
+.logo {
+  width: 80px;
+  height: 80px;
 }

@@ -22,22 +22,29 @@ impl Component for Model {
     fn view(&self, _ctx: &Context<Self>) -> Html {
         html! {
             <BrowserRouter>
-                <div class="container padding-v-l">
-                    <div class="form-grid">
-                        <div class="form-grid__row form-grid__row--small">
-                            <div class="form-grid__row__column">
-                                <legend class="form-legend">
-                                    <span class="form-legend__addon">
-                                        <img src="assets/static/media/localauth0.png" width="80" height="80" alt="Localauth0 logo" />
-                                    </span>
-                                    <span class="form-legend__title">{"LOCALAUTH0"}</span>
-                                </legend>
+                <div class="container pt-6">
+                    <div class="columns is-centered">
+                        <div class="column is-half">
+                            <div class="level">
+                              <div class="level-item has-text-centered">
+                                  <figure class="image logo">
+                                    <img src="assets/static/media/localauth0.png" width="80" height="80" alt="Localauth0 logo" />
+                                </figure>
+                              </div>
                             </div>
                         </div>
-
-                        <Switch<Route> render={Switch::render(route::switch)} />
-
                     </div>
+                    <div class="columns is-centered">
+                        <div class="column is-half">
+                            <div class="level">
+                                <div class="level-item has-text-centered">
+                                    <h4 class="title is-4">{"LOCALAUTH0"}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    // <Switch<Route> render={Switch::render(route::switch)} />
                 </div>
             </BrowserRouter>
         }
