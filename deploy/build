@@ -24,6 +24,4 @@ export ENV=$1
 export AWS_DEFAULT_REGION="eu-west-1"
 export VERSION="${DRONE_TAG:-$DRONE_COMMIT_SHA}"
 
-cargo build
-
 ./build.sh . 'public.ecr.aws/prima/localauth0:'

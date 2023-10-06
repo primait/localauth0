@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.1] - 2023-10-06
+
+### Changed
+- No longer using pyxis as css library; using bulma instead.
+
+---
+
 ## [0.6.0] - 2023-08-22
 
 ### Added
@@ -110,7 +117,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - First release 🎉
 
 
-[Unreleased]: https://github.com/primait/localauth0/compare/0.6.0...HEAD
+[Unreleased]: https://github.com/primait/localauth0/compare/0.6.1...HEAD
+[0.6.1]: https://github.com/primait/localauth0/compare/0.6.0...0.6.1
 [0.6.0]: https://github.com/primait/localauth0/compare/0.5.0...0.6.0
 [0.5.0]: https://github.com/primait/localauth0/compare/0.4.1...0.5.0
 [0.4.1]: https://github.com/primait/localauth0/compare/0.4.0...0.4.1
