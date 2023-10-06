@@ -6,7 +6,7 @@ use localauth0_web::route::{self, Route};
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
-    yew::start_app::<Model>();
+    yew::Renderer::<Model>::new().render();
 }
 
 pub struct Model {}
@@ -44,7 +44,7 @@ impl Component for Model {
                         </div>
                     </div>
 
-                    <Switch<Route> render={Switch::render(route::switch)} />
+                    <Switch<Route> render={route::switch} />
                 </div>
             </BrowserRouter>
         }
