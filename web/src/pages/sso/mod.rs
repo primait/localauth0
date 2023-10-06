@@ -4,7 +4,7 @@ use msg::Msg;
 use serde::Deserialize;
 use url::Url;
 use yew::{Component, Context, html, Html};
-use yew_router::prelude::{Location, RouterScopeExt};
+use yew_router::prelude::RouterScopeExt;
 
 use crate::pages::{bindgen, bridge};
 use crate::pages::model::Jwt;

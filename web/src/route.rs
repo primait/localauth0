@@ -13,7 +13,7 @@ pub enum Route {
     NotFound,
 }
 
-pub fn switch(routes: &Route) -> Html {
+pub fn switch(routes: Route) -> Html {
     match routes {
         Route::Home => html! { <Home /> },
         Route::SSO => html! { <SSO /> },
