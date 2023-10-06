@@ -5,6 +5,11 @@ version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[profile.release]
+opt-level = "z" # Optimize for size.
+lto = true # instructs the linker to optimize at the link stage
+codegen-units = 1 # run parallel compilation prevents some optimizations
+
 [dependencies]
 yew = { version = "0.21", features = ["csr"] }
 yew-router = "0.18"

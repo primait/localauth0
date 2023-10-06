@@ -1,15 +1,31 @@
-FROM debian:10.2-slim
+FROM clux/muslrust:stable as builder
 
-RUN apt-get update && \
-  apt-get upgrade -y && \
-  apt-get install --no-install-recommends -y \
-    libssl1.1 \
-    libssl-dev && \
-  rm -r /var/lib/apt/lists/* && \
-  apt-get clean && \
-  apt-get autoremove
+# Installing trunk
+RUN rustup target add wasm32-unknown-unknown && \
+    cargo install --locked trunk
 
-COPY target/release/localauth0 /localauth0
-COPY web/dist /web/dist
+# Copying the project resources
+COPY Cargo.lock .
+COPY Cargo.toml .
+COPY src ./src
+COPY web ./web
 
-ENTRYPOINT ["/localauth0"]
+RUN set -x && \
+    # Building the binary and the web distro
+    cargo build --target x86_64-unknown-linux-musl --release && \
+    # Build web distro as release with trunk
+    trunk build --release web/index.html
+
+# Copying resources to build directory
+RUN set -x &&  \
+    mkdir -p /build/web/dist/ && \
+    cp target/x86_64-unknown-linux-musl/release/localauth0 /build/ && \
+    cp -r web/dist/ /build/web/
+
+# Create the final minimal docker image
+FROM scratch
+
+ENV RUST_LOG="error,localauth0=info"
+COPY --from=builder /build /
+
+CMD ["/localauth0"]
