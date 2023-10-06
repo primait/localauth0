@@ -10,20 +10,15 @@ COPY Cargo.toml .
 COPY src ./src
 COPY web ./web
 
-# Temp: copying pyxis
-COPY pyxis ./pyxis
-
-# Building the binary and the web distro
-RUN set -x && cargo build --target x86_64-unknown-linux-musl --release
-
-# Build web distro
-RUN set -x && trunk build --release web/index.html
-
-# Create build directories
-RUN mkdir -p /build/web/dist/
+RUN set -x && \
+    # Building the binary and the web distro
+    cargo build --target x86_64-unknown-linux-musl --release && \
+    # Build web distro as release with trunk
+    trunk build --release web/index.html
 
 # Copying resources to build directory
 RUN set -x &&  \
+    mkdir -p /build/web/dist/ && \
     cp target/x86_64-unknown-linux-musl/release/localauth0 /build/ && \
     cp -r web/dist/ /build/web/
 

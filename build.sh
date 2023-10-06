@@ -2,8 +2,6 @@
 
 set -e
 
-
-
 DOCKERFILE_PATH=$1
 IMAGE_PREFIX=$2
 
