@@ -1,22 +1,8 @@
-@use "../../../pyxis/packages/pyxis-scss/src/scss/pyxis";
+@import "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma-rtl.min.css";
 
-.display-grid {
-  display: grid;
-}
-
-.permission-button {
-  align-self: end;
-}
-
-.token-area {
-  @include pyxis.padding(s);
-  font-family: monospace;
-  word-break: break-all;
-  padding-bottom: 0;
-}
-
-.button-row--center {
-  justify-content: center;
+.logo {
+  width: 80px;
+  height: 80px;
 }
 
 .copy-wrapper {
@@ -25,6 +11,10 @@
 }
 
 .button-copy {
-  margin: pyxis.spacing(3xs);
   cursor: pointer;
+}
+
+.padding-03 {
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
 }

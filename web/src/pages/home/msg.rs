@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use yew::KeyboardEvent;
 
 use crate::pages::model::Jwt;
 
@@ -15,4 +16,5 @@ pub enum Msg {
     AddPermission,
     RemovePermission(String),
     SetPermissions,
+    PermissionKeyUp(KeyboardEvent),
 }

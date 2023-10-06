@@ -17,6 +17,6 @@ pub fn switch(routes: &Route) -> Html {
     match routes {
         Route::Home => html! { <Home /> },
         Route::SSO => html! { <SSO /> },
-        Route::NotFound => html! { <span class="title-xl-bold">{ "Page not found" }</span> },
+        Route::NotFound => html! { <span class="title-xl-bold">{"Page not found"}</span> },
     }
 }
