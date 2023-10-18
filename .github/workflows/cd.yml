@@ -55,6 +55,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: "public.ecr.aws/prima/localauth0:${{ inputs.tag_name || github.event.release.tag_name }}"
+          tags: "public.ecr.aws/c6i9l4r6/localauth0:${{ inputs.tag_name || github.event.release.tag_name }}"
           context: .
           file: "Dockerfile_localauth0"
