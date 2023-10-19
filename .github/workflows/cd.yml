@@ -19,6 +19,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v3
 
@@ -51,10 +52,21 @@ jobs:
           mask-password: "true"
           registry-type: public
 
+      - name: Login to ghcr
+        uses: docker/login-action@v3
+        with:
+          registry: https://ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: "public.ecr.aws/c6i9l4r6/localauth0:${{ inputs.tag_name || github.event.release.tag_name }}"
+          tags: |
+            public.ecr.aws/c6i9l4r6/localauth0:${{ inputs.tag_name || github.event.release.tag_name }}
+            public.ecr.aws/c6i9l4r6/localauth0:latest
+            ghcr.io/${{ github.repository }}:${{ inputs.tag_name || github.event.release.tag_name }}
+            ghcr.io/${{ github.repository }}:latest
           context: .
           file: "Dockerfile_localauth0"
