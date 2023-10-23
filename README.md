@@ -1,6 +1,6 @@
 # Localauth0
 
-[![Build Status](https://drone-1.prima.it/api/badges/primait/localauth0/status.svg)](https://drone-1.prima.it/primait/localauth0)
+[![Build Status](https://github.com/primait/localauth0/actions/workflows/ci.yml/badge.svg)](https://github.com/primait/localauth0/actions/workflows/ci.yml/badge.svg)
 
 ![localauth0](web/assets/static/media/localauth0.png)
 
