@@ -1,6 +1,6 @@
 # Localauth0
 
-[![Build Status](https://drone-1.prima.it/api/badges/primait/localauth0/status.svg)](https://drone-1.prima.it/primait/localauth0)
+[![Build Status](https://github.com/primait/localauth0/actions/workflows/ci.yml/badge.svg)](https://github.com/primait/localauth0/actions/workflows/ci.yml/badge.svg)
 
 ![localauth0](web/assets/static/media/localauth0.png)
 
@@ -13,7 +13,7 @@ With localauth0 you can fake your [auth0](https://auth0.com/) tenant and test it
 In order to run localauth0 docker image execute the following:
 
 ```shell
-docker run -d -p 3000:3000 public.ecr.aws/prima/localauth0:0.6.0
+docker run -d -p 3000:3000 public.ecr.aws/c6i9l4r6/localauth0:0.6.1
 ```
 
 By default, the container exposes an http server on the port 3000 and an https one on port 3001.
@@ -172,7 +172,7 @@ Add this snippet to your `docker-compose.yml` file and reference it in your app 
 
 ```yaml
   auth0:
-    image: public.ecr.aws/prima/localauth0:0.6.0
+    image: public.ecr.aws/c6i9l4r6/localauth0:0.6.1
     environment:
       LOCALAUTH0_CONFIG_PATH: /etc/localauth0.toml
     volumes:
