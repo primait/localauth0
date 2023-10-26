@@ -22,7 +22,7 @@ serde_json = "1.0.80"
 
 base64 = "0.13.0"
 base64-url = "1.4.13"
-openssl = { version = "0.10.55", features = ["vendored"]}
+openssl = "0.10.55"
 
 chrono = {version = "0.4.19", features = ["serde"]}
 
@@ -37,3 +37,7 @@ toml = "0.5.9"
 prima_rs_logger = "0.1"
 
 futures = "0.3.21"
+
+[features]
+default = []
+vendor-openssl = [ "openssl/vendored" ]

@@ -31,7 +31,7 @@ jobs:
           tool: cross
 
       - name: Build 
-        run: cross build --release --target "${{ matrix.arch }}"
+        run: cross build --features vendor-openssl --release --target "${{ matrix.arch }}"
 
       - uses: actions/upload-artifact@v3
         with:
