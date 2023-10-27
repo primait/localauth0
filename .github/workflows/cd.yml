@@ -67,15 +67,19 @@ jobs:
 
       - name: Create container
         run: |-
-          for arch in amd64 arm64; do
-            rust_arch="$([ "$arch" = "arm64" ] && echo aarch64 || echo x86_64)-unknown-linux-musl"
+           buildah manifest create "localauth0"
+           for arch in amd64 arm64; do
+             rust_arch="$([ "$arch" = "arm64" ] && echo aarch64 || echo x86_64)-unknown-linux-musl"
 
-            ctr="$(buildah from --arch $arch scratch)"
-            buildah copy "$ctr" "./localauth0-$rust_arch/localauth0" "/localauth0"
-            buildah copy "$ctr" ./web/ /web
-            buildah config --env 'RUST_LOG error,localauth0=info' --cmd '["/localauth0"]' "$ctr"
-            buildah commit "$ctr" "localauth0:${{ inputs.tag_name || github.event.release.tag_name }}"
-          done
+             ctr="$(buildah from --arch $arch scratch)"
+             buildah copy "$ctr" "./localauth0-$rust_arch/localauth0" "/localauth0"
+             buildah copy "$ctr" ./web/ /web
+             buildah config \
+               --env 'RUST_LOG=error,localauth0=info' \
+               --cmd '["/localauth0"]' \
+               "$ctr"
+             buildah commit --manifest "localauth0" "$ctr"
+           done
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -92,6 +96,5 @@ jobs:
 
       - name: Push
         run: >-
-          buildah push --all
-          "localauth0:${{ inputs.tag_name || github.event.release.tag_name }}"
-          "public.ecr.aws/c6i9l4r6/localauth0:${{ inputs.tag_name || github.event.release.tag_name }}"
+           buildah manifest push --all localauth0
+           "public.ecr.aws/c6i9l4r6/localauth0:${{ inputs.tag_name || github.event.release.tag_name }}"
