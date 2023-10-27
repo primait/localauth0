@@ -7,9 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
+
+### Added
+
+- Native arm64 containers
+
+### Chanaged
+
+- Container size greatly reduced, going from over 300MiB to just a little over 5
+
 ---
 
 ## [0.6.1] - 2023-10-06
+
+Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 
 ### Changed
 - No longer using pyxis as css library; using bulma instead.
@@ -17,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ---
 
 ## [0.6.0] - 2023-08-22
+
+Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 
 ### Added
 - A /.well-known/openid-configuration making it easier to use localauth0 as a generic openid server
