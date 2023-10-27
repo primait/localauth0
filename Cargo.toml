@@ -37,3 +37,7 @@ toml = "0.5.9"
 prima_rs_logger = "0.1"
 
 futures = "0.3.21"
+
+[features]
+default = []
+vendor-openssl = [ "openssl/vendored" ]
