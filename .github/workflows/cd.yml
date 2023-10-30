@@ -97,4 +97,4 @@ jobs:
       - name: Push
         run: >-
            buildah manifest push --all localauth0
-           "public.ecr.aws/c6i9l4r6/localauth0:${{ inputs.tag_name || github.event.release.tag_name }}"
+           "docker://public.ecr.aws/c6i9l4r6/localauth0:${{ inputs.tag_name || github.event.release.tag_name }}"
