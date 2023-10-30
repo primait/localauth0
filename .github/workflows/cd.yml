@@ -70,9 +70,11 @@ jobs:
            buildah manifest create "localauth0"
            for arch in amd64 arm64; do
              rust_arch="$([ "$arch" = "arm64" ] && echo aarch64 || echo x86_64)-unknown-linux-musl"
+             localauth0_binary="./localauth0-$rust_arch/localauth0"
+             chmod +x "$localauth0_binary"
 
              ctr="$(buildah from --arch $arch scratch)"
-             buildah copy "$ctr" "./localauth0-$rust_arch/localauth0" "/localauth0"
+             buildah copy "$ctr" "$localauth0_binary" "/localauth0"
              buildah copy "$ctr" ./web/ /web
              buildah config \
                --env 'RUST_LOG=error,localauth0=info' \
