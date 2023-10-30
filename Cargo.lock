@@ -843,7 +843,7 @@ checksum = "e34f76eb3611940e0e7d53a9aaa4e6a3151f69541a282fd0dad5571420c53ff1"
 
 [[package]]
 name = "localauth0"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "actix-files",
  "actix-web",
@@ -1033,6 +1033,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "openssl-src"
+version = "111.25.0+1.1.1t"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3173cd3626c43e3854b1b727422a276e568d9ec5fe8cec197822cf52cfb743d6"
+dependencies = [
+ "cc",
+]
+
+[[package]]
 name = "openssl-sys"
 version = "0.9.91"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1040,6 +1049,7 @@ checksum = "866b5f16f90776b9bb8dc1e1802ac6f0513de3a7a7465867bfbc563dc737faac"
 dependencies = [
  "cc",
  "libc",
+ "openssl-src",
  "pkg-config",
  "vcpkg",
 ]

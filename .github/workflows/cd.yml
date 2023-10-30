@@ -75,7 +75,7 @@ jobs:
 
              ctr="$(buildah from --arch $arch scratch)"
              buildah copy "$ctr" "$localauth0_binary" "/localauth0"
-             buildah copy "$ctr" ./web/ /web
+             buildah copy "$ctr" ./web/ /web/dist
              buildah config \
                --env 'RUST_LOG=error,localauth0=info' \
                --cmd '["/localauth0"]' \
