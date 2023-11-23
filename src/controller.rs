@@ -189,6 +189,7 @@ fn new_token_response(
         audience.to_string(),
         permissions,
         app_data.config().issuer().to_string(),
+        app_data.config().subject().to_string(),
         grant_type,
         custom_claims,
     );

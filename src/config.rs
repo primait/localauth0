@@ -15,6 +15,9 @@ pub struct Config {
     #[serde(default = "defaults::issuer")]
     issuer: String,
 
+    #[serde(default = "defaults::subject")]
+    subject: String,
+
     #[serde(default)]
     user_info: UserInfo,
 
@@ -57,6 +60,7 @@ impl Config {
                 log_error(error);
                 Self {
                     issuer: defaults::issuer(),
+                    subject: defaults::subject(),
                     user_info: Default::default(),
                     audience: vec![],
                     user: vec![],

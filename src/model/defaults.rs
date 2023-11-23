@@ -1,7 +1,9 @@
 use chrono::{DateTime, Utc};
 
 const ISSUER: &str = "https://prima.localauth0.com/";
-const USER_INFO_SUBJECT: &str = "google-apps|developers@prima.it";
+
+const SUBJECT: &str = "google-apps|developers@prima.it";
+const USER_INFO_SUBJECT: &str = SUBJECT;
 const USER_INFO_NAME: &str = "Local";
 const USER_INFO_NICKNAME: &str = "locie.auth0";
 const USER_INFO_GIVEN_NAME: &str = "Locie";
@@ -21,6 +23,9 @@ pub fn issuer() -> String {
     ISSUER.to_string()
 }
 
+pub fn subject() -> String {
+    SUBJECT.to_string()
+}
 pub fn user_info_subject() -> String {
     USER_INFO_SUBJECT.to_string()
 }
