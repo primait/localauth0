@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-use serde::{Deserialize, ser::SerializeMap, Serialize, Serializer};
+use serde::{ser::SerializeMap, Deserialize, Serialize, Serializer};
 use uuid::Uuid;
 
 use crate::config::{CustomField, CustomFieldValue};
@@ -63,7 +63,6 @@ impl Claims {
         &self.sub
     }
 
-
     pub fn grant_type(&self) -> &GrantType {
         &self.gty
     }
@@ -76,8 +75,8 @@ impl Claims {
 
 impl Serialize for Claims {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         let mut map = serializer.serialize_map(None)?;
 
