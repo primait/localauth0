@@ -176,6 +176,7 @@ mod tests {
         let audience: &str = "audience";
         let permission: &str = "permission";
         let issuer: &str = "issuer";
+        let subject: &str = "subject";
         let gty: GrantType = GrantType::ClientCredentials;
 
         let jwks: Jwks = jwk_store.get().unwrap();
@@ -185,6 +186,7 @@ mod tests {
             audience.to_string(),
             vec![permission.to_string()],
             issuer.to_string(),
+            subject.to_string(),
             gty.clone(),
             vec![],
         );
@@ -206,6 +208,7 @@ mod tests {
         let audience: &str = "audience";
         let permission: &str = "permission";
         let issuer: &str = "issuer";
+        let subject: &str = "subject";
         let gty: GrantType = GrantType::ClientCredentials;
 
         let jwks: Jwks = jwk_store.get().unwrap();
@@ -219,6 +222,7 @@ mod tests {
             audience.to_string(),
             vec![permission.to_string()],
             issuer.to_string(),
+            subject.to_string(),
             gty,
             custom_claims,
         );
@@ -237,6 +241,7 @@ mod tests {
         let audience: &str = "audience";
         let permission: &str = "permission";
         let issuer: &str = "issuer";
+        let subject: &str = "subject";
         let gty: GrantType = GrantType::ClientCredentials;
 
         let jwks: Jwks = jwk_store.get().unwrap();
@@ -252,6 +257,7 @@ mod tests {
             audience.to_string(),
             vec![permission.to_string()],
             issuer.to_string(),
+            subject.to_string(),
             gty,
             custom_claims,
         );

@@ -1,15 +1,20 @@
-use serde::{ser::SerializeMap, Deserialize, Serialize, Serializer};
 use std::fmt::{Display, Formatter};
+
+use serde::{ser::SerializeMap, Deserialize, Serialize, Serializer};
+use uuid::Uuid;
 
 use crate::config::{CustomField, CustomFieldValue};
 
 #[derive(Debug, Deserialize)]
 pub struct Claims {
-    aud: String,
-    iat: Option<i64>,
-    exp: Option<i64>,
-    scope: String,
     iss: String,
+    sub: String,
+    aud: String,
+    exp: Option<i64>,
+    nbf: Option<i64>,
+    iat: Option<i64>,
+    jti: String,
+    scope: String,
     gty: GrantType,
     permissions: Vec<String>,
     // skip deserializing since deserialization from a jwt wouldn't match this struct
@@ -23,15 +28,19 @@ impl Claims {
         aud: String,
         permissions: Vec<String>,
         iss: String,
+        sub: String,
         gty: GrantType,
         custom_claims: Vec<CustomField>,
     ) -> Self {
         Self {
-            aud,
-            iat: Some(chrono::Utc::now().timestamp()),
-            exp: Some(chrono::Utc::now().timestamp() + 60000),
-            scope: permissions.join(" "),
             iss,
+            sub,
+            aud,
+            exp: Some(chrono::Utc::now().timestamp() + 60000),
+            nbf: Some(chrono::Utc::now().timestamp()),
+            iat: Some(chrono::Utc::now().timestamp()),
+            jti: Uuid::new_v4().to_string(),
+            scope: permissions.join(" "),
             gty,
             permissions,
             custom_claims,
@@ -48,6 +57,10 @@ impl Claims {
 
     pub fn issuer(&self) -> &str {
         &self.iss
+    }
+
+    pub fn subject(&self) -> &str {
+        &self.sub
     }
 
     pub fn grant_type(&self) -> &GrantType {
@@ -67,11 +80,14 @@ impl Serialize for Claims {
     {
         let mut map = serializer.serialize_map(None)?;
 
-        map.serialize_entry("aud", &self.aud)?;
-        map.serialize_entry("iat", &self.iat)?;
-        map.serialize_entry("exp", &self.exp)?;
-        map.serialize_entry("scope", &self.scope)?;
         map.serialize_entry("iss", &self.iss)?;
+        map.serialize_entry("sub", &self.sub)?;
+        map.serialize_entry("aud", &self.aud)?;
+        map.serialize_entry("exp", &self.exp)?;
+        map.serialize_entry("nbf", &self.nbf)?;
+        map.serialize_entry("iat", &self.iat)?;
+        map.serialize_entry("jti", &self.jti)?;
+        map.serialize_entry("scope", &self.scope)?;
         map.serialize_entry("gty", &self.gty)?;
         map.serialize_entry("permissions", &self.permissions)?;
 
