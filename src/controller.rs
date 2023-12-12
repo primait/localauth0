@@ -19,7 +19,7 @@ pub async fn jwks(app_data: Data<AppData>) -> HttpResponse {
 }
 
 impl jwks {
-    pub const ENDPOINT: &str = "/.well-known/jwks.json";
+    pub const ENDPOINT: &'static str = "/.well-known/jwks.json";
 }
 
 /// Generate a new jwt token for a given audience. For `client_credentials` the audience is found in the post body
@@ -36,7 +36,7 @@ async fn token(app_data: Data<AppData>, token_request: Either<Json<TokenRequest>
 }
 
 impl token {
-    pub const ENDPOINT: &str = "/oauth/token";
+    pub const ENDPOINT: &'static str = "/oauth/token";
 }
 
 /// Logs the "user" in and returns an auth code which can be exchanged for a token
@@ -53,7 +53,7 @@ pub async fn login(app_data: Data<AppData>, login_request: Json<LoginRequest>) -
         .body(serde_json::to_string(&LoginResponse { code }).expect("Failed to serialize login response to json"))
 }
 impl login {
-    pub const ENDPOINT: &str = "/oauth/login";
+    pub const ENDPOINT: &'static str = "/oauth/login";
 }
 
 /// List all audience-permissions mappings present in local implementation

@@ -22,7 +22,7 @@ async fn main() -> std::io::Result<()> {
         .set(prima_rs_logger::term_guard(APP_NAME))
         .expect("Cannot set global logger guard");
 
-    let config: Config = Config::load();
+    let config = Config::load_or_default();
     let data: Data<AppData> = Data::new(AppData::new(config).expect("Failed to create AppData"));
 
     let http_server = start_http_server(data.clone());

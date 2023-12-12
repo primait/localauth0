@@ -2,8 +2,9 @@ use std::fs;
 
 use chrono::{DateTime, Utc};
 use derive_getters::Getters;
-use prima_rs_logger::{error, info};
+use prima_rs_logger::{error, warn};
 use serde::Deserialize;
+
 use thiserror::Error;
 
 use crate::model::defaults;
@@ -37,11 +38,23 @@ pub struct Config {
     https: Https,
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            issuer: defaults::issuer(),
+            subject: defaults::subject(),
+            user_info: Default::default(),
+            audience: vec![],
+            user: vec![],
+            access_token: Default::default(),
+            http: Default::default(),
+            https: Default::default(),
+        }
+    }
+}
+
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error(transparent)]
-    VarError(#[from] std::env::VarError),
-
     #[error(transparent)]
     ReadFileError(#[from] std::io::Error),
 
@@ -50,32 +63,37 @@ pub enum Error {
 }
 
 impl Config {
-    pub fn load() -> Self {
-        match Self::load_env() {
-            Ok(config) => {
-                info!("Configuration is '{:?}'", &config);
-                config
-            }
-            Err(error) => {
-                log_error(error);
-                Self {
-                    issuer: defaults::issuer(),
-                    subject: defaults::subject(),
-                    user_info: Default::default(),
-                    audience: vec![],
-                    user: vec![],
-                    access_token: Default::default(),
-                    http: Default::default(),
-                    https: Default::default(),
+    pub fn load_or_default() -> Self {
+        Self::load()
+            .map_err(|e| match e {
+                Error::TomlError(error) => {
+                    error!("Config not parsable: {}", error);
                 }
-            }
-        }
+                Error::ReadFileError(error) => {
+                    error!("Failed to read config file: {}", error);
+                }
+            })
+            .unwrap_or_default()
     }
 
-    fn load_env() -> Result<Self> {
-        let config_path: String = std::env::var("LOCALAUTH0_CONFIG_PATH")?;
-        let config_string: String = fs::read_to_string(config_path)?;
-        Ok(toml::from_str(config_string.as_str())?)
+    fn load() -> Result<Self> {
+        let config_from_env = std::env::var_os("LOCALAUTH0_CONFIG");
+        let config_file_path = std::env::var_os("LOCALAUTH0_CONFIG_PATH");
+
+        if config_file_path.is_some() && config_from_env.is_some() {
+            warn!("Both LOCALAUTH0_CONFIG_PATH and LOCALAUTH0_CONFIG are set. Using to LOCALAUTH0_CONFIG");
+        }
+
+        let cfg = if let Some(config_env) = config_from_env {
+            Some(config_env.as_encoded_bytes().to_vec())
+        } else if let Some(config_path) = config_file_path {
+            Some(fs::read(config_path)?)
+        } else {
+            // Try reading from the default config path. If not found return None
+            fs::read("localauth0.toml").ok()
+        };
+
+        Ok(cfg.as_deref().map(toml::from_slice).transpose()?.unwrap_or_default())
     }
 }
 
@@ -189,20 +207,6 @@ impl Default for Https {
     fn default() -> Self {
         Https {
             port: defaults::https_port(),
-        }
-    }
-}
-
-fn log_error(error: Error) {
-    match error {
-        Error::VarError(_) => {
-            info!("LOCALAUTH0_CONFIG_PATH env var not set. Configuration not loaded!");
-        }
-        Error::TomlError(error) => {
-            error!("Provided file not parsable: {}", error);
-        }
-        Error::ReadFileError(error) => {
-            error!("Failed to read file: {}", error);
         }
     }
 }
