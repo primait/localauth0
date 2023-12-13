@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Load configuration from the `LOCALAUTH0_CONFIG` environment variable
+
+### Changed
+
+- Load configuration from `localauth0.toml` by default
+
 ---
 
 ## [0.6.2] - 2023-10-27
