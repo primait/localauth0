@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.6.2] - 2023-10-27
 
-Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
+Note: switch to using the public.ecr.aws/primaassicurazioni/localauth0 registry.
 
 ### Added
 
