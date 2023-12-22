@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Load configuration from the `LOCALAUTH0_CONFIG` environment variable
+- Access tokens now contain a `sub`, `iss`, `nbf`, `iat` and `jti` fields. 
+
+  You can check the jwt spec for the meaning of those fields
 
 ### Changed
 
