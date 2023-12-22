@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.7.0] - 2023-12-22
+
 ### Added
 
 - Load configuration from the `LOCALAUTH0_CONFIG` environment variable
+- Access tokens now contain a `sub`, `iss`, `nbf`, `iat` and `jti` fields. 
+
+  You can check the jwt spec for the meaning of those fields
 
 ### Changed
 
@@ -144,7 +151,9 @@ Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 
 
 
-[Unreleased]: https://github.com/primait/localauth0/compare/0.6.2...HEAD
+
+[Unreleased]: https://github.com/primait/localauth0/compare/0.7.0...HEAD
+[0.7.0]: https://github.com/primait/localauth0/compare/0.6.2...0.7.0
 [0.6.2]: https://github.com/primait/localauth0/compare/0.6.1...0.6.2
 [0.6.1]: https://github.com/primait/localauth0/compare/0.6.0...0.6.1
 [0.6.0]: https://github.com/primait/localauth0/compare/0.5.0...0.6.0
