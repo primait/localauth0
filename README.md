@@ -115,8 +115,9 @@ The page will automatically redirect to:
 
 ## Configuration
 
-Localauth0 can be configured using a `.toml` file (see [localauth0.toml](localauth0.toml) as an example), 
-which can be specified using the `LOCALAUTH0_CONFIG_PATH` environment variable.
+Localauth0 can be configured using a `localauth0.toml` file (see [localauth0.toml](localauth0.toml) as an example) 
+or using the `LOCALAUTH0_CONFIG` environment variable.
+
 Take a look [here](#Integrate-localauth0-in-existing-project) to see how to configure your docker compose cluster.
 
 ### Local development
@@ -174,7 +175,13 @@ Add this snippet to your `docker-compose.yml` file and reference it in your app 
   auth0:
     image: public.ecr.aws/primaassicurazioni/localauth0:0.6.2
     environment:
-      LOCALAUTH0_CONFIG_PATH: /etc/localauth0.toml
+      # Configure using an inline environment variable
+      LOCALAUTH0_CONFIG: |
+issuer = "https://prima.localauth0.com/"
+[user_info]
+given_name = "Locie"
+
+    # Or using a config file
     volumes:
       - ./localauth0.toml:/etc/localauth0.toml:ro
     ports:
