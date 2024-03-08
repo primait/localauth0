@@ -52,8 +52,8 @@ fn healthcheck() -> Result<(), String> {
                 .build()
                 .unwrap();
 
-            let endpoint_http = format!("http://127.0.0.1:{}/healthcheck", config.http().port());
-            let endpoint_https = format!("https://127.0.0.1:{}/healthcheck", config.https().port());
+            let endpoint_http = format!("http://127.0.0.1:{}/check", config.http().port());
+            let endpoint_https = format!("https://127.0.0.1:{}/check", config.https().port());
 
             let http_healthy = is_endpoint_healthy(&client, endpoint_http).await;
             let https_healthy = is_endpoint_healthy(&client, endpoint_https).await;
@@ -86,7 +86,7 @@ fn start_http_server(data: Data<AppData>) -> impl Future<Output = Result<(), std
     HttpServer::new(move || {
         App::new()
             .app_data(data.clone())
-            .wrap(middleware::Logger::default().exclude("/healthcheck"))
+            .wrap(middleware::Logger::default().exclude("/check"))
             .configure(setup_service)
     })
     .bind(("0.0.0.0", port))
@@ -100,7 +100,7 @@ fn start_https_server(data: Data<AppData>) -> impl Future<Output = Result<(), st
     HttpServer::new(move || {
         App::new()
             .app_data(data.clone())
-            .wrap(middleware::Logger::default().exclude("/healthcheck"))
+            .wrap(middleware::Logger::default().exclude("/check"))
             .configure(setup_service)
     })
     .bind_openssl(("0.0.0.0", port), setup_ssl_acceptor())

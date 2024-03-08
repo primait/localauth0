@@ -10,7 +10,7 @@ use crate::model::{
 use crate::{CLIENT_ID_VALUE, CLIENT_SECRET_VALUE};
 ///
 /// Remove one jwk and generate new one
-#[get("/healthcheck")]
+#[get("/check")]
 pub async fn healthcheck() -> HttpResponse {
     HttpResponse::Ok().content_type("text/plain").body("ok")
 }
