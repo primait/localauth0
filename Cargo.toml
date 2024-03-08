@@ -2,6 +2,7 @@
 edition = "2021"
 name = "localauth0"
 version = "0.7.0"
+default-run = "localauth0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -37,6 +38,8 @@ toml = "0.5.9"
 prima_rs_logger = "0.1"
 
 futures = "0.3.21"
+reqwest = { version = "0.11.24", default-features = false, features = ["native-tls"] }
+tokio = { version = "1.36.0", default-features = false }
 
 [features]
 default = []

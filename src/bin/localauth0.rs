@@ -36,7 +36,7 @@ fn start_http_server(data: Data<AppData>) -> impl Future<Output = Result<(), std
     HttpServer::new(move || {
         App::new()
             .app_data(data.clone())
-            .wrap(middleware::Logger::default())
+            .wrap(middleware::Logger::default().exclude("/healthcheck"))
             .configure(setup_service)
     })
     .bind(("0.0.0.0", port))
@@ -50,7 +50,7 @@ fn start_https_server(data: Data<AppData>) -> impl Future<Output = Result<(), st
     HttpServer::new(move || {
         App::new()
             .app_data(data.clone())
-            .wrap(middleware::Logger::default())
+            .wrap(middleware::Logger::default().exclude("/healthcheck"))
             .configure(setup_service)
     })
     .bind_openssl(("0.0.0.0", port), setup_ssl_acceptor())
@@ -60,7 +60,8 @@ fn start_https_server(data: Data<AppData>) -> impl Future<Output = Result<(), st
 }
 
 fn setup_service(cfg: &mut web::ServiceConfig) {
-    cfg.service(controller::jwks)
+    cfg.service(controller::healthcheck)
+        .service(controller::jwks)
         .service(controller::get_permissions)
         .service(controller::set_permissions_for_audience)
         .service(controller::get_permissions_by_audience)

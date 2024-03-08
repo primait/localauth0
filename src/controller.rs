@@ -8,6 +8,12 @@ use crate::model::{
     LoginRequest, LoginResponse, OpenIDMetadata, PermissionsForAudienceRequest, TokenRequest, TokenResponse,
 };
 use crate::{CLIENT_ID_VALUE, CLIENT_SECRET_VALUE};
+///
+/// Remove one jwk and generate new one
+#[get("/healthcheck")]
+pub async fn healthcheck() -> HttpResponse {
+    HttpResponse::Ok().content_type("text/plain").body("ok")
+}
 
 /// .well-known/jwks.json route. This is the standard route exposed by authorities to fetch jwks
 #[get("/.well-known/jwks.json")]
