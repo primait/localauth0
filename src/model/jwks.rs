@@ -64,7 +64,7 @@ impl Jwks {
         self.keys
             .choose(&mut rand::thread_rng())
             .ok_or(Error::EmptyJwks)
-            .map(|jwks| jwks.clone())
+            .cloned()
     }
 
     pub fn parse<T: DeserializeOwned>(&self, token: &str, audience: &[impl ToString]) -> Result<T, Error> {
