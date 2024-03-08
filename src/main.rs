@@ -18,7 +18,7 @@ use localauth0::{controller, APP_NAME};
 static LOGGER_GUARD: GuardLoggerCell = GuardLoggerCell::new();
 
 fn main() -> Result<(), Box<dyn Error>> {
-    match std::env::args().skip(1).next().as_deref() {
+    match std::env::args().nth(1).as_deref() {
         Some("healthcheck") => Ok(healthcheck()?),
         _ => Ok(server()?),
     }
