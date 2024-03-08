@@ -38,7 +38,6 @@ jobs:
           name: localauth0-${{ matrix.arch }}
           path: |
             ./target/${{ matrix.arch }}/release/localauth0
-            ./target/${{ matrix.arch }}/release/healthcheck
 
   build-web:
     runs-on: ubuntu-latest
@@ -79,18 +78,15 @@ jobs:
             for arch in amd64 arm64; do
               rust_arch="$([ "$arch" = "arm64" ] && echo aarch64 || echo x86_64)-unknown-linux-musl"
               localauth0_binary="./localauth0-$rust_arch/localauth0"
-              healthcheck_binary="./localauth0-$rust_arch/localauth0"
               chmod +x "$localauth0_binary"
-              chmod +x "$healthcheck_binary"
 
               ctr="$(buildah from --arch $arch $base)"
               buildah copy "$ctr" "$localauth0_binary" "/localauth0"
-              buildah copy "$ctr" "$healthcheck_binary" "/healthcheck"
               buildah copy "$ctr" ./web/ /web/dist
               buildah config \
                 --env 'RUST_LOG=error,localauth0=info' \
                 --cmd '["/localauth0"]' \
-                --healthcheck '["/healthcheck"]' \
+                --healthcheck 'CMD /localauth0 healthcheck'
                 --healthcheck-interval 0.1s \
                 --healthcheck-timeout  2s \
                 --healthcheck-start-period 2s \

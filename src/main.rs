@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::time::Duration;
 
 use actix_files::{Files, NamedFile};
@@ -16,8 +17,57 @@ use localauth0::{controller, APP_NAME};
 // Singleton logger. Used to free user from manually passing Logger objects around.
 static LOGGER_GUARD: GuardLoggerCell = GuardLoggerCell::new();
 
+fn main() -> Result<(), Box<dyn Error>> {
+    match std::env::args().skip(1).next().as_deref() {
+        Some("healthcheck") => Ok(healthcheck()?),
+        _ => Ok(server()?),
+    }
+}
+
+async fn is_endpoint_healthy(client: &reqwest::Client, endpoint: String) -> bool {
+    let status = client.get(&endpoint).send().await.map(|r| r.error_for_status());
+
+    match status {
+        Ok(Ok(_)) => {
+            println!("{endpoint} OK");
+            true
+        }
+        _ => {
+            println!("{endpoint} ERROR {status:?}");
+            false
+        }
+    }
+}
+
+fn healthcheck() -> Result<(), String> {
+    tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(async {
+            let config = Config::load_or_default();
+
+            let client = reqwest::Client::builder()
+                .danger_accept_invalid_certs(true)
+                .build()
+                .unwrap();
+
+            let endpoint_http = format!("http://127.0.0.1:{}/healthcheck", config.http().port());
+            let endpoint_https = format!("https://127.0.0.1:{}/healthcheck", config.https().port());
+
+            let http_healthy = is_endpoint_healthy(&client, endpoint_http).await;
+            let https_healthy = is_endpoint_healthy(&client, endpoint_https).await;
+
+            if http_healthy && https_healthy {
+                Ok(())
+            } else {
+                Err("healthcheck failed".to_string())
+            }
+        })
+}
+
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn server() -> std::io::Result<()> {
     LOGGER_GUARD
         .set(prima_rs_logger::term_guard(APP_NAME))
         .expect("Cannot set global logger guard");
