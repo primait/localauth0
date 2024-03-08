@@ -174,6 +174,8 @@ Add this snippet to your `docker-compose.yml` file and reference it in your app 
 ```yaml
   auth0:
     image: public.ecr.aws/primaassicurazioni/localauth0:0.7.0
+    healthcheck:
+      test: ["CMD", "/localauth0", "healthcheck"]
     environment:
       # Configure using an inline environment variable
       LOCALAUTH0_CONFIG: |
@@ -187,3 +189,7 @@ given_name = "Locie"
     ports:
       - "3000:3000"
 ```
+
+### Healthchecks
+
+The localauth0 binary can perform a healthcheck on the running localauth0 service. Simply run `localauth0 healtcheck`
