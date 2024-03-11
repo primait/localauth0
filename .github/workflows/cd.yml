@@ -68,6 +68,7 @@ jobs:
 
       - name: Create container
         run: |-
+           set -x
            for base in scratch alpine; do
             manifest="localauth0-$base"
             if [[ "$base" == "scratch" ]]; then
@@ -86,7 +87,7 @@ jobs:
               buildah config \
                 --env 'RUST_LOG=error,localauth0=info' \
                 --cmd '["/localauth0"]' \
-                --healthcheck 'CMD /localauth0 healthcheck'
+                --healthcheck 'CMD /localauth0 healthcheck' \
                 --healthcheck-interval 0.1s \
                 --healthcheck-timeout  2s \
                 --healthcheck-start-period 2s \
