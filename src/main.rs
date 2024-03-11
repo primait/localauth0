@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::time::Duration;
 
 use actix_files::{Files, NamedFile};
@@ -16,8 +17,57 @@ use localauth0::{controller, APP_NAME};
 // Singleton logger. Used to free user from manually passing Logger objects around.
 static LOGGER_GUARD: GuardLoggerCell = GuardLoggerCell::new();
 
+fn main() -> Result<(), Box<dyn Error>> {
+    match std::env::args().nth(1).as_deref() {
+        Some("healthcheck") => Ok(healthcheck()?),
+        _ => Ok(server()?),
+    }
+}
+
+async fn is_endpoint_healthy(client: &reqwest::Client, endpoint: String) -> bool {
+    let status = client.get(&endpoint).send().await.map(|r| r.error_for_status());
+
+    match status {
+        Ok(Ok(_)) => {
+            println!("{endpoint} OK");
+            true
+        }
+        _ => {
+            println!("{endpoint} ERROR {status:?}");
+            false
+        }
+    }
+}
+
+fn healthcheck() -> Result<(), String> {
+    tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(async {
+            let config = Config::load_or_default();
+
+            let client = reqwest::Client::builder()
+                .danger_accept_invalid_certs(true)
+                .build()
+                .unwrap();
+
+            let endpoint_http = format!("http://127.0.0.1:{}/check", config.http().port());
+            let endpoint_https = format!("https://127.0.0.1:{}/check", config.https().port());
+
+            let http_healthy = is_endpoint_healthy(&client, endpoint_http).await;
+            let https_healthy = is_endpoint_healthy(&client, endpoint_https).await;
+
+            if http_healthy && https_healthy {
+                Ok(())
+            } else {
+                Err("healthcheck failed".to_string())
+            }
+        })
+}
+
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn server() -> std::io::Result<()> {
     LOGGER_GUARD
         .set(prima_rs_logger::term_guard(APP_NAME))
         .expect("Cannot set global logger guard");
@@ -36,7 +86,7 @@ fn start_http_server(data: Data<AppData>) -> impl Future<Output = Result<(), std
     HttpServer::new(move || {
         App::new()
             .app_data(data.clone())
-            .wrap(middleware::Logger::default())
+            .wrap(middleware::Logger::default().exclude("/check"))
             .configure(setup_service)
     })
     .bind(("0.0.0.0", port))
@@ -50,7 +100,7 @@ fn start_https_server(data: Data<AppData>) -> impl Future<Output = Result<(), st
     HttpServer::new(move || {
         App::new()
             .app_data(data.clone())
-            .wrap(middleware::Logger::default())
+            .wrap(middleware::Logger::default().exclude("/check"))
             .configure(setup_service)
     })
     .bind_openssl(("0.0.0.0", port), setup_ssl_acceptor())
@@ -60,7 +110,8 @@ fn start_https_server(data: Data<AppData>) -> impl Future<Output = Result<(), st
 }
 
 fn setup_service(cfg: &mut web::ServiceConfig) {
-    cfg.service(controller::jwks)
+    cfg.service(controller::healthcheck)
+        .service(controller::jwks)
         .service(controller::get_permissions)
         .service(controller::set_permissions_for_audience)
         .service(controller::get_permissions_by_audience)

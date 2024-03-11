@@ -13,7 +13,7 @@ With localauth0 you can fake your [auth0](https://auth0.com/) tenant and test it
 In order to run localauth0 docker image execute the following:
 
 ```shell
-docker run -d -p 3000:3000 public.ecr.aws/primaassicurazioni/localauth0:0.7.0
+docker run -d -p 3000:3000 public.ecr.aws/primaassicurazioni/localauth0:0.7.1
 ```
 
 By default, the container exposes an http server on the port 3000 and an https one on port 3001.
@@ -173,7 +173,9 @@ Add this snippet to your `docker-compose.yml` file and reference it in your app 
 
 ```yaml
   auth0:
-    image: public.ecr.aws/primaassicurazioni/localauth0:0.7.0
+    image: public.ecr.aws/primaassicurazioni/localauth0:0.7.1
+    healthcheck:
+      test: ["CMD", "/localauth0", "healthcheck"]
     environment:
       # Configure using an inline environment variable
       LOCALAUTH0_CONFIG: |
@@ -187,3 +189,7 @@ given_name = "Locie"
     ports:
       - "3000:3000"
 ```
+
+### Healthchecks
+
+The localauth0 binary can perform a healthcheck on the running localauth0 service. Simply run `localauth0 healtcheck`
