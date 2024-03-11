@@ -112,8 +112,9 @@ jobs:
 
       - name: Push primaassicurazioni alpine
         run: >-
-           buildah manifest push --all localauth0-alpine
+           buildah manifest push --all localauth0-alpine \
            "docker://public.ecr.aws/primaassicurazioni/localauth0:${{ inputs.tag_name || github.event.release.tag_name }}-alpine"
+           buildah manifest push --all localauth0-alpine \
            "docker://public.ecr.aws/primaassicurazioni/localauth0:alpine"
 
       - name: Push primaassicurazioni
