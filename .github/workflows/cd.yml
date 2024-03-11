@@ -68,6 +68,7 @@ jobs:
 
       - name: Create container
         run: |-
+           set -x
            for base in scratch alpine; do
             manifest="localauth0-$base"
             if [[ "$base" == "scratch" ]]; then
