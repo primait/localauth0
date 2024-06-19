@@ -67,6 +67,10 @@ async fn server() -> std::io::Result<()> {
     let config = Config::load_or_default();
     let data: Data<AppData> = Data::new(AppData::new(config).expect("Failed to create AppData"));
 
+    tracing_subscriber::fmt()
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .init();
+
     let http_server = start_http_server(data.clone());
     let https_server = start_https_server(data.clone());
 
@@ -113,7 +117,7 @@ fn setup_service(cfg: &mut web::ServiceConfig) {
         .service(controller::token)
         .service(controller::openid_configuration)
         .service(
-            Files::new("/", "./web/dist")
+            Files::new("/", "./web")
                 .index_file("index.html")
                 .default_handler(|req: ServiceRequest| async {
                     let (http_req, _payload) = req.into_parts();
