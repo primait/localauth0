@@ -2,7 +2,6 @@ use std::fs;
 
 use chrono::{DateTime, Utc};
 use derive_getters::Getters;
-use prima_rs_logger::{error, warn};
 use serde::Deserialize;
 
 use thiserror::Error;
@@ -67,10 +66,10 @@ impl Config {
         Self::load()
             .map_err(|e| match e {
                 Error::TomlError(error) => {
-                    error!("Config not parsable: {}", error);
+                    tracing::error!("Config not parsable: {}", error);
                 }
                 Error::ReadFileError(error) => {
-                    error!("Failed to read config file: {}", error);
+                    tracing::error!("Failed to read config file: {}", error);
                 }
             })
             .unwrap_or_default()
@@ -81,7 +80,7 @@ impl Config {
         let config_file_path = std::env::var_os("LOCALAUTH0_CONFIG_PATH");
 
         if config_file_path.is_some() && config_from_env.is_some() {
-            warn!("Both LOCALAUTH0_CONFIG_PATH and LOCALAUTH0_CONFIG are set. Using to LOCALAUTH0_CONFIG");
+            tracing::warn!("Both LOCALAUTH0_CONFIG_PATH and LOCALAUTH0_CONFIG are set. Using to LOCALAUTH0_CONFIG");
         }
 
         let cfg = if let Some(config_env) = config_from_env {

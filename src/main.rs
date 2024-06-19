@@ -8,14 +8,10 @@ use actix_web::{middleware, App, HttpServer};
 
 use futures::Future;
 use openssl::ssl::{SslAcceptor, SslAcceptorBuilder, SslMethod};
-use prima_rs_logger::GuardLoggerCell;
 
 use localauth0::config::Config;
+use localauth0::controller;
 use localauth0::model::{certificates, AppData};
-use localauth0::{controller, APP_NAME};
-
-// Singleton logger. Used to free user from manually passing Logger objects around.
-static LOGGER_GUARD: GuardLoggerCell = GuardLoggerCell::new();
 
 fn main() -> Result<(), Box<dyn Error>> {
     match std::env::args().nth(1).as_deref() {
@@ -68,10 +64,6 @@ fn healthcheck() -> Result<(), String> {
 
 #[actix_web::main]
 async fn server() -> std::io::Result<()> {
-    LOGGER_GUARD
-        .set(prima_rs_logger::term_guard(APP_NAME))
-        .expect("Cannot set global logger guard");
-
     let config = Config::load_or_default();
     let data: Data<AppData> = Data::new(AppData::new(config).expect("Failed to create AppData"));
 
