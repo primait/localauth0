@@ -117,7 +117,7 @@ fn setup_service(cfg: &mut web::ServiceConfig) {
         .service(controller::token)
         .service(controller::openid_configuration)
         .service(
-            Files::new("/", "./web")
+            Files::new("/", "./web/dist")
                 .index_file("index.html")
                 .default_handler(|req: ServiceRequest| async {
                     let (http_req, _payload) = req.into_parts();
