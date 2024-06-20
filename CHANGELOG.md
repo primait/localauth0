@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Removed `prima_rs_logger` in favour of `tracing`
+
 ---
 
 ## [0.7.1] - 2024-03-11
