@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.7.2] - 2024-06-20
+
 ### Changed
 
 - Removed `prima_rs_logger` in favour of `tracing`
@@ -164,7 +168,9 @@ Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 
 
 
-[Unreleased]: https://github.com/primait/localauth0/compare/0.7.1...HEAD
+
+[Unreleased]: https://github.com/primait/localauth0/compare/0.7.2...HEAD
+[0.7.2]: https://github.com/primait/localauth0/compare/0.7.1...0.7.2
 [0.7.1]: https://github.com/primait/localauth0/compare/0.7.0...0.7.1
 [0.7.0]: https://github.com/primait/localauth0/compare/0.6.2...0.7.0
 [0.6.2]: https://github.com/primait/localauth0/compare/0.6.1...0.6.2
