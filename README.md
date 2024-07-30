@@ -217,7 +217,6 @@ auth0:
   healthcheck:
     test: ["CMD", "/localauth0", "healthcheck"]
   environment:
-    # Configure using an inline environment variable
     LOCALAUTH0_CONFIG: |
 issuer = "https://prima.localauth0.com/"
 [user_info]
