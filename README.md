@@ -243,6 +243,8 @@ auth0:
   image: public.ecr.aws/primaassicurazioni/localauth0:0.7.2
   healthcheck:
     test: ["CMD", "/localauth0", "healthcheck"]
+  environment:
+    LOCALAUTH0_CONFIG_PATH: /etc/localauth0.toml
   volumes:
     - ./localauth0.toml:/etc/localauth0.toml:ro
   ports:
