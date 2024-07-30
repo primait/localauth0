@@ -202,7 +202,7 @@ Add this snippet to your `docker-compose.yml` file and reference it in your app
 auth0:
   image: public.ecr.aws/primaassicurazioni/localauth0:0.7.2
   healthcheck:
-    test:i ["CMD", "/localauth0", "healthcheck"]
+    test: ["CMD", "/localauth0", "healthcheck"]
   ports:
     - "3000:3000"
 ```
