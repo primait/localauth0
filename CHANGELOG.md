@@ -3,9 +3,12 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+and this project adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+- Improve documentation about how to configure Localauth0 in docker.
 
 ---
 
@@ -20,7 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.7.1] - 2024-03-11
 
 ### Added
-- `healthcheck` subcommand to preform a healthcheck on the running localauth0 instance
+
+- `healthcheck` subcommand to preform a healthcheck on the running localauth0
+  instance
 
 ---
 
@@ -29,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Load configuration from the `LOCALAUTH0_CONFIG` environment variable
-- Access tokens now contain a `sub`, `iss`, `nbf`, `iat` and `jti` fields. 
+- Access tokens now contain a `sub`, `iss`, `nbf`, `iat` and `jti` fields.
 
   You can check the jwt spec for the meaning of those fields
 
@@ -58,6 +63,7 @@ Note: switch to using the public.ecr.aws/primaassicurazioni/localauth0 registry.
 Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 
 ### Changed
+
 - No longer using pyxis as css library; using bulma instead.
 
 ---
@@ -67,7 +73,9 @@ Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 
 ### Added
-- A /.well-known/openid-configuration making it easier to use localauth0 as a generic openid server
+
+- A /.well-known/openid-configuration making it easier to use localauth0 as a
+  generic openid server
 
 ---
 
@@ -81,7 +89,8 @@ Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 
 ### Changed
 
-- Changed id_token audience to return the client_id as described in the [auth0 doc](https://auth0.com/docs/secure/tokens/id-tokens/validate-id-tokens).
+- Changed id_token audience to return the client_id as described in the
+  [auth0 doc](https://auth0.com/docs/secure/tokens/id-tokens/validate-id-tokens).
 
 ---
 
@@ -90,7 +99,8 @@ Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 ### Added
 
 - Added `x5c` field in `access_token` to expose the certificate.
-- Added configuration value `access_token` with custom fields to enrich `access_token`.
+- Added configuration value `access_token` with custom fields to enrich
+  `access_token`.
 
 ### Changed
 
@@ -102,12 +112,15 @@ Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 
 ### Added
 
-- Extend `/oauth/token` endpoint content type compatibility with `application/x-www-form-urlencoded`.
-- Added `/oauth/login` endpoint to support authentication with `response_type: code`.
-- Grant type field added to claims with values `client_credentials` and `authorization_code`.
+- Extend `/oauth/token` endpoint content type compatibility with
+  `application/x-www-form-urlencoded`.
+- Added `/oauth/login` endpoint to support authentication with
+  `response_type: code`.
+- Grant type field added to claims with values `client_credentials` and
+  `authorization_code`.
 - Added `id_token` to get user info.
 - Added configuration value `user_info`.
-- Added `custom_fields` in config. Custom fields are used to enrich `id_token`. 
+- Added `custom_fields` in config. Custom fields are used to enrich `id_token`.
 
 ---
 
@@ -124,8 +137,8 @@ Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 ### Added
 
 - New `catalog-info.yaml` to register this project on backstage
-- Localauth0 can now be configured with a `.toml` file.
-  Right now you can configure audiences and their permissions, which will be loaded at startup
+- Localauth0 can now be configured with a `.toml` file. Right now you can
+  configure audiences and their permissions, which will be loaded at startup
 
 ### Changed
 
@@ -163,11 +176,6 @@ Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 ### Added
 
 - First release 🎉
-
-
-
-
-
 
 [Unreleased]: https://github.com/primait/localauth0/compare/0.7.2...HEAD
 [0.7.2]: https://github.com/primait/localauth0/compare/0.7.1...0.7.2
