@@ -1,6 +1,7 @@
 use std::str::FromStr;
 use std::sync::{RwLock, RwLockWriteGuard};
-
+use base64::Engine;
+use base64::prelude::BASE64_STANDARD;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use openssl::pkey::Private;
 use openssl::rsa::Rsa;
@@ -116,7 +117,7 @@ impl Jwk {
         let exponent = key_pair.rsa()?.e().to_vec();
 
         let x509 = certificates::generate_certificate(&key_pair)?;
-        let x509cert = base64::encode(x509.to_der()?);
+        let x509cert = BASE64_STANDARD.encode(x509.to_der()?);
 
         Ok(Self {
             kty: "RSA".to_string(),

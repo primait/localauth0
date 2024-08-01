@@ -58,6 +58,9 @@ pub enum Error {
     ReadFileError(#[from] std::io::Error),
 
     #[error(transparent)]
+    Utf8Error(#[from] std::str::Utf8Error),
+
+    #[error(transparent)]
     TomlError(#[from] toml::de::Error),
 }
 
@@ -71,6 +74,9 @@ impl Config {
                 Error::ReadFileError(error) => {
                     tracing::error!("Failed to read config file: {}", error);
                 }
+                Error::Utf8Error(error) => {
+                    tracing::error!("Config file is not utf8 encoded: {}", error);
+                }
             })
             .unwrap_or_default()
     }
@@ -83,7 +89,7 @@ impl Config {
             tracing::warn!("Both LOCALAUTH0_CONFIG_PATH and LOCALAUTH0_CONFIG are set. Using to LOCALAUTH0_CONFIG");
         }
 
-        let cfg = if let Some(config_env) = config_from_env {
+        let cfg_opt = if let Some(config_env) = config_from_env {
             Some(config_env.as_encoded_bytes().to_vec())
         } else if let Some(config_path) = config_file_path {
             Some(fs::read(config_path)?)
@@ -92,7 +98,13 @@ impl Config {
             fs::read("localauth0.toml").ok()
         };
 
-        Ok(cfg.as_deref().map(toml::from_slice).transpose()?.unwrap_or_default())
+        match cfg_opt.as_deref() {
+            None => Ok(Default::default()),
+            Some(cfg) => {
+                let cfg_str = std::str::from_utf8(cfg)?;
+                Ok(toml::from_str(cfg_str)?)
+            },
+        }
     }
 }
 
