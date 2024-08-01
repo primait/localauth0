@@ -145,6 +145,15 @@ configure your docker compose cluster.
 
 ### Local development
 
+To build and run localauth0 locally run the following commands:
+
+```shell
+docker build -f Dockerfile -t localauth0 . && \
+docker run -it -p 3000:3000 -v .:/code localauth0 bash
+```
+
+Keep in mind that installing `trunk` will take some time.
+
 #### Run localauth0 from within a docker-compose
 
 Get into docker-compose container with:
@@ -189,7 +198,7 @@ rustup target add wasm32-unknown-unknown --toolchain nightly
 Then run:
 
 ```shell
-docker build -f Dockerfile_localauth0 -t localauth0 . && \
+docker build -f Dockerfile -t localauth0 . && \
 docker run -d -p 3000:3000 localauth0
 ```
 
