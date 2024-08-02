@@ -1,3 +1,4 @@
+use crate::model::{Issuer, Subject};
 use chrono::{DateTime, Utc};
 
 const ISSUER: &str = "https://prima.localauth0.com/";
@@ -19,12 +20,12 @@ const USER_INFO_PICTURE: &str = "https://github.com/primait/localauth0/blob/6f71
 const HTTP_PORT: u16 = 3000;
 const HTTPS_PORT: u16 = 3001;
 
-pub fn issuer() -> String {
-    ISSUER.to_string()
+pub fn issuer() -> Issuer {
+    Issuer(ISSUER.to_string())
 }
 
-pub fn subject() -> String {
-    SUBJECT.to_string()
+pub fn subject() -> Subject {
+    Subject(SUBJECT.to_string())
 }
 pub fn user_info_subject() -> String {
     USER_INFO_SUBJECT.to_string()

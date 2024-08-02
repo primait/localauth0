@@ -2,33 +2,33 @@ use std::fs;
 
 use chrono::{DateTime, Utc};
 use derive_getters::Getters;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use thiserror::Error;
 
-use crate::model::defaults;
+use crate::model::{defaults, Issuer, Subject};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Deserialize, Getters)]
 pub struct Config {
     #[serde(default = "defaults::issuer")]
-    issuer: String,
+    issuer: Issuer,
 
     #[serde(default = "defaults::subject")]
-    subject: String,
+    subject: Subject,
 
     #[serde(default)]
-    user_info: UserInfo,
+    user_info: UserInfoConfig,
 
     #[serde(default)]
-    audience: Vec<Audience>,
+    audience: Vec<AudienceConfig>,
 
     #[serde(default)]
-    user: Vec<User>,
+    user: Vec<UserConfig>,
 
     #[serde(default)]
-    access_token: AccessToken,
+    access_token: AccessTokenConfig,
 
     #[serde(default)]
     http: Http,
@@ -86,7 +86,7 @@ impl Config {
         let config_file_path = std::env::var_os("LOCALAUTH0_CONFIG_PATH");
 
         if config_file_path.is_some() && config_from_env.is_some() {
-            tracing::warn!("Both LOCALAUTH0_CONFIG_PATH and LOCALAUTH0_CONFIG are set. Using to LOCALAUTH0_CONFIG");
+            tracing::warn!("Both LOCALAUTH0_CONFIG_PATH and LOCALAUTH0_CONFIG are set. Using LOCALAUTH0_CONFIG");
         }
 
         let cfg_opt = if let Some(config_env) = config_from_env {
@@ -103,25 +103,25 @@ impl Config {
             Some(cfg) => {
                 let cfg_str = std::str::from_utf8(cfg)?;
                 Ok(toml::from_str(cfg_str)?)
-            },
+            }
         }
     }
 }
 
 #[derive(Debug, Deserialize, Getters)]
-pub struct Audience {
+pub struct AudienceConfig {
     name: String,
     permissions: Vec<String>,
 }
 
 #[derive(Debug, Deserialize, Getters)]
-pub struct User {
+pub struct UserConfig {
     name: String,
     permissions: Vec<String>,
 }
 
-#[derive(Debug, Deserialize, Getters)]
-pub struct UserInfo {
+#[derive(Debug, Serialize, Deserialize, Getters, Clone)]
+pub struct UserInfoConfig {
     #[serde(default = "defaults::user_info_subject")]
     subject: String,
     #[serde(default = "defaults::user_info_name")]
@@ -146,11 +146,10 @@ pub struct UserInfo {
     picture: String,
     #[serde(default = "defaults::user_info_updated_at")]
     updated_at: DateTime<Utc>,
-    #[serde(default)]
-    custom_fields: Vec<CustomField>,
+    custom_fields: Option<Vec<CustomField>>,
 }
 
-impl Default for UserInfo {
+impl Default for UserInfoConfig {
     fn default() -> Self {
         Self {
             subject: defaults::user_info_subject(),
@@ -165,18 +164,18 @@ impl Default for UserInfo {
             email_verified: defaults::user_info_email_verified(),
             picture: defaults::user_info_picture(),
             updated_at: defaults::user_info_updated_at(),
-            custom_fields: vec![],
+            custom_fields: None,
         }
     }
 }
 
 #[derive(Debug, Deserialize, Getters, Default)]
-pub struct AccessToken {
+pub struct AccessTokenConfig {
     #[serde(default)]
     custom_claims: Vec<CustomField>,
 }
 
-#[derive(Debug, Deserialize, Getters, Clone)]
+#[derive(Debug, Serialize, Deserialize, Getters, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
 pub struct CustomField {
     name: String,
@@ -189,7 +188,7 @@ impl CustomField {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
 pub enum CustomFieldValue {
     String(String),
@@ -226,7 +225,9 @@ impl Default for Https {
 mod tests {
     use chrono::DateTime;
 
-    use crate::config::{Audience, Config, CustomField, CustomFieldValue};
+    use crate::config::{AudienceConfig, Config, CustomField, CustomFieldValue};
+    use crate::model::Issuer;
+
     #[test]
     fn local_localauth0_config_file_is_loadable() {
         let config_string: String = std::fs::read_to_string("./localauth0.toml").unwrap();
@@ -276,7 +277,7 @@ mod tests {
 
         let config: Config = toml::from_str(config_str).unwrap();
 
-        assert_eq!(config.issuer(), "issuer");
+        assert_eq!(config.issuer(), &Issuer("issuer".to_string()));
 
         assert_eq!(config.user_info().subject, "subject");
         assert_eq!(config.user_info().name, "name");
@@ -296,18 +297,18 @@ mod tests {
 
         assert_eq!(config.audience.len(), 2);
 
-        let audience1: Option<&Audience> = config.audience.iter().find(|v| v.name == "audience1");
+        let audience1: Option<&AudienceConfig> = config.audience.iter().find(|v| v.name == "audience1");
         assert!(audience1.is_some());
         assert_eq!(
             audience1.unwrap().permissions,
             ["audience1:permission1", "audience1:permission2"]
         );
 
-        let audience2: Option<&Audience> = config.audience.iter().find(|v| v.name == "audience2");
+        let audience2: Option<&AudienceConfig> = config.audience.iter().find(|v| v.name == "audience2");
         assert!(audience2.is_some());
         assert_eq!(audience2.unwrap().permissions, ["audience2:permission2"]);
 
-        let custom_fields: &Vec<CustomField> = config.user_info().custom_fields();
+        let custom_fields: &[CustomField] = config.user_info().custom_fields().as_deref().unwrap_or_default();
 
         assert_eq!(custom_fields.len(), 2);
 

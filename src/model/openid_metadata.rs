@@ -1,12 +1,11 @@
+use super::{Issuer, Jwk, TokenResponse};
 use crate::config::Config;
 use crate::controller;
 use serde::Serialize;
 
-use super::{JwksStore, TokenResponse};
-
 #[derive(Serialize)]
 pub struct OpenIDMetadata {
-    issuer: String,
+    issuer: Issuer,
     authorization_endpoint: String,
     token_endpoint: String,
     jwks_uri: String,
@@ -21,8 +20,8 @@ fn endpoint_to_url(base_uri: &str, endpoint: &str) -> String {
 
 impl OpenIDMetadata {
     pub fn new(
-        jwks: &JwksStore,
-        config: &Config,
+        issuer: &Issuer,
+        random_jwk: &Jwk,
         // The base uri for, concatenated with endpoints to generate the urls
         base_uri: &str,
     ) -> Self {
@@ -30,16 +29,14 @@ impl OpenIDMetadata {
         let token_endpoint = endpoint_to_url(base_uri, controller::token::ENDPOINT);
         let jwks_uri = endpoint_to_url(base_uri, controller::jwks::ENDPOINT);
 
-        let jwk = jwks.random_jwk().expect("Failed to get a jwk");
-
         Self {
-            issuer: config.issuer().clone(),
+            issuer: issuer.clone(),
             authorization_endpoint,
             token_endpoint,
             jwks_uri,
             response_types_supported: TokenResponse::response_types_supported(),
             subject_types_supported: vec!["public".to_string()],
-            id_token_signing_alg_values_supported: vec![jwk.alg().to_string()],
+            id_token_signing_alg_values_supported: vec![random_jwk.alg().to_string()],
         }
     }
 }

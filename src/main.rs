@@ -65,20 +65,19 @@ fn healthcheck() -> Result<(), String> {
 #[actix_web::main]
 async fn server() -> std::io::Result<()> {
     let config = Config::load_or_default();
-    let data: Data<AppData> = Data::new(AppData::new(config).expect("Failed to create AppData"));
+    let data: Data<AppData> = Data::new(AppData::new(&config).expect("Failed to create AppData"));
 
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
         .init();
 
-    let http_server = start_http_server(data.clone());
-    let https_server = start_https_server(data.clone());
+    let http_server = start_http_server(data.clone(), *config.http().port());
+    let https_server = start_https_server(data, *config.https().port());
 
     futures::try_join!(http_server, https_server).map(|_| ())
 }
 
-fn start_http_server(data: Data<AppData>) -> impl Future<Output = Result<(), std::io::Error>> {
-    let port = *data.config().http().port();
+fn start_http_server(data: Data<AppData>, port: u16) -> impl Future<Output = Result<(), std::io::Error>> {
     HttpServer::new(move || {
         App::new()
             .app_data(data.clone())
@@ -91,8 +90,7 @@ fn start_http_server(data: Data<AppData>) -> impl Future<Output = Result<(), std
     .run()
 }
 
-fn start_https_server(data: Data<AppData>) -> impl Future<Output = Result<(), std::io::Error>> {
-    let port = *data.config().https().port();
+fn start_https_server(data: Data<AppData>, port: u16) -> impl Future<Output = Result<(), std::io::Error>> {
     HttpServer::new(move || {
         App::new()
             .app_data(data.clone())
