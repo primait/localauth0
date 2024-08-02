@@ -1,5 +1,4 @@
 use super::{Issuer, Jwk, TokenResponse};
-use crate::config::Config;
 use crate::controller;
 use serde::Serialize;
 

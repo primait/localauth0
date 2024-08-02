@@ -1,8 +1,6 @@
 use chrono::Utc;
 use serde::Serialize;
 
-use crate::config::Config;
-
 use super::{Issuer, UserInfo};
 
 #[derive(Debug, Serialize)]
@@ -23,7 +21,7 @@ impl IdTokenClaims {
             iss: issuer.0.to_string(),
             aud: audience,
             sid: "session_id".to_string(),
-            user_info: user_info.into(),
+            user_info,
             iat: Some(Utc::now().timestamp()),
             exp: Some(Utc::now().timestamp() + 60000),
             nonce,
