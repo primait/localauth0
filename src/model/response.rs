@@ -3,6 +3,7 @@ use serde::Serialize;
 use crate::BEARER;
 
 #[derive(Serialize)]
+#[cfg_attr(test, derive(serde::Deserialize, Debug))]
 pub struct TokenResponse {
     access_token: String,
     id_token: String,

@@ -1,4 +1,4 @@
-pub use app_data::*;
+pub use crate::app_data::*;
 pub use claims::*;
 pub use id_token::*;
 pub use jwks::*;
@@ -7,9 +7,6 @@ pub use request::*;
 pub use response::*;
 pub use user_info::*;
 
-mod app_data;
-mod audience;
-mod authorizations;
 pub mod certificates;
 mod claims;
 pub mod defaults;
@@ -19,3 +16,13 @@ mod openid_metadata;
 mod request;
 mod response;
 mod user_info;
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[cfg_attr(test, derive(PartialEq))]
+#[serde(transparent)]
+pub struct Issuer(pub String);
+
+#[derive(serde::Serialize, serde::Deserialize, Clone, Debug)]
+#[cfg_attr(test, derive(PartialEq))]
+#[serde(transparent)]
+pub struct Subject(pub String);

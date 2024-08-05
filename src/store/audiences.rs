@@ -1,15 +1,15 @@
-use crate::config::Audience;
+use crate::config::AudienceConfig;
 use std::collections::HashMap;
 use std::sync::RwLock;
 
 use crate::error::Error;
 
-pub struct AudiencesStore {
+pub struct Audiences {
     cache: RwLock<HashMap<String, Vec<String>>>,
 }
 
-impl AudiencesStore {
-    pub fn new(audiences: &[Audience]) -> Self {
+impl Audiences {
+    pub fn new(audiences: &[AudienceConfig]) -> Self {
         let mut map: HashMap<String, Vec<String>> = HashMap::new();
 
         for audience in audiences {

@@ -1,14 +1,15 @@
-FROM public.ecr.aws/prima/rust:1.79.0
+FROM public.ecr.aws/prima/rust:1.80.0
 
 WORKDIR /code
 
-COPY entrypoint /code/entrypoint
+ENV CARGO_HOME=/home/app/.cargo
 
-RUN chown -R app:app /code
-RUN rustup target add wasm32-unknown-unknown
-RUN cargo install --locked trunk
+COPY entrypoint /code/entrypoint
 
 # Needed to have the same file owner in the container and in Linux host
 USER app
+
+RUN rustup target add wasm32-unknown-unknown
+RUN cargo install --locked trunk
 
 ENTRYPOINT ["./entrypoint"]

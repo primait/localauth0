@@ -1,29 +1,27 @@
 use chrono::Utc;
 use serde::Serialize;
 
-use crate::config::Config;
-
-use super::UserInfo;
+use super::{Issuer, UserInfo};
 
 #[derive(Debug, Serialize)]
-pub struct IdTokenClaims<'s> {
+pub struct IdTokenClaims {
     iss: String,
     aud: String,
     sid: String,
     #[serde(flatten)]
-    user_info: UserInfo<'s>,
+    user_info: UserInfo,
     iat: Option<i64>,
     exp: Option<i64>,
     nonce: Option<String>,
 }
 
-impl<'s> IdTokenClaims<'s> {
-    pub fn new(config: &'s Config, audience: String, nonce: Option<String>) -> Self {
+impl IdTokenClaims {
+    pub fn new(issuer: &Issuer, audience: String, user_info: UserInfo, nonce: Option<String>) -> Self {
         Self {
-            iss: config.issuer().clone(),
+            iss: issuer.0.to_string(),
             aud: audience,
             sid: "session_id".to_string(),
-            user_info: UserInfo::new(config),
+            user_info,
             iat: Some(Utc::now().timestamp()),
             exp: Some(Utc::now().timestamp() + 60000),
             nonce,
@@ -37,7 +35,7 @@ mod tests {
     use serde_json::{json, Value};
 
     use crate::config::Config;
-    use crate::model::IdTokenClaims;
+    use crate::model::{IdTokenClaims, Issuer};
 
     #[test]
     fn id_token_serialization() {
@@ -68,11 +66,15 @@ mod tests {
         "#;
 
         let config: Config = toml::from_str(config_str).unwrap();
-
         let audience = "audience".to_string();
         let nonce = Some("nonce".to_string());
 
-        let user_info: IdTokenClaims = IdTokenClaims::new(&config, audience.clone(), nonce.clone());
+        let user_info: IdTokenClaims = IdTokenClaims::new(
+            config.issuer(),
+            audience.clone(),
+            config.user_info().into(),
+            nonce.clone(),
+        );
         let now = Utc::now();
         let value: Value = serde_json::to_value(user_info).unwrap();
 

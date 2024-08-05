@@ -9,6 +9,9 @@ and this project adheres to
 ## [Unreleased]
 
 - Improve documentation about how to configure Localauth0 in docker.
+- Add new API routes to:
+  - Get/set custom claims in JWT. The route is available at `/oauth/token/custom_claims`.
+  - Get/set user info properties (w custom fields). The route is available at `/oauth/token/user_info`.
 
 ---
 
