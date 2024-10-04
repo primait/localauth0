@@ -84,8 +84,46 @@ After having run the localauth0 machine a web interface is available at
   }
   ```
 
-- `GET` <http://localhost:3000/permissions/{audience}>: used to get a the list
+- `GET` <http://localhost:3000/permissions/{audience}>: used to get the list
   of all permissions for the given audience.
+
+- `GET` <http://localhost:3000/oauth/token/custom_claims>: used to get the
+  list of custom claims that will be injected in the JWT payload.
+
+- `POST` <http://localhost:3000/oauth/token/custom_claims>: used to add or update
+  one or more custom claim fields. Body should be:
+   
+  ```json
+  {
+    "custom_claims": [{
+      "name": "custom_claim_field_name",
+      "value": "custom claim field value. Can be a string or a list of strings"      
+    }]
+  }
+  ```
+
+- `GET` <http://localhost:3000/oauth/token/user_info>: used to get the user info.
+
+- `POST` <http://localhost:3000/oauth/token/user_info>: used to update the user info.
+  Body should be:
+
+  ```json
+  {
+    "subject": "optional field",
+    "name": "optional field",
+    "given_name": "optional field",
+    "family_name": "optional field",
+    "nickname": "optional field",
+    "locale": "optional field",
+    "gender": "optional field",
+    "birthdate": "optional field",
+    "email": "optional field",
+    "email_verified": "optional field",
+    "picture": "optional field",
+    "updated_at": "optional field",
+    "custom_fields": "optional field"
+  }
+  ```
 
 ### Jwks
 
