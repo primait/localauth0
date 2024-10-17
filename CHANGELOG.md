@@ -10,6 +10,14 @@ and this project adheres to
 
 ---
 
+## [0.8.1] - 2024-10-17
+
+# Fixed
+
+- Chrome ERR_SSL_KEY_USAGE_INCOMPATIBLE due to the key usage not being configured.
+
+---
+
 ## [0.8.0] - 2024-08-28
 
 - Improve documentation about how to configure Localauth0 in docker.
@@ -184,7 +192,9 @@ Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 
 - First release 🎉
 
-[Unreleased]: https://github.com/primait/localauth0/compare/0.8.0...HEAD
+
+[Unreleased]: https://github.com/primait/localauth0/compare/0.8.1...HEAD
+[0.8.1]: https://github.com/primait/localauth0/compare/0.8.0...0.8.1
 [0.8.0]: https://github.com/primait/localauth0/compare/0.7.2...0.8.0
 [0.7.2]: https://github.com/primait/localauth0/compare/0.7.1...0.7.2
 [0.7.1]: https://github.com/primait/localauth0/compare/0.7.0...0.7.1
