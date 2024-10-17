@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+# Fixed
+
+- Chrome ERR_SSL_KEY_USAGE_INCOMPATIBLE due to the key usage not being configured.
+
 ---
 
 ## [0.8.0] - 2024-08-28
