@@ -38,7 +38,14 @@ pub fn generate_certificate(key_pair: &PKey<Private>) -> Result<X509, Error> {
     cert_builder.set_not_after(&not_after)?;
 
     cert_builder.append_extension(BasicConstraints::new().critical().ca().build()?)?;
-    cert_builder.append_extension(KeyUsage::new().critical().key_cert_sign().crl_sign().digital_signature().build()?)?;
+    cert_builder.append_extension(
+        KeyUsage::new()
+            .critical()
+            .key_cert_sign()
+            .crl_sign()
+            .digital_signature()
+            .build()?,
+    )?;
 
     let subject_key_identifier = SubjectKeyIdentifier::new().build(&cert_builder.x509v3_context(None, None))?;
     cert_builder.append_extension(subject_key_identifier)?;
