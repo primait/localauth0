@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- Changed unused `connection` query parameter to be optional.
+
 ---
 
 ## [0.8.1] - 2024-10-17

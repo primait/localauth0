@@ -13,14 +13,14 @@ mod msg;
 
 const MISSING_PARAMS_CONTENT: &str = "Bad request while authenticating with sso:\
 Missing some query params.\
-Mandatory query params are: `client_id`, `connection`, audience`, `redirect_uri`, `scope` and `response_type`\
-Optional query params are: `state` and `bypass`";
+Mandatory query params are: `client_id`, audience`, `redirect_uri`, `scope` and `response_type`\
+Optional query params are: `connection`, `state` and `bypass`";
 
 #[derive(Deserialize, Debug)]
 #[allow(dead_code)]
 struct QueryParams {
     client_id: String,
-    connection: String,
+    connection: Option<String>,
     audience: String,
     redirect_uri: String,
     scope: String,
