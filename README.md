@@ -27,7 +27,7 @@ tenant and test it offline for "real".
 In order to run localauth0 docker image execute the following:
 
 ```shell
-docker run -d -p 3000:3000 public.ecr.aws/primaassicurazioni/localauth0:0.8.1
+docker run -d -p 3000:3000 public.ecr.aws/primaassicurazioni/localauth0:0.8.2
 ```
 
 By default, the container exposes an http server on the port 3000 and an https
@@ -84,28 +84,29 @@ After having run the localauth0 machine a web interface is available at
   }
   ```
 
-- `GET` <http://localhost:3000/permissions/{audience}>: used to get the list
-  of all permissions for the given audience.
+- `GET` <http://localhost:3000/permissions/{audience}>: used to get the list of
+  all permissions for the given audience.
 
-- `GET` <http://localhost:3000/oauth/token/custom_claims>: used to get the
-  list of custom claims that will be injected in the JWT payload.
+- `GET` <http://localhost:3000/oauth/token/custom_claims>: used to get the list
+  of custom claims that will be injected in the JWT payload.
 
-- `POST` <http://localhost:3000/oauth/token/custom_claims>: used to add or update
-  one or more custom claim fields. Body should be:
-   
+- `POST` <http://localhost:3000/oauth/token/custom_claims>: used to add or
+  update one or more custom claim fields. Body should be:
+
   ```json
   {
     "custom_claims": [{
       "name": "custom_claim_field_name",
-      "value": "custom claim field value. Can be a string or a list of strings"      
+      "value": "custom claim field value. Can be a string or a list of strings"
     }]
   }
   ```
 
-- `GET` <http://localhost:3000/oauth/token/user_info>: used to get the user info.
+- `GET` <http://localhost:3000/oauth/token/user_info>: used to get the user
+  info.
 
-- `POST` <http://localhost:3000/oauth/token/user_info>: used to update the user info.
-  Body should be:
+- `POST` <http://localhost:3000/oauth/token/user_info>: used to update the user
+  info. Body should be:
 
   ```json
   {
@@ -247,7 +248,7 @@ Add this snippet to your `docker-compose.yml` file and reference it in your app
 
 ```yaml
 auth0:
-  image: public.ecr.aws/primaassicurazioni/localauth0:0.8.1
+  image: public.ecr.aws/primaassicurazioni/localauth0:0.8.2
   healthcheck:
     test: ["CMD", "/localauth0", "healthcheck"]
   ports:
@@ -262,7 +263,7 @@ example:
 
 ```yaml
 auth0:
-  image: public.ecr.aws/primaassicurazioni/localauth0:0.8.0
+  image: public.ecr.aws/primaassicurazioni/localauth0:0.8.2
   healthcheck:
     test: ["CMD", "/localauth0", "healthcheck"]
   ports:
@@ -291,7 +292,7 @@ Then mount the file in the container using the following snippet in your
 
 ```yaml
 auth0:
-  image: public.ecr.aws/primaassicurazioni/localauth0:0.8.0
+  image: public.ecr.aws/primaassicurazioni/localauth0:0.8.2
   healthcheck:
     test: ["CMD", "/localauth0", "healthcheck"]
   environment:

@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+---
+
+## [0.8.2] - 2025-02-17
+
 ### Changed
 
 - Changed unused `connection` query parameter to be optional.
@@ -197,7 +201,9 @@ Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 - First release 🎉
 
 
-[Unreleased]: https://github.com/primait/localauth0/compare/0.8.1...HEAD
+
+[Unreleased]: https://github.com/primait/localauth0/compare/0.8.2...HEAD
+[0.8.2]: https://github.com/primait/localauth0/compare/0.8.1...0.8.2
 [0.8.1]: https://github.com/primait/localauth0/compare/0.8.0...0.8.1
 [0.8.0]: https://github.com/primait/localauth0/compare/0.7.2...0.8.0
 [0.7.2]: https://github.com/primait/localauth0/compare/0.7.1...0.7.2
