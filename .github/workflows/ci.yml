@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        
-      - uses: Swatinem/rust-cache@v2
+
+      - uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # ratchet:Swatinem/rust-cache@v2
 
       - run: rustup target add wasm32-unknown-unknown
       - name: install tools
-        uses: taiki-e/install-action@v2
+        uses: taiki-e/install-action@5651179950649c44da31d346537e20c0534f0f25 # ratchet:taiki-e/install-action@v2
         with:
           tool: trunk@0.17
 
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6 # ratchet:Swatinem/rust-cache@v2
       - name: Run tests
         run: cargo test
 
@@ -56,6 +56,6 @@ jobs:
       - test
     steps:
       - name: Decide whether the needed jobs succeeded or failed
-        uses: re-actors/alls-green@release/v1
+        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # ratchet:re-actors/alls-green@release/v1
         with:
           jobs: ${{ toJSON(needs) }}
