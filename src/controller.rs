@@ -199,7 +199,16 @@ pub async fn jwt_for_authorization_code(
     app_data: Data<AppData>,
     request: AuthorizationCodeTokenRequest,
 ) -> HttpResponse {
-    if request.client_id == CLIENT_ID_VALUE && request.client_secret == CLIENT_SECRET_VALUE {
+    if request.client_id == CLIENT_ID_VALUE {
+        // Client secret is optional for certain clients
+        if let Some(expected_secret) = request.client_secret {
+            if expected_secret != CLIENT_SECRET_VALUE {
+                return HttpResponse::Unauthorized()
+                    .content_type("application/json")
+                    .body(r#"{"error":"access_denied","error_description":"Unauthorized"}"#);
+            }
+        }
+
         let audience: String = app_data
             .authorizations()
             .get_audience_for_authorization(&request.code)
@@ -261,7 +270,6 @@ fn new_token_response(
 
 #[cfg(test)]
 mod test {
-    use crate::model::{Jwks, TokenResponse};
     use crate::{
         config::Config,
         model::{AppData, GrantType},
@@ -452,7 +460,7 @@ mod test {
     async fn custom_claims_test() {
         use super::{get_custom_claims, set_custom_claims, token};
         use crate::config::CustomField;
-        use crate::model::{Claims, ClientCredentialsTokenRequest, TokenRequest, TokenResponse, UserInfo};
+        use crate::model::{ClientCredentialsTokenRequest, TokenRequest, TokenResponse};
         use actix_web::{http::header::ContentType, test, web::Data, App};
 
         let path = "/oauth/token/custom_claims";
@@ -534,7 +542,7 @@ mod test {
         use super::{get_user_info, set_user_info, token};
         use crate::config::UserInfoConfig;
         use crate::model::UserInfo;
-        use crate::model::{Claims, ClientCredentialsTokenRequest, TokenRequest, TokenResponse};
+        use crate::model::{ClientCredentialsTokenRequest, TokenRequest, TokenResponse};
         use actix_web::{http::header::ContentType, test, web::Data, App};
 
         let path = "/oauth/token/user_info";
