@@ -10,6 +10,16 @@ and this project adheres to
 
 ---
 
+## [0.8.3] - 2025-05-30
+
+### Changed
+
+- Client secret is optional for the authorization code flow (thanks to
+  @linkdotnet for the contribution 👏 ) and will be checked only if present in
+  the response
+
+---
+
 ## [0.8.2] - 2025-02-17
 
 ### Changed
@@ -22,7 +32,8 @@ and this project adheres to
 
 # Fixed
 
-- Chrome ERR_SSL_KEY_USAGE_INCOMPATIBLE due to the key usage not being configured.
+- Chrome ERR_SSL_KEY_USAGE_INCOMPATIBLE due to the key usage not being
+  configured.
 
 ---
 
@@ -30,8 +41,10 @@ and this project adheres to
 
 - Improve documentation about how to configure Localauth0 in docker.
 - Add new API routes to:
-  - Get/set custom claims in JWT. The route is available at `/oauth/token/custom_claims`.
-  - Get/set user info properties (w custom fields). The route is available at `/oauth/token/user_info`.
+  - Get/set custom claims in JWT. The route is available at
+    `/oauth/token/custom_claims`.
+  - Get/set user info properties (w custom fields). The route is available at
+    `/oauth/token/user_info`.
 
 ---
 
@@ -201,8 +214,8 @@ Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 - First release 🎉
 
 
-
-[Unreleased]: https://github.com/primait/localauth0/compare/0.8.2...HEAD
+[Unreleased]: https://github.com/primait/localauth0/compare/0.8.3...HEAD
+[0.8.3]: https://github.com/primait/localauth0/compare/0.8.2...0.8.3
 [0.8.2]: https://github.com/primait/localauth0/compare/0.8.1...0.8.2
 [0.8.1]: https://github.com/primait/localauth0/compare/0.8.0...0.8.1
 [0.8.0]: https://github.com/primait/localauth0/compare/0.7.2...0.8.0
