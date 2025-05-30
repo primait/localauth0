@@ -27,7 +27,7 @@ tenant and test it offline for "real".
 In order to run localauth0 docker image execute the following:
 
 ```shell
-docker run -d -p 3000:3000 public.ecr.aws/primaassicurazioni/localauth0:0.8.2
+docker run -d -p 3000:3000 public.ecr.aws/primaassicurazioni/localauth0:0.8.3
 ```
 
 By default, the container exposes an http server on the port 3000 and an https
@@ -248,7 +248,7 @@ Add this snippet to your `docker-compose.yml` file and reference it in your app
 
 ```yaml
 auth0:
-  image: public.ecr.aws/primaassicurazioni/localauth0:0.8.2
+  image: public.ecr.aws/primaassicurazioni/localauth0:0.8.3
   healthcheck:
     test: ["CMD", "/localauth0", "healthcheck"]
   ports:
