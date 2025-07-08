@@ -3,15 +3,10 @@ name: CD
 on:
   release:
     types: [published]
-  workflow_dispatch:
-    inputs:
-      tag_name:
-        description: "The tag name to use"
-        required: true
-        type: string
 
 env:
   CARGO_TERM_COLOR: always
+  VERSION: ${{ github.event.release.tag_name }}
 
 jobs:
   build:
@@ -113,11 +108,11 @@ jobs:
       - name: Push primaassicurazioni alpine
         run: |-
            buildah manifest push --all localauth0-alpine \
-           "docker://public.ecr.aws/primaassicurazioni/localauth0:${{ inputs.tag_name || github.event.release.tag_name }}-alpine"
+           "docker://public.ecr.aws/primaassicurazioni/localauth0:$VERSION-alpine"
            buildah manifest push --all localauth0-alpine \
            "docker://public.ecr.aws/primaassicurazioni/localauth0:alpine"
 
       - name: Push primaassicurazioni
         run: >-
            buildah manifest push --all localauth0
-           "docker://public.ecr.aws/primaassicurazioni/localauth0:${{ inputs.tag_name || github.event.release.tag_name }}"
+           "docker://public.ecr.aws/primaassicurazioni/localauth0:$VERSION"
