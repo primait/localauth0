@@ -179,7 +179,7 @@ Localauth0 can be configured using a `localauth0.toml` file (see
 [localauth0.toml](localauth0.toml) as an example) or using the
 `LOCALAUTH0_CONFIG` environment variable.
 
-Take a look [here](#Integrate-localauth0-in-existing-project) to see how to
+Take a look [here](#integrate-localauth0-in-an-existing-docker-compose-project) to see how to
 configure your docker compose cluster.
 
 ### Local development
