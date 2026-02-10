@@ -28,7 +28,7 @@ chrono = {version = "0.4.19", features = ["serde"]}
 
 thiserror = "1.0.31"
 
-jsonwebtoken = {version = "10.3.0", features = ["rust_crypto"]}
+jsonwebtoken = { version = "10.3.0", features = ["rust_crypto"] }
 rand = "0.9.1"
 uuid = {version = "1.1.2", features = ["v4"]}
 
