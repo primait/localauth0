@@ -10,6 +10,6 @@ COPY entrypoint /code/entrypoint
 USER app
 
 RUN rustup target add wasm32-unknown-unknown
-RUN cargo install --locked trunk
+RUN cargo install --locked trunk --version 0.21.5
 
 ENTRYPOINT ["./entrypoint"]
