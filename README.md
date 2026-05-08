@@ -27,7 +27,7 @@ tenant and test it offline for "real".
 In order to run localauth0 docker image execute the following:
 
 ```shell
-docker run -d -p 3000:3000 public.ecr.aws/primaassicurazioni/localauth0:0.8.3
+docker run -d -p 3000:3000 public.ecr.aws/primaassicurazioni/localauth0:0.9.0
 ```
 
 By default, the container exposes an http server on the port 3000 and an https
@@ -179,8 +179,8 @@ Localauth0 can be configured using a `localauth0.toml` file (see
 [localauth0.toml](localauth0.toml) as an example) or using the
 `LOCALAUTH0_CONFIG` environment variable.
 
-Take a look [here](#integrate-localauth0-in-an-existing-docker-compose-project) to see how to
-configure your docker compose cluster.
+Take a look [here](#integrate-localauth0-in-an-existing-docker-compose-project)
+to see how to configure your docker compose cluster.
 
 ### Local development
 
@@ -248,7 +248,7 @@ Add this snippet to your `docker-compose.yml` file and reference it in your app
 
 ```yaml
 auth0:
-  image: public.ecr.aws/primaassicurazioni/localauth0:0.8.3
+  image: public.ecr.aws/primaassicurazioni/localauth0:0.9.0
   healthcheck:
     test: ["CMD", "/localauth0", "healthcheck"]
   ports:
@@ -263,7 +263,7 @@ example:
 
 ```yaml
 auth0:
-  image: public.ecr.aws/primaassicurazioni/localauth0:0.8.2
+  image: public.ecr.aws/primaassicurazioni/localauth0:0.9.0
   healthcheck:
     test: ["CMD", "/localauth0", "healthcheck"]
   ports:
@@ -292,7 +292,7 @@ Then mount the file in the container using the following snippet in your
 
 ```yaml
 auth0:
-  image: public.ecr.aws/primaassicurazioni/localauth0:0.8.2
+  image: public.ecr.aws/primaassicurazioni/localauth0:0.9.0
   healthcheck:
     test: ["CMD", "/localauth0", "healthcheck"]
   environment:

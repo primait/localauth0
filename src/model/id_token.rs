@@ -35,7 +35,7 @@ mod tests {
     use serde_json::{json, Value};
 
     use crate::config::Config;
-    use crate::model::{IdTokenClaims, Issuer};
+    use crate::model::IdTokenClaims;
 
     #[test]
     fn id_token_serialization() {

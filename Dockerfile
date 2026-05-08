@@ -1,4 +1,4 @@
-FROM public.ecr.aws/prima/rust:1.80.0
+FROM public.ecr.aws/primaassicurazioni/rust:1.88.0
 
 WORKDIR /code
 
@@ -10,6 +10,6 @@ COPY entrypoint /code/entrypoint
 USER app
 
 RUN rustup target add wasm32-unknown-unknown
-RUN cargo install --locked trunk
+RUN cargo install --version ^0.17 trunk
 
 ENTRYPOINT ["./entrypoint"]
