@@ -6,14 +6,14 @@ version = "0.8.3"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [profile.release]
-strip = true # Automatically strip symbols (elf) from the binary.
-opt-level = "z" # Optimize for size.
-lto = true # instructs the linker to optimize at the link stage
 codegen-units = 1 # run parallel compilation prevents some optimizations
+lto = true # instructs the linker to optimize at the link stage
+opt-level = "z" # Optimize for size.
+strip = true # Automatically strip symbols (elf) from the binary.
 
 [dependencies]
 actix-files = "0.6.10"
-actix-web = { version = "4", features = ["openssl"] }
+actix-web = {version = "4", features = ["openssl"]}
 
 derive-getters = "0.4.0"
 
@@ -28,19 +28,19 @@ chrono = {version = "0.4.19", features = ["serde"]}
 
 thiserror = "1.0.31"
 
-jsonwebtoken = "10.3.0"
+jsonwebtoken = {version = "10.3.0", features = ["rust_crypto"]}
 rand = "0.9.1"
 uuid = {version = "1.1.2", features = ["v4"]}
 
 toml = "0.8.19"
 
-tracing = { version = "0.1", features = ["log", "max_level_info", "release_max_level_info"] }
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing = {version = "0.1", features = ["log", "max_level_info", "release_max_level_info"]}
+tracing-subscriber = {version = "0.3", features = ["env-filter"]}
 
 futures = "0.3.21"
-reqwest = { version = "0.12.5", default-features = false, features = ["native-tls"] }
-tokio = { version = "1.43.1", default-features = false }
+reqwest = {version = "0.12.5", default-features = false, features = ["native-tls"]}
+tokio = {version = "1.43.1", default-features = false}
 
 [features]
 default = []
-vendor-openssl = [ "openssl/vendored" ]
+vendor-openssl = ["openssl/vendored"]
