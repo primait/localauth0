@@ -10,6 +10,15 @@ and this project adheres to
 
 ---
 
+## [0.9.0] - 2026-05-08
+
+### Changed
+
+- Bumped `jsonwebtoken` to v10
+- Bumped `rand` to v0.9
+
+---
+
 ## [0.8.3] - 2025-05-30
 
 ### Changed
@@ -213,8 +222,8 @@ Note: images temporairly use the public.ecr.aws/c6i9l4r6/localauth0 registry.
 
 - First release 🎉
 
-
-[Unreleased]: https://github.com/primait/localauth0/compare/0.8.3...HEAD
+[Unreleased]: https://github.com/primait/localauth0/compare/0.9.0...HEAD
+[0.9.0]: https://github.com/primait/localauth0/compare/0.8.3...0.9.0
 [0.8.3]: https://github.com/primait/localauth0/compare/0.8.2...0.8.3
 [0.8.2]: https://github.com/primait/localauth0/compare/0.8.1...0.8.2
 [0.8.1]: https://github.com/primait/localauth0/compare/0.8.0...0.8.1
