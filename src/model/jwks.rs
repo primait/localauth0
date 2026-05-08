@@ -3,7 +3,7 @@ use base64::Engine;
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use openssl::pkey::Private;
 use openssl::rsa::Rsa;
-use rand::seq::SliceRandom;
+use rand::seq::IndexedRandom;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -29,10 +29,7 @@ impl Jwks {
     }
 
     pub fn random_jwk(&self) -> Result<Jwk, Error> {
-        self.keys
-            .choose(&mut rand::thread_rng())
-            .ok_or(Error::EmptyJwks)
-            .cloned()
+        self.keys.choose(&mut rand::rng()).ok_or(Error::EmptyJwks).cloned()
     }
 
     pub fn parse<T: DeserializeOwned>(&self, token: &str, audience: &[impl ToString]) -> Result<T, Error> {
