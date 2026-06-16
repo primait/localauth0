@@ -100,7 +100,7 @@ jobs:
 
       - name: Login to public ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2.1.5
         with:
           mask-password: "true"
           registry-type: public
