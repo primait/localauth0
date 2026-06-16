@@ -15,7 +15,7 @@ strip = true # Automatically strip symbols (elf) from the binary.
 actix-files = "0.6.10"
 actix-web = {version = "4", features = ["openssl"]}
 
-derive-getters = "0.4.0"
+derive-getters = "0.5.0"
 
 serde = {version = "1.0.137", features = ["derive"]}
 serde_json = "1.0.80"
