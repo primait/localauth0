@@ -109,6 +109,10 @@ fn setup_service(cfg: &mut web::ServiceConfig) {
         .service(controller::get_permissions)
         .service(controller::set_permissions_for_audience)
         .service(controller::get_permissions_by_audience)
+        .service(controller::get_custom_claims)
+        .service(controller::set_custom_claims)
+        .service(controller::get_user_info)
+        .service(controller::set_user_info)
         .service(controller::rotate_keys)
         .service(controller::revoke_keys)
         .service(controller::login)
@@ -134,4 +138,47 @@ fn setup_ssl_acceptor() -> SslAcceptorBuilder {
         .set_certificate(&certificate)
         .expect("Error setting the certificate");
     builder
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use actix_web::{test, App};
+
+    #[actix_web::test]
+    async fn test_setup_service_registers_all_handlers() {
+        let config = Config::load_or_default();
+        let app_data = Data::new(AppData::new(&config).expect("Failed to create AppData"));
+
+        let app = test::init_service(
+            App::new()
+                .app_data(app_data)
+                .configure(setup_service),
+        )
+        .await;
+
+        let req = test::TestRequest::get()
+            .uri("/oauth/token/custom_claims")
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_ne!(resp.status(), 404, "Custom claims GET endpoint not registered");
+
+        let req = test::TestRequest::post()
+            .uri("/oauth/token/custom_claims")
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_ne!(resp.status(), 404, "Custom claims POST endpoint not registered");
+
+        let req = test::TestRequest::get()
+            .uri("/oauth/token/user_info")
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_ne!(resp.status(), 404, "User info GET endpoint not registered");
+
+        let req = test::TestRequest::post()
+            .uri("/oauth/token/user_info")
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert_ne!(resp.status(), 404, "User info POST endpoint not registered");
+    }
 }
