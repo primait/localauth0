@@ -150,34 +150,21 @@ mod tests {
         let config = Config::load_or_default();
         let app_data = Data::new(AppData::new(&config).expect("Failed to create AppData"));
 
-        let app = test::init_service(
-            App::new()
-                .app_data(app_data)
-                .configure(setup_service),
-        )
-        .await;
+        let app = test::init_service(App::new().app_data(app_data).configure(setup_service)).await;
 
-        let req = test::TestRequest::get()
-            .uri("/oauth/token/custom_claims")
-            .to_request();
+        let req = test::TestRequest::get().uri("/oauth/token/custom_claims").to_request();
         let resp = test::call_service(&app, req).await;
         assert_ne!(resp.status(), 404, "Custom claims GET endpoint not registered");
 
-        let req = test::TestRequest::post()
-            .uri("/oauth/token/custom_claims")
-            .to_request();
+        let req = test::TestRequest::post().uri("/oauth/token/custom_claims").to_request();
         let resp = test::call_service(&app, req).await;
         assert_ne!(resp.status(), 404, "Custom claims POST endpoint not registered");
 
-        let req = test::TestRequest::get()
-            .uri("/oauth/token/user_info")
-            .to_request();
+        let req = test::TestRequest::get().uri("/oauth/token/user_info").to_request();
         let resp = test::call_service(&app, req).await;
         assert_ne!(resp.status(), 404, "User info GET endpoint not registered");
 
-        let req = test::TestRequest::post()
-            .uri("/oauth/token/user_info")
-            .to_request();
+        let req = test::TestRequest::post().uri("/oauth/token/user_info").to_request();
         let resp = test::call_service(&app, req).await;
         assert_ne!(resp.status(), 404, "User info POST endpoint not registered");
     }
