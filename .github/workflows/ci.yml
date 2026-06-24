@@ -23,7 +23,7 @@ jobs:
 
       - run: rustup target add wasm32-unknown-unknown
       - name: install tools
-        uses: taiki-e/install-action@5651179950649c44da31d346537e20c0534f0f25 # ratchet:taiki-e/install-action@v2
+        uses: taiki-e/install-action@b8cecb83565409bcc297b2df6e77f030b2a468d5 # ratchet:taiki-e/install-action@v2
         with:
           tool: trunk@0.17
 
