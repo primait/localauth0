@@ -28,7 +28,7 @@ jobs:
       - name: Build 
         run: cross build --features vendor-openssl --release --target "${{ matrix.arch }}"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: localauth0-${{ matrix.arch }}
           path: |
@@ -47,7 +47,7 @@ jobs:
       - name: Build web
         run: trunk build --release web/index.html
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: web
           path: ./web/dist
