@@ -2,7 +2,7 @@ use chrono::{DateTime, SecondsFormat, Utc};
 use serde::ser::SerializeMap;
 use serde::{Serialize, Serializer};
 
-use crate::config::{CustomField, CustomFieldValue, UserInfoConfig};
+use crate::config::{CustomField, CustomFieldValue, UserConfig, UserInfoConfig};
 
 #[derive(Debug, Clone)]
 #[cfg_attr(test, derive(serde::Deserialize, PartialEq))]
@@ -24,6 +24,26 @@ pub struct UserInfo {
 
 impl From<&UserInfoConfig> for UserInfo {
     fn from(value: &UserInfoConfig) -> Self {
+        Self {
+            sub: value.subject().to_string(),
+            name: value.name().to_string(),
+            given_name: value.given_name().to_string(),
+            family_name: value.family_name().to_string(),
+            nickname: value.nickname().to_string(),
+            locale: value.locale().to_string(),
+            gender: value.gender().to_string(),
+            birthdate: value.birthdate().to_string(),
+            email: value.email().to_string(),
+            email_verified: *value.email_verified(),
+            picture: value.picture().to_string(),
+            updated_at: *value.updated_at(),
+            custom_fields: value.custom_fields().clone(),
+        }
+    }
+}
+
+impl From<&UserConfig> for UserInfo {
+    fn from(value: &UserConfig) -> Self {
         Self {
             sub: value.subject().to_string(),
             name: value.name().to_string(),
@@ -71,6 +91,7 @@ impl Serialize for UserInfo {
             match custom_field.value() {
                 CustomFieldValue::String(string) => map.serialize_entry(custom_field.name(), &string),
                 CustomFieldValue::Vec(vec) => map.serialize_entry(custom_field.name(), &vec),
+                CustomFieldValue::Object(value) => map.serialize_entry(custom_field.name(), &value),
             }?;
         }
 
@@ -106,7 +127,8 @@ mod tests {
         updated_at = "2022-11-11T11:00:00Z"
         custom_fields = [
             { name = "custom_field_str", value = { String = "str" } },
-            { name = "custom_field_vec", value = { Vec = ["vec"] } }
+            { name = "custom_field_vec", value = { Vec = ["vec"] } },
+            { name = "https://clevertap.com/app_metadata", value = { Object = { regions = ["us"], accountMFA = false } } }
         ]
 
         [[audience]]
@@ -137,7 +159,8 @@ mod tests {
             "picture": config.user_info().picture(),
             "updated_at": config.user_info().updated_at().to_rfc3339_opts(SecondsFormat::Millis, true),
             "custom_field_str": "str",
-            "custom_field_vec": ["vec"]
+            "custom_field_vec": ["vec"],
+            "https://clevertap.com/app_metadata": { "regions": ["us"], "accountMFA": false }
         });
 
         assert_eq!(value, asserted);

@@ -35,6 +35,9 @@ pub struct Config {
 
     #[serde(default)]
     https: Https,
+
+    #[serde(default)]
+    jwks: JwksConfig,
 }
 
 impl Default for Config {
@@ -48,6 +51,7 @@ impl Default for Config {
             access_token: Default::default(),
             http: Default::default(),
             https: Default::default(),
+            jwks: Default::default(),
         }
     }
 }
@@ -114,10 +118,41 @@ pub struct AudienceConfig {
     permissions: Vec<String>,
 }
 
-#[derive(Debug, Deserialize, Getters)]
+/// A locally-defined user that can log in via `/u/login/identifier` + `/u/login/password`.
+/// `email` is the login identifier and the unique key in the users store. `password`
+/// is checked verbatim (no hashing — this is a test fixture, not a production IdP).
+/// All other fields populate the id_token user_info claims for this user; sensible
+/// defaults are pulled from `defaults::user_info_*` for fields not specified in TOML.
+#[derive(Debug, Deserialize, Getters, Clone)]
 pub struct UserConfig {
+    email: String,
+    password: String,
+
+    #[serde(default = "defaults::user_info_subject")]
+    subject: String,
+    #[serde(default = "defaults::user_info_name")]
     name: String,
-    permissions: Vec<String>,
+    #[serde(default = "defaults::user_info_given_name")]
+    given_name: String,
+    #[serde(default = "defaults::user_info_family_name")]
+    family_name: String,
+    #[serde(default = "defaults::user_info_nickname")]
+    nickname: String,
+    #[serde(default = "defaults::user_info_locale")]
+    locale: String,
+    #[serde(default = "defaults::user_info_gender")]
+    gender: String,
+    #[serde(default = "defaults::user_info_birthdate")]
+    birthdate: String,
+    #[serde(default = "defaults::user_info_email_verified")]
+    email_verified: bool,
+    #[serde(default = "defaults::user_info_picture")]
+    picture: String,
+    #[serde(default = "defaults::user_info_updated_at")]
+    updated_at: DateTime<Utc>,
+
+    #[serde(default)]
+    custom_fields: Option<Vec<CustomField>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Getters, Clone)]
@@ -193,6 +228,7 @@ impl CustomField {
 pub enum CustomFieldValue {
     String(String),
     Vec(Vec<String>),
+    Object(serde_json::Value),
 }
 
 #[derive(Debug, Deserialize, Getters)]
@@ -219,6 +255,19 @@ impl Default for Https {
             port: defaults::https_port(),
         }
     }
+}
+
+/// `[jwks]` section. When both `private_key_pem_path` and `kid` are set, the
+/// signing-key store loads that PEM as the first (pinned) JWK and survives
+/// `/rotate` and `/revoke` so the kid stays stable across container restarts.
+/// When unset, three RSA-2048 keys are generated at startup with random UUIDs —
+/// the legacy behaviour.
+#[derive(Debug, Deserialize, Getters, Default, Clone)]
+pub struct JwksConfig {
+    #[serde(default)]
+    private_key_pem_path: Option<String>,
+    #[serde(default)]
+    kid: Option<String>,
 }
 
 #[cfg(test)]
@@ -255,7 +304,8 @@ mod tests {
         updated_at = "2022-11-11T11:00:00Z"
         custom_fields = [
             { name = "custom_field_str", value = { String = "str" } },
-            { name = "custom_field_vec", value = { Vec = ["vec"] } }
+            { name = "custom_field_vec", value = { Vec = ["vec"] } },
+            { name = "custom_field_obj", value = { Object = { regions = ["us", "eu"], accountMFA = false } } }
         ]
 
         [[audience]]
@@ -268,7 +318,8 @@ mod tests {
 
         [access_token]
         custom_claims = [
-            { name = "at_custom_claim_str", value = { String = "str" } }
+            { name = "at_custom_claim_str", value = { String = "str" } },
+            { name = "at_custom_claim_obj", value = { Object = { nested = { flag = true } } } }
         ]
 
         [http]
@@ -310,13 +361,19 @@ mod tests {
 
         let custom_fields: &[CustomField] = config.user_info().custom_fields().as_deref().unwrap_or_default();
 
-        assert_eq!(custom_fields.len(), 2);
+        assert_eq!(custom_fields.len(), 3);
 
         let custom_field: &CustomField = custom_fields.iter().find(|v| v.name == "custom_field_vec").unwrap();
         assert_eq!(custom_field.value, CustomFieldValue::Vec(vec!["vec".to_string()]));
 
         let custom_field: &CustomField = custom_fields.iter().find(|v| v.name == "custom_field_str").unwrap();
         assert_eq!(custom_field.value, CustomFieldValue::String("str".to_string()));
+
+        let custom_field: &CustomField = custom_fields.iter().find(|v| v.name == "custom_field_obj").unwrap();
+        assert_eq!(
+            custom_field.value,
+            CustomFieldValue::Object(serde_json::json!({ "regions": ["us", "eu"], "accountMFA": false }))
+        );
 
         let access_token = config.access_token();
         let at_custom_claims = access_token.custom_claims();
@@ -326,6 +383,15 @@ mod tests {
             .find(|v| v.name == "at_custom_claim_str")
             .unwrap();
         assert_eq!(at_custom_claim.value, CustomFieldValue::String("str".to_string()));
+
+        let at_custom_claim: &CustomField = at_custom_claims
+            .iter()
+            .find(|v| v.name == "at_custom_claim_obj")
+            .unwrap();
+        assert_eq!(
+            at_custom_claim.value,
+            CustomFieldValue::Object(serde_json::json!({ "nested": { "flag": true } }))
+        );
 
         assert_eq!(&8000, config.http().port());
         assert_eq!(&3001, config.https().port());

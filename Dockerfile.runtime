@@ -1,0 +1,48 @@
+# Runtime Dockerfile for CleverTap ITF local-setup integration.
+# Builds a minimal runtime image (multi-stage) — distinct from the upstream
+# `Dockerfile` which is a dev-only build environment.
+#
+# The CI release pipeline at .github/workflows/cd.yml uses `cross` + `buildah`
+# to produce the canonical scratch/alpine images; this Dockerfile exists so
+# `docker compose build localauth0` works out of the box inside the Ultron
+# `local-setup/` orchestration without depending on CI artefacts.
+
+FROM rust:1.96-slim-bookworm AS builder
+
+WORKDIR /build
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config libssl-dev ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+
+# The actix Files fallback mounts ./web/dist as static; provide a placeholder
+# so the SPA-fallback handler does not 500 when a browser hits an unmatched
+# path. The real Yew SPA is intentionally not built here — ITF callers hit
+# JSON/redirect endpoints, not the SPA.
+RUN mkdir -p web/dist && \
+    printf '<!doctype html><title>localauth0</title>\n' > web/dist/index.html
+
+RUN cargo build --release --bin localauth0
+
+# --- Runtime stage ----------------------------------------------------------
+
+FROM debian:bookworm-slim AS runtime
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libssl3 ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /
+
+COPY --from=builder /build/target/release/localauth0 /localauth0
+COPY --from=builder /build/web /web
+
+ENV RUST_LOG=info,localauth0=info
+
+HEALTHCHECK --interval=5s --timeout=2s --start-period=2s --retries=3 \
+    CMD ["/localauth0", "healthcheck"]
+
+CMD ["/localauth0"]

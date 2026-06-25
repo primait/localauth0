@@ -24,6 +24,16 @@ impl Jwks {
         })
     }
 
+    /// Construct a 3-key JWKS where the first slot is a pinned key loaded from
+    /// the supplied PEM with a stable `kid`. The other two slots are random.
+    /// `/rotate` and `/revoke` will refresh the random slots but preserve the
+    /// pinned key — see `JwksStore`.
+    pub fn new_with_pinned(pem: &[u8], kid: String) -> Result<Self, Error> {
+        Ok(Self {
+            keys: vec![Jwk::from_pem(pem, kid)?, Jwk::new()?, Jwk::new()?],
+        })
+    }
+
     pub fn find(&self, kid: String) -> Option<Jwk> {
         self.keys.iter().find(|jwk| jwk.kid == kid).cloned()
     }
@@ -92,6 +102,32 @@ impl Jwk {
             r#use: "sig".to_string(),
             x5c: vec![x509cert],
             private_key_pem: key_pair.private_key_to_pem_pkcs8()?,
+        })
+    }
+
+    /// Load a JWK from a PEM-encoded RSA private key with a caller-supplied `kid`.
+    /// The x5c entry is regenerated each call (different serial number) but the
+    /// modulus, exponent, and kid remain stable across restarts — which is the
+    /// whole point: JVM consumers' JWKS caches verify by `kid` and key material,
+    /// not by certificate identity.
+    pub fn from_pem(pem: &[u8], kid: String) -> Result<Jwk, Error> {
+        let rsa = Rsa::private_key_from_pem(pem)?;
+        let key_pair = openssl::pkey::PKey::from_rsa(rsa)?;
+        let modulus = key_pair.rsa()?.n().to_vec();
+        let exponent = key_pair.rsa()?.e().to_vec();
+
+        let x509 = certificates::generate_certificate(&key_pair)?;
+        let x509cert = BASE64_STANDARD.encode(x509.to_der()?);
+
+        Ok(Self {
+            kty: "RSA".to_string(),
+            n: base64_url::encode(&modulus),
+            e: base64_url::encode(&exponent),
+            alg: "RS256".to_string(),
+            kid,
+            r#use: "sig".to_string(),
+            x5c: vec![x509cert],
+            private_key_pem: pem.to_vec(),
         })
     }
 

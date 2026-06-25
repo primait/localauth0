@@ -25,4 +25,10 @@ pub enum Error {
 
     #[error(transparent)]
     OpenSSLParseUtf8Error(#[from] FromUtf8Error),
+
+    #[error(transparent)]
+    IoError(#[from] std::io::Error),
+
+    #[error("Config error: {0}")]
+    Config(String),
 }

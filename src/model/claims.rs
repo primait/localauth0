@@ -95,6 +95,7 @@ impl Serialize for Claims {
             match custom_claims.value() {
                 CustomFieldValue::String(string) => map.serialize_entry(custom_claims.name(), &string),
                 CustomFieldValue::Vec(vec) => map.serialize_entry(custom_claims.name(), &vec),
+                CustomFieldValue::Object(value) => map.serialize_entry(custom_claims.name(), &value),
             }?;
         }
 
