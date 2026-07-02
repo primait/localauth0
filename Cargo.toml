@@ -32,7 +32,7 @@ jsonwebtoken = {version = "10.3.0", features = ["rust_crypto"]}
 rand = "0.9.1"
 uuid = {version = "1.1.2", features = ["v4"]}
 
-toml = "0.8.19"
+toml = "1.1.2"
 
 tracing = {version = "0.1", features = ["log", "max_level_info", "release_max_level_info"]}
 tracing-subscriber = {version = "0.3", features = ["env-filter"]}
