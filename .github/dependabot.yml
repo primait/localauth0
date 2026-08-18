@@ -5,6 +5,15 @@ updates:
     interval: weekly
   cooldown:
     default-days: 7
+  commit-message:
+    prefix: "chore(deps-cargo)"
+  groups:
+    cargo-non-major:
+      patterns:
+      - "*"
+      update-types:
+      - "minor"
+      - "patch"
   directories:
   - '*'
 - package-ecosystem: docker
@@ -12,15 +21,29 @@ updates:
     interval: weekly
   cooldown:
     default-days: 7
+  commit-message:
+    prefix: "chore(deps-docker)"
+  groups:
+    docker-non-major:
+      patterns:
+      - "*"
+      update-types:
+      - "minor"
+      - "patch"
   directories:
   - '*'
-  ignore:
-  - dependency-name: '*'
-    update-types:
-    - version-update:semver-major
 - package-ecosystem: github-actions
   schedule:
     interval: weekly
   cooldown:
     default-days: 7
+  commit-message:
+    prefix: "chore(deps-github-actions)"
+  groups:
+    github-actions-non-major:
+      patterns:
+      - "*"
+      update-types:
+      - "minor"
+      - "patch"
   directory: /
