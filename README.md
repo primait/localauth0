@@ -91,14 +91,34 @@ After having run the localauth0 machine a web interface is available at
   of custom claims that will be injected in the JWT payload.
 
 - `POST` <http://localhost:3000/oauth/token/custom_claims>: used to add or
-  update one or more custom claim fields. Body should be:
+  update one or more custom claim fields. 
+  
+   For a single string value, the body should be:
 
   ```json
   {
-    "custom_claims": [{
-      "name": "custom_claim_field_name",
-      "value": "custom claim field value. Can be a string or a list of strings"
-    }]
+    "custom_claims": [
+      {
+        "name": "custom_claim_field_name",
+        "value": {
+          "String": "your string value"
+        }
+      }
+    ]
+  }
+  ```
+
+    For an array of strings:
+  ```json
+  {
+    "custom_claims": [
+      {
+        "name": "custom_claim_field_name",
+        "value": {
+          "Vec": ["value_1", "value_2"]
+        }
+      }
+    ]
   }
   ```
 
