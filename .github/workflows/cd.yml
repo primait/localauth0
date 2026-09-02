@@ -21,7 +21,7 @@ jobs:
         with:
           key: "${{ matrix.arch }}"
 
-      - uses: taiki-e/install-action@5b4d68e2e660441203ab128a23676f1e4faf1532 # ratchet:taiki-e/install-action@v2
+      - uses: taiki-e/install-action@fcf5432d9f50d67e37ee6e29bdb7a224ff67b4a7 # ratchet:taiki-e/install-action@v2
         with:
           tool: cross
 
@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
       - run: rustup target add wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # ratchet:Swatinem/rust-cache@v2
-      - uses: taiki-e/install-action@5b4d68e2e660441203ab128a23676f1e4faf1532 # ratchet:taiki-e/install-action@v2
+      - uses: taiki-e/install-action@fcf5432d9f50d67e37ee6e29bdb7a224ff67b4a7 # ratchet:taiki-e/install-action@v2
         with:
           tool: trunk@0.17
 
