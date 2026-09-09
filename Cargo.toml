@@ -12,7 +12,7 @@ opt-level = "z" # Optimize for size.
 strip = true # Automatically strip symbols (elf) from the binary.
 
 [dependencies]
-actix-files = "0.6.10"
+actix-files = "0.7.0"
 actix-web = {version = "4", features = ["openssl"]}
 
 derive-getters = "0.5.0"
