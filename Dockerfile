@@ -1,4 +1,4 @@
-FROM public.ecr.aws/primaassicurazioni/rust:1.98.1
+FROM public.ecr.aws/primaassicurazioni/rust:1.99.0
 
 WORKDIR /code
 
