@@ -1,4 +1,4 @@
-FROM public.ecr.aws/primaassicurazioni/rust:1.98.1
+FROM 279066465364.dkr.ecr.eu-west-1.amazonaws.com/prima-rust:1.98.1
 
 WORKDIR /code
 
