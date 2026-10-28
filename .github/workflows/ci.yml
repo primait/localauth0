@@ -19,11 +19,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # ratchet:Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # ratchet:Swatinem/rust-cache@v2
 
       - run: rustup target add wasm32-unknown-unknown
       - name: install tools
-        uses: taiki-e/install-action@1168f6810a3cb30a3514bf5756a3b7f0422c6df8 # ratchet:taiki-e/install-action@v2
+        uses: taiki-e/install-action@a4d3f3f761dcd95cce1b72cb61cb6d1963438177 # ratchet:taiki-e/install-action@v2
         with:
           tool: trunk@0.17
 
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # ratchet:Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # ratchet:Swatinem/rust-cache@v2
       - name: Run tests
         run: cargo test
 
