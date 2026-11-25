@@ -21,7 +21,7 @@ jobs:
         with:
           key: "${{ matrix.arch }}"
 
-      - uses: taiki-e/install-action@a4d3f3f761dcd95cce1b72cb61cb6d1963438177 # ratchet:taiki-e/install-action@v2
+      - uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # ratchet:taiki-e/install-action@v2
         with:
           tool: cross
 
@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v7.0.1
       - run: rustup target add wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # ratchet:Swatinem/rust-cache@v2
-      - uses: taiki-e/install-action@a4d3f3f761dcd95cce1b72cb61cb6d1963438177 # ratchet:taiki-e/install-action@v2
+      - uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # ratchet:taiki-e/install-action@v2
         with:
           tool: trunk@0.17
 
@@ -100,7 +100,7 @@ jobs:
 
       - name: Login to public ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2.1.7
+        uses: aws-actions/amazon-ecr-login@v2.2.0
         with:
           mask-password: "true"
           registry-type: public
